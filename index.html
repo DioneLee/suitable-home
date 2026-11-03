@@ -996,22 +996,24 @@ function drawLocMap(l, home, stn, work) {
   const tip = (m, t, d = 'top') => m.bindTooltip(t, { permanent: true, direction: d, offset: d === 'top' ? [0, -8] : d === 'bottom' ? [0, 10] : [10, 0] });
   const pts = [home];
   const wr = stn && state.routes[routeKey(home, stn)];
-  if (stn && wr === undefined) walkRoute(home, stn);
+  if (stn && wr === undefined) fetchRoute(home, stn);
+  const cr = work && state.routes[routeKey(home, work, true)];
+  if (work && cr === undefined) fetchRoute(home, work, true);
   if (stn) { L.polyline(wr ? wr.p : [home, stn], { color: css('--ink'), weight: wr ? 3.5 : 1.5, opacity: wr ? .85 : .5 }).addTo(locLayer);
     tip(L.circleMarker(stn, { radius: 6, color: css('--sage'), fillColor: css('--sage'), fillOpacity: 1 }).addTo(locLayer), `${esc(l.station)} · 도보 ${fmtMin(l.walk)}`, 'right'); pts.push(stn); }
-  if (work) { L.polyline([home, work], { color: css('--ink'), weight: 1.5, dashArray: '6 5' }).addTo(locLayer);
-    tip(L.circleMarker(work, { radius: 6, color: css('--ink'), fillColor: css('--ink'), fillOpacity: 1 }).addTo(locLayer), `${esc(state.settings.work)} · 통근 ${fmtMin(l.commute)} · 직선`); pts.push(work); }
+  if (work) { L.polyline(cr ? cr.p : [home, work], { color: css('--accent'), weight: cr ? 3 : 1.5, opacity: cr ? .85 : .5, dashArray: cr ? null : '6 5' }).addTo(locLayer);
+    tip(L.circleMarker(work, { radius: 6, color: css('--ink'), fillColor: css('--ink'), fillOpacity: 1 }).addTo(locLayer), `${esc(state.settings.work)} · 통근 ${fmtMin(l.commute)}`); pts.push(work); }
   tip(L.circleMarker(home, { radius: 10, color: css('--accent'), fillColor: css('--accent'), fillOpacity: 1 }).addTo(locLayer), typeCode(l), 'bottom');
   const fit = () => { locMap.invalidateSize(); pts.length > 1 ? locMap.fitBounds(pts, { padding: [48, 48], maxZoom: 16 }) : locMap.setView(home, 15); };
   box.offsetWidth ? fit() : (locMap._fitLater = fit);   // 숨겨진 화면이면 보일 때 맞춤
 }
 const routeBusy = new Set();
-const routeKey = (a, b) => `${a}|${b}`;
-async function walkRoute(a, b) {   // OpenStreetMap FOSSGIS 도보 경로(키 불필요)
-  const k = routeKey(a, b);
+const routeKey = (a, b, car) => `${car ? 'car:' : ''}${a}|${b}`;
+async function fetchRoute(a, b, car) {   // OpenStreetMap FOSSGIS 도보·차도 경로(키 불필요)
+  const k = routeKey(a, b, car);
   if (k in state.routes || routeBusy.has(k)) return; routeBusy.add(k);
   try {
-    const r = await fetch(`https://routing.openstreetmap.de/routed-foot/route/v1/foot/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`);
+    const r = await fetch(`https://routing.openstreetmap.de/${car ? 'routed-car/route/v1/driving' : 'routed-foot/route/v1/foot'}/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`);
     if (!r.ok) throw r.status;
     const t = (await r.json()).routes?.[0];
     state.routes[k] = t ? { d: Math.round(t.distance), p: t.geometry.coordinates.map(([x, y]) => [+y.toFixed(5), +x.toFixed(5)]) } : null; save();
@@ -1034,7 +1036,8 @@ function renderLocation(ev) {
   if (geoQueue.size && typeof L !== 'undefined') geocodeQueue();
   $('#locMap').hidden = !mapOk; $('#locSvg').toggleAttribute('hidden', mapOk);
   const wr = mapOk && g[1] && state.routes[routeKey(g[0], g[1])];
-  const kmS = wr ? `걷는 길 ${(wr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[1]) : '', kmW = mapOk ? km(g[0], g[2]) : '';
+  const cr = mapOk && g[2] && state.routes[routeKey(g[0], g[2], true)];
+  const kmS = wr ? `걷는 길 ${(wr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[1]) : '', kmW = cr ? `도로 ${(cr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[2]) : '';
   const facts = () => {
     const walkRank = rankOf(ev.all, l, 'walk'), comRank = rankOf(ev.all, l, 'commute'), many = ev.all.length > 1;
     $('#locFacts').innerHTML = `
@@ -1043,7 +1046,7 @@ function renderLocation(ev) {
     <div><dt>직장</dt><dd>${esc(work)} 편도 ${fmtMin(l.commute)}<small>${many ? `${ev.all.length}곳 중 ${ord(comRank)} 가까워요 · ` : ''}하루 왕복 ${fmtMin(l.commute * 2)}${kmW ? ` · ${kmW}` : ''}</small></dd></div>`;
   };
   if (mapOk) {
-    $('#locLead').textContent = '역까지는 실제로 걷는 길을, 직장까지는 직선을 그렸어요. 대중교통 경로는 아직 지원하지 않고, 시간은 입력한 도보·통근 시간이에요.';
+    $('#locLead').textContent = '역까지는 걷는 길, 직장까지는 도로를 따라 그렸어요. 직장 경로는 지하철·버스 노선이 아닌 도로 기준이고, 시간은 입력한 도보·통근 시간이에요.';
     drawLocMap(l, g[0], g[1], g[2]); facts(); return;
   }
   const far = Math.max(l.commute, l.walk), step = far <= 60 ? 10 : far <= 180 ? 30 : 60;

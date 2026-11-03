@@ -165,7 +165,43 @@ a.stat:active .go i { transform: translateX(4px); }
 /* 1 TYPE 라인업: 큰 평면 한 장 + 작은 목록 (Arkitektkontoret Vest) */
 .type-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); margin-top: var(--s4); align-items: start; }
 @media (max-width: 960px) { .type-grid { grid-template-columns: minmax(0, 1fr); } }
-.type-panel { border: 1px solid var(--line); border-radius: var(--r2); background: var(--paper); overflow: hidden; }
+.type-panel { border: 1px solid var(--line); border-radius: var(--r2); background: var(--paper); overflow: hidden; transition: border-color .2s; }
+@media (min-width: 961px) { .type-panel { position: sticky; top: 72px; } }   /* 두 단일 때: 목록을 내려도 평면·3D 가 보이게 */
+.type-panel.changed { border-color: var(--accent); }
+/* ---- 휴대폰 바텀시트 (768px 미만) ---- */
+.sheet { position: fixed; inset: 0; z-index: 60; }
+.sheet-scrim { position: absolute; inset: 0; background: rgba(10,9,8,.62); opacity: 0; transition: opacity .24s; }
+.sheet.open .sheet-scrim { opacity: 1; }
+.sheet-panel { position: absolute; left: 0; right: 0; bottom: 0; height: 85vh; height: 85dvh; display: flex; flex-direction: column;
+  background: var(--paper); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; transform: translateY(100%); transition: transform .26s cubic-bezier(.2,.7,.2,1); outline: none; }
+.sheet.open .sheet-panel { transform: none; }
+.sheet.dragging .sheet-panel { transition: none; }
+.sheet-grab { display: flex; justify-content: center; padding: 10px 0 4px; touch-action: none; cursor: grab; }
+.sheet-grab span { width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
+.sheet-head { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px 44px; align-items: center; gap: 4px; padding: 0 8px 8px; touch-action: none; }
+.sheet-head .t { text-align: center; min-width: 0; }
+.sheet-head .t .eyebrow { margin: 0; }
+.sheet-head h3 { margin: 2px 0 0; font: 400 20px/1.3 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-head .t small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-head button { min-height: 44px; width: 44px; padding: 0; border-radius: var(--pill); font-size: 20px; }
+.sheet-head button:disabled { opacity: .3; }
+.sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 16px; }
+.sheet .type-stage { aspect-ratio: 4 / 3; border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; touch-action: pan-y; }
+.sheet #sh2d { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ink); padding: 12px; }
+.sheet #sh2d img, .sheet #sh2d svg { max-width: 100%; max-height: 100%; }
+.sheet #sh3d { position: absolute; inset: 0; touch-action: none; }
+.sheet #sh3d canvas { display: block; width: 100% !important; height: 100% !important; }
+.sheet .note { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.sheet-cost { display: flex; align-items: baseline; gap: 8px; margin-top: var(--s2); }
+.sheet-cost b { font: 300 32px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+.sheet-cost small { color: var(--muted); }
+.sheet .why { color: var(--fail); font-size: 13px; margin: 6px 0 0; }
+.sheet .vs { margin-top: 6px; }
+.sheet-acts { display: grid; gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); grid-template-columns: 1fr 1fr; }
+.sheet-acts .primary { grid-column: 1 / -1; }
+.sheet-pos { text-align: center; font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+html.sheet-lock body { position: fixed; left: 0; right: 0; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .sheet-panel, .sheet-scrim { transition: none; } }
 .tabs { display: flex; border-bottom: 1px solid var(--line); }
 .tabs button { border: 0; border-radius: 0; min-height: 48px; padding: 0 var(--s3); color: var(--muted); background: transparent; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 @media (hover: hover) { .tabs button:hover { background: transparent; color: var(--ink); } }
@@ -673,6 +709,37 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 </div>
 </main>
 <footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요.</div></footer>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-scrim" data-sheet-close></div>
+  <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="shTitle" tabindex="-1">
+    <div class="sheet-grab" aria-hidden="true"><span></span></div>
+    <header class="sheet-head">
+      <button type="button" class="ghost" id="shPrev" aria-label="이전 매물">‹</button>
+      <div class="t"><p class="eyebrow" id="shType"></p><h3 id="shTitle"></h3><small id="shRegion"></small></div>
+      <button type="button" class="ghost" id="shNext" aria-label="다음 매물">›</button>
+      <button type="button" class="ghost" data-sheet-close aria-label="닫기">✕</button>
+    </header>
+    <div class="sheet-body">
+      <div class="tabs" role="tablist" aria-label="보기 방식">
+        <button type="button" role="tab" id="shTab2d" aria-selected="true" aria-controls="sh2d">2D 평면</button>
+        <button type="button" role="tab" id="shTab3d" aria-selected="false" aria-controls="sh3d">3D 보기</button>
+      </div>
+      <div class="type-stage" style="margin-top:12px"><div id="sh2d" role="tabpanel" aria-labelledby="shTab2d"></div><div id="sh3d" role="tabpanel" aria-labelledby="shTab3d" hidden></div></div>
+      <p class="note" id="shNote"></p>
+      <div class="sheet-cost"><b id="shCost"></b><small>만원 / 월 실제 부담</small></div>
+      <div class="badges" id="shBadges" style="margin-top:8px"></div>
+      <p class="why" id="shWhy"></p>
+      <p class="vs" id="shVs"></p>
+      <p class="sheet-pos" id="shPos"></p>
+    </div>
+    <div class="sheet-acts">
+      <button type="button" class="primary" id="shStudio">3D 크게 보기·가구 배치</button>
+      <button type="button" class="ghost" id="shEdit">수정</button>
+      <button type="button" class="ghost" data-sheet-close>닫기</button>
+    </div>
+  </section>
+</div>
+
 <nav class="tabbar" aria-label="메뉴">
   <a href="#home" data-nav="home">홈</a>
   <a href="#listings" data-nav="listings">매물</a>
@@ -991,6 +1058,107 @@ function renderTypes(ev) {
   $('#typeCap').innerHTML = `<span><b>${typeCode(sel)}</b>${esc(sel.name)} · ${esc(sel.region)}</span><span>전용 ${sel.area}㎡ · 방 ${sel.rooms} · ${sel.plan ? '실제 평면도' : '면적 기준 대략 구조'}</span>`;
   $('#type2d').innerHTML = sel.plan ? `<img src="${sel.plan.img}" alt="${esc(sel.name)} 평면도">` : schematic(sel, true);
 }
+// ---------- 휴대폰 바텀시트: 카드를 누르면 그 매물을 바로 보여준다. 내용은 render 의 selectedId 하나만 읽는다 ----------
+const mobileQ = matchMedia('(max-width: 767.98px)');
+const sheet = { open: false, tab: '2d', y: 0, from: null, after: null };
+function renderSheet(ev) {
+  if (!sheet.open) return;
+  const all = ev.all, i = all.findIndex(l => l.id === state.selectedId), l = all[i];
+  if (!l) return closeSheet();
+  $('#shType').textContent = typeCode(l); $('#shTitle').textContent = l.name; $('#shRegion').textContent = `${l.region || '지역 미입력'} · 전용 ${l.area}㎡ · 방 ${l.rooms}`;
+  $('#shPrev').disabled = i <= 0; $('#shNext').disabled = i >= all.length - 1;
+  $('#shPos').textContent = `${i + 1} / ${all.length} · ${sheet.tab === '2d' ? '좌우로 밀거나 ‹ › 로 넘겨요' : '3D 는 끌어서 돌리고, ‹ › 로 넘겨요'}`;
+  $('#sh2d').innerHTML = l.plan ? `<img src="${l.plan.img}" alt="${esc(l.name)} 평면도">` : schematic(l, true);
+  $('#shNote').textContent = l.plan ? '올린 평면도 기준 실제 구조예요.' : '평면도가 없어 전용면적·방 개수로 그린 대략 구조예요.';
+  $('#shCost').textContent = l.monthly.toFixed(1);
+  $('#shBadges').innerHTML = badge(l) + costTags(l) + commuteTags(l) + (l.walk == null ? ' ' + walkTag(l) : '');
+  $('#shWhy').textContent = l.reasons.length ? `탈락 사유: ${l.reasons.join(', ')}` : ''; $('#shWhy').hidden = !l.reasons.length;
+  const vs = vsCur(l, ev.cur); $('#shVs').textContent = vs ? `지금 집보다 ${vs}` : ''; $('#shVs').hidden = !vs;
+  $('#sheet').dataset.id = l.id;   // 검증용: 시트가 보여주는 매물
+}
+function setSheetTab(which) {
+  sheet.tab = which; const is3d = which === '3d';
+  $('#shTab2d').setAttribute('aria-selected', !is3d); $('#shTab3d').setAttribute('aria-selected', is3d);
+  $('#sh2d').hidden = is3d; $('#sh3d').hidden = !is3d;
+  window.mount3D?.(is3d ? $('#sh3d') : null);   // 3D 는 3D 탭을 눌렀을 때만 (3D 집 보기와 같은 모형을 시트로 옮겨 그림)
+  renderSheet(evaluate(state));
+}
+function openSheet(from) {
+  if (sheet.open) return;
+  sheet.open = true; sheet.from = from || null; sheet.y = scrollY;
+  document.documentElement.classList.add('sheet-lock'); document.body.style.top = `-${sheet.y}px`;   // 뒤 페이지 스크롤 고정
+  $('#sheet').hidden = false; setSheetTab('2d');
+  void $('.sheet-panel').offsetHeight; $('#sheet').classList.add('open');   // 한 번 그린 위치(화면 아래)에서 바로 올라오게
+  history.pushState({ sheet: 1 }, '');   // 휴대폰 뒤로 가기 = 시트만 닫기
+  $('.sheet-panel').focus({ preventScroll: true });
+}
+function hideSheet() {   // 실제로 닫기 (popstate 에서 부른다)
+  if (!sheet.open) return;
+  sheet.open = false; window.mount3D?.(null);
+  $('#sheet').classList.remove('open'); $('.sheet-panel').style.transform = '';
+  setTimeout(() => { if (!sheet.open) $('#sheet').hidden = true; }, reducedMotion ? 0 : 260);
+  document.documentElement.classList.remove('sheet-lock'); document.body.style.top = ''; window.scrollTo({ top: sheet.y, behavior: 'instant' });   // 부드러운 스크롤 없이 원래 자리로
+  const after = sheet.after; sheet.after = null;
+  if (after) after(); else sheet.from?.isConnected ? sheet.from.focus({ preventScroll: true }) : document.querySelector(`[data-type="${state.selectedId}"]`)?.focus({ preventScroll: true });
+}
+function closeSheet(after) {   // X·바깥·끌어내리기·Esc·버튼: 기록 한 칸 뒤로 → popstate 가 닫는다
+  if (!sheet.open) return;
+  sheet.after = after || null;
+  if (history.state?.sheet) history.back(); else hideSheet();
+}
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';   // 뒤로 가기로 시트를 닫을 때 브라우저가 스크롤을 덮어쓰지 않게 (화면 전환 스크롤은 route 가 직접 한다)
+addEventListener('popstate', () => { if (sheet.open) hideSheet(); });
+mobileQ.addEventListener?.('change', e => { if (!e.matches && sheet.open) closeSheet(); });
+function stepSheet(d) {
+  const all = evaluate(state).all, i = all.findIndex(l => l.id === state.selectedId), n = all[i + d];
+  if (!n) return; state.selectedId = n.id; render();
+}
+$('#shPrev').addEventListener('click', () => stepSheet(-1));
+$('#shNext').addEventListener('click', () => stepSheet(1));
+$('#shTab2d').addEventListener('click', () => setSheetTab('2d'));
+$('#shTab3d').addEventListener('click', () => setSheetTab('3d'));
+$('#sheet').addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) closeSheet(); });
+$('#shStudio').addEventListener('click', () => closeSheet(() => go('studio')));
+$('#shEdit').addEventListener('click', () => { const id = state.selectedId; closeSheet(() => startEdit(id)); });
+// 키보드: Esc 닫기, Tab 은 시트 안에서만 돈다
+$('#sheet').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); closeSheet(); return; }
+  if (e.key !== 'Tab') return;
+  const f = [...$('.sheet-panel').querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')].filter(el => el.offsetParent !== null);
+  if (!f.length) return;
+  const first = f[0], last = f.at(-1);
+  if (e.shiftKey && (document.activeElement === first || document.activeElement === $('.sheet-panel'))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+// 손잡이·머리를 아래로 끌면 닫기
+(function dragToClose() {
+  const panel = $('.sheet-panel'); let y0 = null, dy = 0, t0 = 0, pid = null;
+  for (const h of [$('.sheet-grab'), $('.sheet-head')]) h.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    y0 = e.clientY; dy = 0; t0 = performance.now(); pid = e.pointerId; try { h.setPointerCapture(pid); } catch (err) {}   // 끝난 포인터면 캡처 없이 진행
+    $('#sheet').classList.add('dragging');
+  });
+  addEventListener('pointermove', e => { if (y0 === null || e.pointerId !== pid) return; dy = Math.max(0, e.clientY - y0); panel.style.transform = `translateY(${dy}px)`; });
+  const end = e => {
+    if (y0 === null || e.pointerId !== pid) return;
+    y0 = null; $('#sheet').classList.remove('dragging');
+    const fast = dy / Math.max(1, performance.now() - t0) > 0.6;
+    if (dy > 110 || (fast && dy > 30)) closeSheet(); else panel.style.transform = '';
+  };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+})();
+// 2D 탭에서만 좌우로 밀어 이전·다음 (3D 탭은 모형 회전과 겹치니 ‹ › 만)
+(function swipe() {
+  const st = $('#sheet .type-stage'); let x0 = null, y0 = 0, pid = null;
+  st.addEventListener('pointerdown', e => { if (sheet.tab !== '2d') return; x0 = e.clientX; y0 = e.clientY; pid = e.pointerId; });
+  st.addEventListener('pointerup', e => {
+    if (x0 === null || e.pointerId !== pid || sheet.tab !== '2d') { x0 = null; return; }
+    const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) stepSheet(dx < 0 ? 1 : -1);
+  });
+  st.addEventListener('pointercancel', () => { x0 = null; });
+})();
+
 function setTypeTab(which) {
   const is3d = which === '3d';
   $('#tab2d').setAttribute('aria-selected', !is3d); $('#tab3d').setAttribute('aria-selected', is3d);
@@ -1266,7 +1434,7 @@ function render() {
   if (!state.listings.some(l => l.id === state.selectedId)) state.selectedId = state.listings[0]?.id ?? null;
   ensureTypeLetters(state.listings);
   const ev = evaluate(state);
-  renderHero(ev); renderTypes(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
+  renderHero(ev); renderTypes(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
   const areas = ev.all.map(l => l.area);
   const lo = Math.min(...areas), hi = Math.max(...areas);
   $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'Type lineup';
@@ -1356,14 +1524,26 @@ document.addEventListener('click', e => {
     return;
   }
   const t = e.target.closest('[data-type]');
-  if (t) { state.selectedId = t.dataset.type; render(); return; }
+  if (t) {
+    state.selectedId = t.dataset.type; render();
+    if (mobileQ.matches) openSheet(t);
+    else {   // 데스크톱: 패널이 바뀐 걸 바로 보이게
+      const pn = $('.type-panel'); pn.classList.add('changed'); clearTimeout(pn._t); pn._t = setTimeout(() => pn.classList.remove('changed'), 700);
+      if (pn.getBoundingClientRect().bottom < 80 || pn.getBoundingClientRect().top > innerHeight) pn.scrollIntoView({ block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
+    }
+    return;
+  }
   const lc = e.target.closest('[data-loc]');
   if (lc) { locId = lc.dataset.loc; renderLocation(evaluate(state)); return; }
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const l = state.listings.find(x => x.id === b.dataset.id); if (!l) return;
   if (b.dataset.act === 'view') { state.selectedId = l.id; render(); go('studio'); }
   if (b.dataset.act === 'del' && confirmTap(b)) { state.listings = state.listings.filter(x => x !== l); render(); }
-  if (b.dataset.act === 'edit') {
+  if (b.dataset.act === 'edit') startEdit(l.id);
+});
+function startEdit(id) {
+  const l = state.listings.find(x => x.id === id); if (!l) return;
+  {
     form.id.value = l.id; form.name.value = l.name; form.region.value = l.region; form.addr.value = l.addr || ''; form.station.value = l.station || '';
     for (const k of NUMS) form[k].value = l[k] ?? '';
     form.current.checked = !!l.current;
@@ -1371,7 +1551,7 @@ document.addEventListener('click', e => {
     $('#submitBtn').textContent = '수정 저장'; $('#cancelEdit').hidden = false;
     go('listings', '#manage'); form.name.focus({ preventScroll: true });
   }
-});
+}
 $('#sel3d').addEventListener('change', e => { state.selectedId = e.target.value; render(); });
 
 // 데이터 옮기기: 내보낸 파일 = { app, version, exportedAt, data(state 그대로, 큰 평면도는 다시 압축) }
@@ -2110,14 +2290,25 @@ addEventListener('keydown', e => {
 const topBtn = document.getElementById('topBtn');
 topBtn.addEventListener('click', () => { topView = !topView; topBtn.textContent = topView ? '비스듬히 보기' : '위에서 보기'; setCamera(); });
 
-new ResizeObserver(() => {
-  const w = view.clientWidth, h = view.clientHeight;
+const fitView = () => {
+  const host = renderer.domElement.parentElement, w = host.clientWidth, h = host.clientHeight;
+  if (!w || !h) return;
   renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
   renderer.render(scene, camera);
-}).observe(view);
-let viewVisible = true;   // 다른 메뉴 화면에 있거나 스크롤로 벗어나면 그리지 않는다 (배터리·발열)
+};
+const viewRO = new ResizeObserver(fitView); viewRO.observe(view);
+let viewVisible = true, sheetHost = null;   // 다른 메뉴 화면에 있거나 스크롤로 벗어나면 그리지 않는다 (배터리·발열)
 if ('IntersectionObserver' in window) new IntersectionObserver(es => { viewVisible = es[0].isIntersecting; }).observe(view);
-(function tick() { controls.update(); if (viewVisible) renderer.render(scene, camera); requestAnimationFrame(tick); })();
+(function tick() { controls.update(); if (viewVisible || sheetHost) renderer.render(scene, camera); requestAnimationFrame(tick); })();
+// 휴대폰 시트의 3D 탭: 같은 렌더러·장면(평면도 바닥·설비·가구 포함)을 시트 칸으로 옮겼다가 닫으면 되돌린다
+window.mount3D = host => {
+  if (host === sheetHost) return;
+  if (sheetHost) viewRO.unobserve(sheetHost);
+  sheetHost = host || null;
+  (sheetHost || view).appendChild(renderer.domElement);
+  if (sheetHost) { viewRO.observe(sheetHost); setCamera(); }
+  fitView();
+};
 
 // ================= 평면도 편집기 (2D) =================
 const $ = s => document.querySelector(s);

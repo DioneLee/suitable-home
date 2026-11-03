@@ -184,6 +184,16 @@ a.stat:active .go i { transform: translateX(4px); }
 table.ana { width: 100%; border-collapse: collapse; font-size: 14px; }
 table.ana td, table.ana th { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: left; }
 #anaHourOut { white-space: nowrap; min-width: 3.2em; }
+table.ana input.spn { width: 100%; min-width: 6em; padding: 4px 6px; min-height: 32px; font-size: 14px; }
+table.ana select.spz { width: auto; padding: 4px 6px; min-height: 32px; font-size: 13px; margin: 0; }
+table.ana tr.flash td { background: rgba(184,135,95,.16); }
+#anaZoomHint { display: none; }
+@media (max-width: 767.98px) { #anaZoomHint { display: block; } }
+.zoomview { position: fixed; inset: 0; z-index: 90; background: #0F0E0D; display: flex; flex-direction: column; }
+.zoomview .zv-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; color: var(--muted); font-size: 13px; border-bottom: 1px solid var(--line); }
+.zoomview .zv-head button { width: 44px; min-height: 44px; padding: 0; border-radius: var(--pill); font-size: 18px; }
+.zoomview .zv-body { flex: 1; overflow: auto; touch-action: pan-x pan-y; padding: 12px; }
+.zoomview img { display: block; max-width: none; background: #fff; border-radius: var(--r1); }
 table.ana .n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 table.ana tr.sum td { border-top: 1px solid var(--ink); font-weight: 600; }
 .zchip { display: inline-block; font-size: 12px; padding: 1px 6px; border-radius: var(--r1); color: #1C1A19; }
@@ -207,7 +217,7 @@ table.ana tr.sum td { border-top: 1px solid var(--ink); font-weight: 600; }
 .sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 16px; }
 .sheet .type-stage { aspect-ratio: 4 / 3; border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; touch-action: pan-y; }
 .sheet #sh2d { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ink); padding: 12px; }
-.sheet #sh2d img, .sheet #sh2d svg { max-width: 100%; max-height: 100%; }
+.sheet #sh2d img, .sheet #sh2d svg { max-width: 100%; max-height: 100%; min-width: 0; min-height: 0; object-fit: contain; }
 .sheet #sh3d { position: absolute; inset: 0; touch-action: none; }
 .sheet #sh3d canvas { display: block; width: 100% !important; height: 100% !important; }
 .sheet .note { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
@@ -228,9 +238,9 @@ html.sheet-lock body { position: fixed; left: 0; right: 0; overflow: hidden; }
 .tabs .tab-link { margin-left: auto; font-size: 13px; }
 .type-stage { position: relative; aspect-ratio: 16 / 10; max-width: 100%; }
 #type2d, #type3d { position: absolute; inset: 0; }
-#type2d { display: grid; place-items: center; padding: var(--s4); color: var(--ink); }
+#type2d { display: grid; place-items: center; grid-template: minmax(0, 1fr) / minmax(0, 1fr); padding: var(--s4); color: var(--ink); overflow: hidden; }   /* 줄 높이를 영역에 묶어 큰 이미지가 아래 정보 줄을 덮지 않게 */
 @media (max-width: 600px) { #type2d { padding: var(--s2); } .hero .sub { font-size: 16px; } }
-#type2d svg, #type2d img { width: 100%; height: 100%; object-fit: contain; display: block; }
+#type2d svg, #type2d img { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; display: block; }
 .type-cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s1) var(--s3); padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 .type-cap b { color: var(--ink); font-weight: 600; margin-right: 6px; }
 .type-list { list-style: none; padding: 0; border-top: 1px solid var(--ink); }
@@ -739,6 +749,8 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
               <label><input type="radio" name="anaTool" value="win"> 창 쪽 벽 찍기</label>
             </div>
             <div class="plan-wrap"><canvas id="anaCanvas" aria-label="도면 분석 그림"></canvas></div>
+            <p class="hint" id="anaZoomHint">그림을 누르면 전체 화면으로 크게 볼 수 있어요 (두 손가락으로 확대).</p>
+            <p class="hint" id="anaRough" hidden>경계가 어색한 칸은 칸을 눌러 구역을 직접 고를 수 있어요. (휴대폰은 아래 표에서 고를 수 있어요)</p>
             <div class="ana-legend"><span><i style="background:var(--zone-live)"></i>생활 (거실·주방)</span><span><i style="background:var(--zone-sleep)"></i>수면 (침실)</span><span><i style="background:var(--zone-svc)"></i>서비스 (욕실·현관·수납)</span><span><i style="background:var(--accent)"></i>현관에서 가는 길</span></div>
             <div class="ana-grid">
               <div><h4>공간별 면적</h4><div class="tbl"><table class="ana" id="anaArea"></table></div><p class="ch-foot" id="anaAreaFoot" style="margin-top:8px"></p></div>
@@ -2678,7 +2690,7 @@ const planRot = l => SIDE_ANG[l.plan?.winSide || 'bottom'] - (facingOf(l)?.[1] ?
 let anaOn = false, anaCache = { key: '', A: null };
 async function analyze(l) {
   const p = l.plan, pg = planGeometry(l), c = pg.cellM, gw = p.gw, gh = p.gh, n = gw * gh, mask = pg.mask, out = pg.outside;
-  const key = `${l.id}|${l.area}|${p.v}|${p.scaleM}|${p.entry?.x},${p.entry?.y}`;
+  const key = `${l.id}|${l.area}|${p.v}|${p.scaleM}|${p.entry?.x},${p.entry?.y}|${JSON.stringify(p.spaceNames || [])}`;
   if (anaCache.key === key) return anaCache.A;
   const free = i => !mask[i] && !out[i], fix = new Uint8Array(n);
   for (const fx of p.fixtures || []) for (let y = fx.y0; y < fx.y1; y++) fix.fill(1, y * gw + fx.x0, y * gw + fx.x1);
@@ -2693,6 +2705,46 @@ async function analyze(l) {
     }
     const q = []; for (let i = 0; i < n; i++) if (kind[i] >= 0) q.push(i);   // 모르는 칸(글자·흰 칸)은 가까운 구역으로
     for (let h = 0; h < q.length; h++) { const i = q[h], x = i % gw; for (const j of [x > 0 ? i - 1 : -1, x < gw - 1 ? i + 1 : -1, i - gw, i + gw]) if (j >= 0 && j < n && free(j) && kind[j] < 0) { kind[j] = kind[i]; q.push(j); } }
+    // B. 설비 칸(욕조·변기·세면대·카운터)은 따로 나누지 않고 둘레에서 가장 많은 바닥 종류로 → 그 공간(욕실·주방)에 합쳐진다
+    for (const fx of p.fixtures || []) {
+      const cnt = [0, 0, 0, 0];
+      for (let y = Math.max(0, fx.y0 - 2); y < Math.min(gh, fx.y1 + 2); y++) for (let x = Math.max(0, fx.x0 - 2); x < Math.min(gw, fx.x1 + 2); x++) {
+        const i = y * gw + x; if (fix[i] || !free(i) || kind[i] < 0) continue; cnt[kind[i]]++;
+      }
+      const k = cnt.indexOf(Math.max(...cnt)); if (!cnt[k]) continue;
+      for (let y = fx.y0; y < fx.y1; y++) for (let x = fx.x0; x < fx.x1; x++) { const i = y * gw + x; if (free(i)) kind[i] = k; }
+    }
+    // D. 바닥 무늬로 번진 경계: 5×5 다수결 두 번 (벽 칸은 세지 않음) → 작은 돌출·물결 정리
+    for (let pass = 0; pass < 2; pass++) {
+      const nk = kind.slice();
+      for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+        const i = y * gw + x; if (!free(i) || kind[i] < 0) continue;
+        const cnt = [0, 0, 0, 0];
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= gw || yy >= gh) continue; const j = yy * gw + xx; if (free(j) && kind[j] >= 0) cnt[kind[j]]++; }
+        const b = cnt.indexOf(Math.max(...cnt)); if (cnt[b] > cnt[kind[i]]) nk[i] = b;
+      }
+      kind.set(nk);
+    }
+    // D-2. 벽 없이 맞닿은 두 바닥의 경계가 세로·가로로 길면 경계 칸들의 중앙값 위치에서 한 줄로 곧게 자른다
+    const bd = new Uint8Array(n), seen = new Uint8Array(n);
+    for (let i = 0; i < n; i++) { if (!free(i) || kind[i] < 0) continue; const x = i % gw; for (const j of [x < gw - 1 ? i + 1 : -1, i + gw < n ? i + gw : -1]) if (j >= 0 && free(j) && kind[j] >= 0 && kind[j] !== kind[i]) { bd[i] = bd[j] = 1; } }
+    for (let s0 = 0; s0 < n; s0++) {
+      if (!bd[s0] || seen[s0]) continue;
+      const seg = [], st = [s0]; seen[s0] = 1;
+      while (st.length) { const i = st.pop(), x = i % gw, y = (i / gw) | 0; seg.push(i);
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= gw || yy >= gh) continue; const j = yy * gw + xx; if (bd[j] && !seen[j]) { seen[j] = 1; st.push(j); } } }
+      const ks = [...new Set(seg.map(i => kind[i]))]; if (ks.length !== 2 || seg.length < 12) continue;
+      let x0 = gw, x1 = 0, y0 = gh, y1 = 0; for (const i of seg) { const x = i % gw, y = (i / gw) | 0; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      const w = x1 - x0 + 1, h = y1 - y0 + 1, vert = h >= 3 * w && w <= 14, horiz = w >= 3 * h && h <= 14; if (!vert && !horiz) continue;
+      const pos = seg.map(i => vert ? i % gw : (i / gw) | 0).sort((a, b) => a - b), mid = pos[pos.length >> 1] + 0.5;
+      let lo = [0, 0, 0, 0];   // 경계 앞쪽(왼쪽·위쪽)에 어느 종류가 많은지
+      for (const i of seg) { const v = vert ? i % gw : (i / gw) | 0; if (v < mid) lo[kind[i]]++; }
+      const [a, b] = ks, first = lo[a] >= lo[b] ? a : b, second = first === a ? b : a;
+      for (let y = Math.max(0, y0 - (horiz ? 3 : 0)); y <= Math.min(gh - 1, y1 + (horiz ? 3 : 0)); y++) for (let x = Math.max(0, x0 - (vert ? 3 : 0)); x <= Math.min(gw - 1, x1 + (vert ? 3 : 0)); x++) {
+        const i = y * gw + x; if (!free(i) || (kind[i] !== a && kind[i] !== b)) continue;
+        kind[i] = (vert ? x + 0.5 : y + 0.5) < mid ? first : second;
+      }
+    }
   }
   // 공간 = 같은 종류로 이어진 덩어리 (3D 렌더는 벽으로 나뉜 덩어리)
   const comp = new Int32Array(n).fill(-1), spaces = [];
@@ -2703,7 +2755,7 @@ async function analyze(l) {
       for (const j of [x > 0 ? i - 1 : -1, x < gw - 1 ? i + 1 : -1, y > 0 ? i - gw : -1, y < gh - 1 ? i + gw : -1]) if (j >= 0 && free(j) && comp[j] < 0 && kind[j] === sp.kind) { comp[j] = sp.id; st.push(j); } }
     spaces.push(sp);
   }
-  const minCells = 0.5 / (c * c);   // 0.5㎡ 미만 조각은 가장 많이 맞닿은 이웃 공간에 붙인다
+  const minCells = 0.3 / (c * c);   // C. 0.3㎡ 미만 조각은 맞닿은 이웃 공간에, 없으면 벽 건너 가장 가까운 공간에 붙인다
   for (const sp of [...spaces].sort((a, b) => a.idx.length - b.idx.length)) {
     if (sp.gone || sp.idx.length >= minCells) continue;
     const touch = new Map();
@@ -2713,6 +2765,12 @@ async function analyze(l) {
     const to = spaces[best[0]]; for (const i of sp.idx) { comp[i] = to.id; kind[i] = to.kind; to.idx.push(i); } sp.gone = true;
   }
   const live = spaces.filter(sp => !sp.gone && sp.idx.length >= minCells);
+  { // 맞닿은 이웃이 없던 작은 조각: 큰 공간들에서 집 안(벽 포함)으로 넓혀 가며 가장 먼저 닿는 공간에 붙인다
+    const own = new Int32Array(n).fill(-1), q = [];
+    for (const sp of live) for (const i of sp.idx) { own[i] = sp.id; q.push(i); }
+    for (let h = 0; h < q.length; h++) { const i = q[h], x = i % gw; for (const j of [x > 0 ? i - 1 : -1, x < gw - 1 ? i + 1 : -1, i - gw, i + gw]) if (j >= 0 && j < n && !out[j] && own[j] < 0) { own[j] = own[i]; q.push(j); } }
+    for (const sp of spaces) if (!sp.gone && sp.idx.length < minCells && own[sp.idx[0]] >= 0) { const to = spaces[own[sp.idx[0]]]; for (const i of sp.idx) { comp[i] = to.id; to.idx.push(i); } sp.gone = true; }
+  }
   for (const sp of live) { let sx = 0, sy = 0; for (const i of sp.idx) { sx += i % gw; sy += (i / gw) | 0; } sp.cx = sx / sp.idx.length; sp.cy = sy / sp.idx.length; sp.m2 = sp.idx.length * c * c; sp.zone = sp.kind >= 0 ? KIND_ZONE[sp.kind] : null; }
   // 현관: 직접 찍은 곳, 없으면 바깥과 바로 이어진 문 틈(회색 체크 바닥 우선)
   const walk = i => free(i) && !fix[i];
@@ -2731,8 +2789,16 @@ async function analyze(l) {
     arr.sort((a, b) => b.m2 - a.m2);
     const named = k === 3 ? arr.filter(sp => !sp.idx.includes(entry)) : arr;
     if (k === 3) for (const sp of arr) if (sp.idx.includes(entry)) sp.name = '현관';
-    named.forEach((sp, j) => sp.name = (k >= 0 ? KIND_NAME[k] : '공간') + (named.length > 1 ? ' ' + (j + 1) : ''));
+    named.forEach((sp, j) => sp.name = (k >= 0 ? KIND_NAME[k] : '기타') + (named.length > 1 ? ' ' + (j + 1) : ''));
   }
+  // 사용자가 바꾼 이름·구역: 칸 가운데 위치로 짝짓는다 (1m 안, 가까운 순) → 다시 인식해도 유지
+  const near = 1 / c;
+  for (const e of p.spaceNames || []) {
+    let best = null, bd = near * near;
+    for (const sp of live) { if (sp.custom) continue; const d = (sp.cx - e.cx) ** 2 + (sp.cy - e.cy) ** 2; if (d < bd) { bd = d; best = sp; } }
+    if (best) { best.custom = e; if (e.name) best.name = e.name; if (e.zone) best.zone = e.zone; }
+  }
+  const spaceOf = new Int32Array(n).fill(-1); live.forEach((sp, k) => { sp.k = k; for (const i of sp.idx) spaceOf[i] = k; });
   const entrySp = entry >= 0 ? live.find(sp => comp[entry] === sp.id || sp.idx.includes(entry)) : null;
   if (entrySp && !entrySp.name.startsWith('현관') && entrySp.kind !== 3) entrySp.isEntry = true;
   // 동선: 현관에서 공간마다 가운데에 가장 가까운 칸까지
@@ -2740,7 +2806,7 @@ async function analyze(l) {
   if (entry >= 0) {
     const { dist, prev } = shortest(gw, gh, walk, entry);
     for (const sp of live) {
-      if (sp === entrySp) continue;
+      if (sp === entrySp || sp.idx.every(i => fix[i])) continue;   // 설비만 있는 칸으로는 길을 만들지 않는다
       let best = -1, bd = Infinity;
       for (const i of sp.idx) if (Number.isFinite(dist[i])) { const dd = (i % gw - sp.cx) ** 2 + (((i / gw) | 0) - sp.cy) ** 2; if (dd < bd) { bd = dd; best = i; } }
       if (best < 0) { routes.push({ sp, m: null }); continue; }
@@ -2753,7 +2819,18 @@ async function analyze(l) {
   const floorM2 = live.reduce((a, sp) => a + sp.m2, 0), wallM2 = wallIn * c * c, total = floorM2 + wallM2 / 2;
   const zones = { live: 0, sleep: 0, svc: 0 }; for (const sp of live) if (sp.zone) zones[sp.zone] += sp.m2;
   let bx0 = gw, by0 = gh, bx1 = 0, by1 = 0; for (let i = 0; i < n; i++) if (!out[i]) { const x = i % gw, y = (i / gw) | 0; bx0 = Math.min(bx0, x); by0 = Math.min(by0, y); bx1 = Math.max(bx1, x + 1); by1 = Math.max(by1, y + 1); }
-  const A = { l, gw, gh, c, mask, out, kind, comp, spaces: live, entry, entryHow, entrySp, routes, zoning, floorM2, wallM2, total, diff: (total - l.area) / l.area * 100, zones, box: [bx0, by0, bx1, by1] };
+  // 경계가 번진 곳 찾기: 벽 없이 맞닿은 서로 다른 구역의 경계 칸 수 ÷ (경계 상자 가로 + 세로 − 1) > 1.25 면 '어색함' (곧은 선·ㄱ자는 1)
+  const bnd = new Map();
+  for (let i = 0; i < n; i++) {
+    const a = spaceOf[i]; if (a < 0) continue; const x = i % gw;
+    for (const j of [x < gw - 1 ? i + 1 : -1, i + gw < n ? i + gw : -1]) {
+      if (j < 0) continue; const b = spaceOf[j]; if (b < 0 || b === a || live[a].zone === live[b].zone) continue;
+      const key2 = a < b ? `${a}|${b}` : `${b}|${a}`, e = bnd.get(key2) || { n: 0, x0: gw, y0: gh, x1: 0, y1: 0 }, y = (i / gw) | 0;
+      e.n++; e.x0 = Math.min(e.x0, x); e.x1 = Math.max(e.x1, x); e.y0 = Math.min(e.y0, y); e.y1 = Math.max(e.y1, y); bnd.set(key2, e);
+    }
+  }
+  const rough = [...bnd].filter(([, e]) => e.n >= 6 && e.n / Math.max(1, (e.x1 - e.x0 + 1) + (e.y1 - e.y0 + 1) - 1) > 1.25).map(([k]) => k.split('|').map(v => live[+v].name).join('–'));
+  const A = { l, gw, gh, c, mask, out, kind, comp, spaceOf, spaces: live, entry, entryHow, entrySp, routes, zoning, floorM2, wallM2, total, diff: (total - l.area) / l.area * 100, zones, rough, box: [bx0, by0, bx1, by1] };
   anaCache = { key, A };
   return A;
 }
@@ -2766,7 +2843,7 @@ function paintAna(g, A, mode, S, ox = 0, oy = 0) {
   for (let i = 0; i < gw * gh; i++) {
     let col = null;
     if (mask[i] && !out[i]) col = [28, 26, 25];
-    else if (!out[i]) col = zones && A.zoning && kind[i] >= 0 ? zc[KIND_ZONE[kind[i]]] : [246, 243, 238];
+    else if (!out[i]) { const sp = A.spaces[A.spaceOf[i]]; col = zones && A.zoning && sp?.zone ? zc[sp.zone] : [246, 243, 238]; }
     if (col) im.data.set([...col, 255], i * 4);
   }
   cg.putImageData(im, 0, 0);
@@ -2809,8 +2886,9 @@ async function refreshAnalysis() {
   const cvA = $('#anaCanvas'), [bx0, by0, bx1, by1] = A.box; cvA.width = (bx1 - bx0) * S; cvA.height = (by1 - by0) * S;
   const g = cvA.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cvA.width, cvA.height); paintAna(g, A, mode, S);
   const chip = z => z ? `<span class="zchip" style="background:${zoneColor(z)}">${ZONE_NAME[z]}</span>` : '—', warn = Math.abs(A.diff) > 10;
-  $('#anaArea').innerHTML = `<thead><tr><th>공간</th><th>구역</th><th class="n">바닥 면적</th></tr></thead><tbody>`
-    + A.spaces.slice().sort((a, b) => b.m2 - a.m2).map(sp => `<tr><td>${sp.name}</td><td>${A.zoning ? chip(sp.zone) : '—'}</td><td class="n">${sp.m2.toFixed(2)}㎡</td></tr>`).join('')
+  const zsel = sp => `<select class="spz" data-sp="${sp.k}" aria-label="${esc3(sp.name)} 구역">${[['live', '생활'], ['sleep', '수면'], ['svc', '서비스']].map(([z, t]) => `<option value="${z}" ${sp.zone === z ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+  $('#anaArea').innerHTML = `<thead><tr><th>공간 <small class="hint">(눌러서 이름 바꾸기)</small></th><th>구역</th><th class="n">바닥 면적</th></tr></thead><tbody>`
+    + A.spaces.slice().sort((a, b) => b.m2 - a.m2).map(sp => `<tr data-sp="${sp.k}"><td><input class="spn" data-sp="${sp.k}" value="${esc3(sp.name)}" maxlength="16" aria-label="칸 이름"></td><td>${A.zoning ? zsel(sp) : '—'}</td><td class="n">${sp.m2.toFixed(2)}㎡</td></tr>`).join('')
     + (A.zoning ? `<tr class="sum"><td colspan="2">생활 ${A.zones.live.toFixed(1)} · 수면 ${A.zones.sleep.toFixed(1)} · 서비스 ${A.zones.svc.toFixed(1)}</td><td class="n">바닥 ${A.floorM2.toFixed(2)}㎡</td></tr>` : `<tr class="sum"><td colspan="2">바닥 합계</td><td class="n">${A.floorM2.toFixed(2)}㎡</td></tr>`)
     + `<tr><td colspan="2">+ 벽 면적의 절반 (벽 ${A.wallM2.toFixed(2)}㎡ ÷ 2)</td><td class="n">${(A.wallM2 / 2).toFixed(2)}㎡</td></tr>`
     + `<tr class="sum"><td colspan="2">벽 중심선 기준 합계 · 입력한 전용 ${A.l.area}㎡ 대비</td><td class="n">${A.total.toFixed(2)}㎡ <span class="badge ${warn ? 'warn' : 'pass'}">${A.diff >= 0 ? '+' : ''}${A.diff.toFixed(1)}%${warn ? ' 경고' : ''}</span></td></tr></tbody>`;
@@ -2818,6 +2896,7 @@ async function refreshAnalysis() {
     + (A.l.plan.scaleM ? '축척: 도면 치수로 맞춘 값이에요.' : '축척: 지금은 입력한 전용면적에 맞춘 자동 축척이라 합계가 전용면적과 비슷하게 나와요. \'3D 배치 → 치수 맞추기\'로 도면 치수를 넣으면 실제로 비교돼요.');
   $('#anaRoute').innerHTML = A.entry < 0 ? '<tbody><tr><td>현관을 찾지 못했어요. \'현관 찍기\'를 고르고 도면의 현관을 눌러 주세요.</td></tr></tbody>'
     : `<thead><tr><th>현관 →</th><th class="n">걷는 거리</th></tr></thead><tbody>` + A.routes.map(r => `<tr><td>${r.sp.name}</td><td class="n">${r.m == null ? '닫힌 칸 (가는 길 없음)' : r.m.toFixed(1) + 'm'}</td></tr>`).join('') + '</tbody>';
+  $('#anaRough').hidden = !(A.zoning && A.rough.length);
   $('#anaEntryInfo').textContent = `현관: ${A.entryHow}. 벽·설비를 피해 8방향으로 걷는 가장 짧은 길이고, 각 공간의 가운데에 가장 가까운 곳까지 쟀어요.`;
   updateSun();
 }
@@ -2825,8 +2904,9 @@ function updateSun() {
   const l = cur;
   if (!anaOn || !l) { sun.castShadow = false; sun.intensity = 1.4; hemi.intensity = 1.6; sun.position.set(5, 10, 6); sun.target.position.set(0, 0, 0); return; }
   const f = facingOf(l), side = l.plan?.winSide;
-  $('#anaFacing').textContent = (f ? `방향: ${f[0]}향` : '방향: 미확인 (매물 수정에서 방향을 고르면 그 방위로 해를 비춰요 · 지금은 남향으로 가정)')
-    + ` · 기준: ${side ? `찍은 창 쪽 벽 (도면 ${SIDE_KO[side]})` : '평면도 아래쪽 (기본)'}${l.plan ? '' : ' · 평면도가 없어 대략 구조에 비춰요'}`;
+  $('#anaFacing').innerHTML = esc3((f ? `방향: ${f[0]}향` : '방향: 미확인 (지금은 남향으로 가정)')
+    + ` · 기준: ${side ? `찍은 창 쪽 벽 (도면 ${SIDE_KO[side]})` : '평면도 아래쪽 (기본)'}${l.plan ? '' : ' · 평면도가 없어 대략 구조에 비춰요'}`)
+    + (f ? '' : ' <button type="button" class="small primary" id="anaFacingBtn" style="margin-top:8px">매물 수정에서 방향을 넣으면 실제 햇빛을 볼 수 있어요</button>');
   const hr = +$('#anaHour').value, summer = $('#anaSeason').value === 'summer', sp = sunPos(hr, summer);
   $('#anaHourOut').textContent = `${Math.floor(hr)}:${String(Math.round((hr % 1) * 60)).padStart(2, '0')}`;
   const a = (sp.az + planRot(l)) * Math.PI / 180, al = Math.max(sp.alt, 2) * Math.PI / 180, s = Math.max(focus.w, focus.d, 4);
@@ -2856,16 +2936,70 @@ $('#stTabAna').addEventListener('click', () => setStudioTab('ana'));
 for (const id of ['anaZones', 'anaRoutes']) $('#' + id).addEventListener('change', refreshAnalysis);
 $('#anaSeason').addEventListener('change', updateSun);
 $('#anaHour').addEventListener('input', updateSun);
+// C. 칸 이름·구역 바꾸기 → plan.spaceNames 에 칸 가운데 위치와 함께 저장 (그림·표·보드에 반영, 다시 인식해도 유지)
+$('#anaArea').addEventListener('change', async e => {
+  const t = e.target.closest('.spn, .spz'); if (!t || !cur?.plan) return;
+  const A = await analyze(cur), sp = A.spaces[+t.dataset.sp]; if (!sp) return;
+  const list = cur.plan.spaceNames ||= [];
+  let ent = sp.custom && list.includes(sp.custom) ? sp.custom : null;
+  if (!ent) { ent = { cx: +sp.cx.toFixed(1), cy: +sp.cy.toFixed(1) }; list.push(ent); }
+  if (t.classList.contains('spn')) ent.name = t.value.trim() || undefined; else ent.zone = t.value;
+  save(); await refreshAnalysis();
+  $(`#anaArea tr[data-sp="${sp.k}"] ${t.classList.contains('spn') ? '.spn' : '.spz'}`)?.focus();
+});
+// F. 휴대폰: 그림을 누르면 전체 화면으로 크게 (두 손가락 확대, 닫기 · 뒤로 가기)
+const zoomQ = matchMedia('(max-width: 767.98px)');
+function openZoom() {
+  const l = cur; if (!l?.plan || !anaCache.A) return;
+  const A = anaCache.A, S = 4, [bx0, by0, bx1, by1] = A.box, c2 = document.createElement('canvas'); c2.width = (bx1 - bx0) * S; c2.height = (by1 - by0) * S;
+  const g = c2.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c2.width, c2.height);
+  const mode = $('#anaZones').checked ? ($('#anaRoutes').checked ? 'both' : 'zones') : ($('#anaRoutes').checked ? 'routes' : 'plan'); paintAna(g, A, mode, S);
+  let zv = $('#zoomView');
+  if (!zv) {
+    zv = document.createElement('div'); zv.id = 'zoomView'; zv.className = 'zoomview'; zv.setAttribute('role', 'dialog'); zv.setAttribute('aria-modal', 'true'); zv.setAttribute('aria-label', '분석 그림 크게 보기');
+    zv.innerHTML = '<div class="zv-head"><span>두 손가락으로 확대하고, 밀어서 둘러봐요</span><button type="button" class="ghost" aria-label="닫기">✕</button></div><div class="zv-body"><img alt="도면 분석 그림 크게 보기"></div>';
+    document.body.append(zv);
+    zv.querySelector('button').onclick = () => history.state?.zoom ? history.back() : closeZoom();
+    zv.addEventListener('keydown', e => { if (e.key === 'Escape') zv.querySelector('button').click(); });
+    const body = zv.querySelector('.zv-body'), img = zv.querySelector('img'), pts = new Map(); let d0 = 0, s0 = 1;
+    body.addEventListener('pointerdown', e => { pts.set(e.pointerId, [e.clientX, e.clientY]); if (pts.size === 2) { const [a, b] = [...pts.values()]; d0 = Math.hypot(a[0] - b[0], a[1] - b[1]); s0 = +img.dataset.s; } });
+    body.addEventListener('pointermove', e => {
+      if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pts.size !== 2 || !d0) return; const [a, b] = [...pts.values()];
+      const sc = Math.min(4, Math.max(1, s0 * Math.hypot(a[0] - b[0], a[1] - b[1]) / d0)); img.dataset.s = sc; img.style.width = `${+img.dataset.w * sc}px`;
+    });
+    const up = e => { pts.delete(e.pointerId); if (pts.size < 2) d0 = 0; };
+    body.addEventListener('pointerup', up); body.addEventListener('pointercancel', up);
+  }
+  const img = zv.querySelector('img'); img.src = c2.toDataURL('image/png');
+  img.dataset.w = c2.width / 1.5; img.dataset.s = 1; img.style.width = `${c2.width / 1.5}px`;   // 라벨 16.8px ÷ 1.5 ≈ 11px 이상
+  zv.hidden = false; history.pushState({ zoom: 1 }, ''); zv.querySelector('button').focus();
+}
+function closeZoom() { const zv = $('#zoomView'); if (zv) zv.hidden = true; $('#anaCanvas').focus?.(); }
+addEventListener('popstate', () => { if ($('#zoomView') && !$('#zoomView').hidden) closeZoom(); });
+// G. 방향 미확인: 수정 폼의 방향 칸으로 바로
+$('#anaFacing').addEventListener('click', e => {
+  if (!e.target.closest('#anaFacingBtn') || !cur) return;
+  startEdit(cur.id);
+  setTimeout(() => { const f = document.querySelector('#form [name=facing]'); f.scrollIntoView({ block: 'center', behavior: 'instant' }); f.focus({ preventScroll: true }); }, 700);
+});
 const anaTool = () => document.querySelector('input[name=anaTool]:checked').value;
 document.querySelectorAll('input[name=anaTool]').forEach(r => r.addEventListener('change', () => {
   $('#anaCanvas').classList.toggle('picking', !!anaTool());
   $('#anaMsg').textContent = anaTool() === 'entry' ? '도면에서 현관 바닥을 눌러 주세요.' : anaTool() === 'win' ? '도면에서 큰 창이 있는 바깥벽을 눌러 주세요. 그 벽이 바라보는 쪽을 매물 방향으로 써요.' : '';
 }));
 $('#anaCanvas').addEventListener('click', async e => {
-  const l = cur, t = anaTool(); if (!l?.plan || !t) return;
+  const l = cur, t = anaTool(); if (!l?.plan) return;
+  if (!t && zoomQ.matches) { openZoom(); return; }
   const r = e.currentTarget.getBoundingClientRect();   // await 뒤에는 currentTarget 이 비므로 먼저 읽는다
   const A = await analyze(l), [bx0, by0, bx1, by1] = A.box;
   const x = Math.floor(bx0 + (e.clientX - r.left) / r.width * (bx1 - bx0)), y = Math.floor(by0 + (e.clientY - r.top) / r.height * (by1 - by0));
+  if (!t) {   // 누른 칸을 면적표에서 바로 고치게
+    const sp = A.spaces[A.spaceOf[y * A.gw + x]]; if (!sp) return;
+    const row = $(`#anaArea tr[data-sp="${sp.k}"]`); if (!row) return;
+    row.scrollIntoView({ block: 'center', behavior: 'instant' }); row.classList.add('flash'); setTimeout(() => row.classList.remove('flash'), 1500);
+    (A.zoning ? row.querySelector('.spz') : row.querySelector('.spn')).focus(); $('#anaMsg').textContent = `${sp.name}: 표에서 이름이나 구역을 바꿀 수 있어요.`; return;
+  }
   if (t === 'entry') {   // 누른 곳에서 가장 가까운 걸을 수 있는 칸
     let best = null, bd = Infinity;
     for (let yy = Math.max(0, y - 15); yy < Math.min(A.gh, y + 16); yy++) for (let xx = Math.max(0, x - 15); xx < Math.min(A.gw, x + 16); xx++) { const i = yy * A.gw + xx; if (A.mask[i] || A.out[i]) continue; const d = (xx - x) ** 2 + (yy - y) ** 2; if (d < bd) { bd = d; best = { x: xx, y: yy }; } }
@@ -2884,7 +3018,9 @@ $('#anaCanvas').addEventListener('click', async e => {
 // 보드: 평면 · 조닝 · 동선 · 3D 사선뷰 → 2400×1800 PNG 한 장
 $('#anaBoard').addEventListener('click', async () => {
   const l = cur; if (!l?.plan) return;
-  const A = await analyze(l), Wb = 2400, Hb = 1800, cv2 = document.createElement('canvas'); cv2.width = Wb; cv2.height = Hb;
+  const A = await analyze(l), [bx0, by0, bx1, by1] = A.box, ar = (bx1 - bx0) / (by1 - by0);
+  const cw = 1110, iw = cw - 40, dh = Math.min(iw / ar, 640), dw = dh * ar, ch = 94 + dh + 44;   // 칸 높이를 도면 비율에 맞춰 흰 띠·빈칸 없이
+  const Wb = 2400, Hb = Math.round(220 + ch * 2 + 50 + 60), cv2 = document.createElement('canvas'); cv2.width = Wb; cv2.height = Hb;
   const g = cv2.getContext('2d'), ink = '#EDE6DD', muted = '#A39A90';
   g.fillStyle = '#1C1A19'; g.fillRect(0, 0, Wb, Hb);
   g.fillStyle = '#B8875F'; g.font = '500 26px "Cormorant Garamond", serif'; g.textAlign = 'left'; g.fillText('S U I T A B L E   H O M E  ·  도면 분석 보드', 60, 70);
@@ -2892,7 +3028,7 @@ $('#anaBoard').addEventListener('click', async () => {
   g.fillStyle = ink; g.font = '300 52px "Noto Serif KR", serif'; g.fillText(l.name, 60, 135);
   g.fillStyle = muted; g.font = '400 24px Pretendard, sans-serif';
   g.fillText(`${typeCode(l)} · 전용 ${l.area}㎡ · 방 ${l.rooms} · ${f ? f[0] + '향' : '방향 미확인'} · ${ymd}`, 60, 175);
-  const cells = [[60, 220], [1230, 220], [60, 1010], [1230, 1010]], cw = 1110, ch = 740;
+  const cells = [[60, 220], [1230, 220], [60, 220 + ch + 50], [1230, 220 + ch + 50]];
   const shot3d = () => {   // 3D 사선뷰: 위에서 보기면 잠깐 사선으로 바꿔 찍고 되돌린다
     const was = topView, pos = camera.position.clone(), tg = controls.target.clone();
     topView = false; setCamera(); renderer.render(scene, camera); const url = renderer.domElement.toDataURL('image/png');
@@ -2900,7 +3036,7 @@ $('#anaBoard').addEventListener('click', async () => {
     return url;
   };
   const im3d = await new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.src = shot3d(); });
-  const [bx0, by0, bx1, by1] = A.box, S = Math.min((cw - 40) / (bx1 - bx0), (ch - 110) / (by1 - by0));
+  const S = dw / (bx1 - bx0);
   const caps = ['01  평면 (벽)', '02  조닝', '03  동선', '04  3D 사선뷰'];
   const subs = [`벽 중심선 합계 ${A.total.toFixed(1)}㎡ · 전용 ${l.area}㎡ 대비 ${A.diff >= 0 ? '+' : ''}${A.diff.toFixed(1)}%`,
     A.zoning ? `생활 ${A.zones.live.toFixed(1)}㎡ · 수면 ${A.zones.sleep.toFixed(1)}㎡ · 서비스 ${A.zones.svc.toFixed(1)}㎡` : '3D 이미지라 조닝 생략',
@@ -2910,14 +3046,13 @@ $('#anaBoard').addEventListener('click', async () => {
     g.fillStyle = '#252220'; g.fillRect(x, y, cw, ch); g.textAlign = 'left';   // 앞 칸의 라벨이 가운데 정렬을 남기므로
     g.fillStyle = ink; g.font = '500 28px Pretendard, sans-serif'; g.fillText(caps[k], x + 24, y + 44);
     g.fillStyle = muted; g.font = '400 20px Pretendard, sans-serif'; g.fillText(subs[k], x + 24, y + 76);
-    const ix = x + 20, iy = y + 94, iw = cw - 40, ih = ch - 114;
+    const ix = x + 20 + (iw - dw) / 2, iy = y + 104;
     if (k < 3) {
-      g.fillStyle = '#fff'; g.fillRect(ix, iy, iw, ih);
-      const dw = (bx1 - bx0) * S, dh = (by1 - by0) * S;
-      paintAna(g, A, ['plan', 'zones', 'routes'][k], S, ix + (iw - dw) / 2, iy + (ih - dh) / 2);
+      g.fillStyle = '#fff'; g.fillRect(ix - 10, iy - 10, dw + 20, dh + 20);   // 집 외곽(벽 경계)만 + 10px
+      paintAna(g, A, ['plan', 'zones', 'routes'][k], S, ix, iy);
     } else {
-      const k3 = Math.min(iw / im3d.width, ih / im3d.height), w3 = im3d.width * k3, h3 = im3d.height * k3;
-      g.drawImage(im3d, ix + (iw - w3) / 2, iy + (ih - h3) / 2, w3, h3);
+      const k3 = Math.min(iw / im3d.width, (dh + 20) / im3d.height), w3 = im3d.width * k3, h3 = im3d.height * k3;
+      g.drawImage(im3d, x + 20 + (iw - w3) / 2, iy - 10 + (dh + 20 - h3) / 2, w3, h3);
     }
   });
   g.fillStyle = muted; g.font = '400 18px Pretendard, sans-serif'; g.textAlign = 'right';
@@ -2925,7 +3060,7 @@ $('#anaBoard').addEventListener('click', async () => {
   const blob = await new Promise(ok => cv2.toBlob(ok, 'image/png'));
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `도면분석_${l.name.replace(/[\\/:*?"<>|]/g, '_')}.png`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  $('#anaMsg').textContent = `보드를 내려받았어요 (2400×1800, ${(blob.size / 1024).toFixed(0)}KB).`;
+  $('#anaMsg').textContent = `보드를 내려받았어요 (${Wb}×${Hb}, ${(blob.size / 1024).toFixed(0)}KB).`;
 });
 
 // ================= 진입점 =================

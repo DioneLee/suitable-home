@@ -46,7 +46,7 @@ def page(case, mode, w, h):
   if ('{mode}' === 'board') {{
     let b; const oc = URL.createObjectURL; fw.URL.createObjectURL = x => {{ b = x; return 'blob:x'; }}; fw.HTMLAnchorElement.prototype.click = function () {{}};
     d.querySelector('#anaBoard').click(); await W(3000);
-    document.body.innerHTML = ''; const img = new Image(); img.src = oc.call(URL, b); img.style.display = 'block'; document.body.append(img); return;
+    document.body.innerHTML = ''; document.body.style.background = '#000'; const img = new Image(); img.src = oc.call(URL, b); img.style.display = 'block'; document.body.append(img); return;
   }}
   const top = d.querySelector('#anaPane').getBoundingClientRect().top + fw.scrollY - 140; fw.scrollTo({{ top, behavior: 'instant' }});
 }})();
@@ -65,10 +65,14 @@ def shoot(case, mode, win_w, w, h, name):
         tmp_page.unlink(missing_ok=True)
     im = Image.open(out)
     if w < win_w: im = im.crop((0, 0, w, h)); im.save(out)
+    if mode == "board":   # 보드 높이는 도면 비율에 따라 달라진다 → 아래 검은 빈 줄 잘라내기
+        rgb = im.convert("RGB"); px = rgb.load(); y = rgb.height - 1
+        while y > 0 and all(px[x, y] == (0, 0, 0) for x in range(0, rgb.width, 50)): y -= 1
+        im = im.crop((0, 0, rgb.width, y + 1)); im.save(out)
     print(out.relative_to(REPO), im.size)
 
 if __name__ == "__main__":
     case = sys.argv[1] if len(sys.argv) > 1 else "sample"
     shoot(case, "page", 1280, 1280, 1500, "ana_desktop_1280")
     shoot(case, "page", 500, 390, 1800, "ana_mobile_390")
-    shoot(case, "board", 2400, 2400, 1800, "board")
+    shoot(case, "board", 2400, 2400, 2300, "board")   # 보드 높이는 도면 비율에 따라 달라 넉넉히 찍고 잘라낸다

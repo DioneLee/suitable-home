@@ -82,6 +82,45 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .badge { display: inline-block; font: 600 12px/1 var(--sans); padding: 4px 8px; border: 1px solid currentColor; border-radius: var(--r1); }
 .badge.pass { color: var(--pass); } .badge.fail { color: var(--fail); }
 .badge.warn { color: var(--warn); } .badge.base { color: var(--accent); } .badge.unk { color: var(--muted); border-style: dashed; }
+.badge.deal { color: var(--ink); border-color: var(--line); background: var(--paper); }
+.badge.more { color: var(--muted); border-style: dotted; cursor: help; }
+/* 한눈에 비교: 데스크톱 = 매물이 열인 표, 휴대폰 = 카드 */
+.glance { padding-bottom: var(--s4); }
+.gl-sort { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1); margin: var(--s3) 0 var(--s2); }
+.gl-sort .hint { margin: 0 4px 0 0; }
+.gl-sort button[aria-pressed="true"] { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
+.gl-table { overflow-x: auto; border-top: 1px solid var(--ink); }
+.gl-table table { border-collapse: collapse; font-size: 14px; min-width: 100%; }
+.gl-table th, .gl-table td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+.gl-table td { min-width: 150px; max-width: 240px; }
+.gl-table tr > th:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg); color: var(--muted); font: 500 12px/1.4 var(--sans); white-space: nowrap; width: 1%; }
+.gl-table thead th { font-weight: 600; color: var(--ink); }
+.gl-table .cur { background: var(--paper); }
+.gl-cards { list-style: none; padding: 0; display: grid; gap: var(--s2); }
+.gl-cards > li { border: 1px solid var(--line); border-radius: var(--r2); padding: var(--s2); }
+.gl-cards > li.cur { background: var(--paper); }
+.gl-cards dl { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px 12px; margin: 12px 0 0; }
+.gl-cards dt { color: var(--muted); font-size: 12px; padding-top: 2px; }
+.gl-cards dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.gl-name b { font-weight: 600; } .gl-name small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.gl-amt { font: 300 20px/1.25 var(--serif); font-variant-numeric: lining-nums tabular-nums; display: block; margin-top: 4px; }
+.gl-sub { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.gl-sub.up { color: var(--warn); } .gl-sub.down { color: var(--pass); }
+.gl-score { color: var(--muted); font-size: 12px; } .gl-score.fail { color: var(--fail); }
+.gl-body a { color: var(--ink); text-underline-offset: 3px; }
+.gl-more { margin-top: 10px; }
+@media (min-width: 768px) { .gl-cards { display: none; } }
+@media (max-width: 767.98px) { .gl-table { display: none; } }
+.facts-mini { display: grid; gap: 6px; padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; }
+.type-panel > .facts-mini { border-top: 0; border-bottom: 1px solid var(--line); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px var(--s3); }   /* 두 줄로 접어 고정 패널이 화면 높이를 넘지 않게 */
+@media (min-width: 961px) { .type-panel .type-stage { aspect-ratio: 16 / 9; } }   /* 위에 조건 줄이 생긴 만큼 평면 칸을 조금 낮게 */
+.type-panel > .facts-mini .formula, .type-panel > .facts-mini .vs, .type-panel > .facts-mini .wide { grid-column: 1 / -1; }
+.facts-mini .formula { color: var(--muted); font-size: 12px; }
+.sheet .facts-mini { padding: 12px 0; border-top: 0; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.facts-mini p { margin: 0; } .facts-mini .k { color: var(--muted); font-size: 12px; margin-right: 6px; }
+.facts-mini .gl-amt { display: inline; font-size: 18px; }
+.tcost .tcond { display: block; font-size: 12px; color: var(--muted); margin: 0 0 6px auto; max-width: 220px; }
+.rank .cond { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; }
 .badges { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; }
 .vs { display: block; font-size: 13px; color: var(--muted); }
 .check { display: flex; align-items: center; gap: var(--s1); cursor: pointer; }
@@ -446,18 +485,30 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <div class="stats" id="heroStats">
         <a class="stat" href="#listings"><b id="stCount">0</b><span>비교 중인 매물</span><em class="go">매물 보기 <i aria-hidden="true">→</i></em></a>
         <a class="stat" href="#report" data-focus="#ch1"><b id="stCost">0</b><span id="stCostSub">최저 실제 월 부담</span><em class="go">비용 분석 보기 <i aria-hidden="true">→</i></em></a>
-        <a class="stat" href="#criteria" data-focus="#rankTool" data-hl="top"><b id="stScore">0</b><span id="stScoreSub">1위 적합도</span><em class="go">순위 보기 <i aria-hidden="true">→</i></em></a>
+        <a class="stat" href="#report" data-focus="#ch3"><b id="stScore">0</b><span id="stScoreSub">가장 가까운 집</span><em class="go">통근 분석 보기 <i aria-hidden="true">→</i></em></a>
       </div>
     </div>
-    <button type="button" class="scrollbtn" data-scroll="#final" aria-label="추천 매물로 내려가기">↓</button>
+    <button type="button" class="scrollbtn" data-scroll="#glanceHome" aria-label="한눈에 비교로 내려가기">↓</button>
   </header>
+
+  <section class="block glance" id="glanceHome" aria-labelledby="h-glanceHome">
+    <div class="wrap">
+      <p class="eyebrow">At a glance</p>
+      <h2 class="h2" id="h-glanceHome">한눈에 비교</h2>
+      <p class="lead">계약 조건 · 전입신고 · 주소 · 통근 · 원문을 매물마다 나란히 봐요. 점수·평면도·3D는 "자세히 보기"에서.</p>
+      <div class="gl-sort" role="group" aria-label="정렬"><span class="hint">정렬</span>
+        <button type="button" class="small ghost" data-gsort="price">금액 낮은 순</button><button type="button" class="small ghost" data-gsort="monthly">실제 월 부담 낮은 순</button><button type="button" class="small ghost" data-gsort="commute">통근 짧은 순</button><button type="button" class="small ghost" data-gsort="area">넓은 순</button></div>
+      <div class="gl-body" data-glance></div>
+    </div>
+  </section>
 
 
   <!-- 5 마무리 -->
   <section class="block" id="final" aria-labelledby="h-final">
     <div class="wrap">
       <p class="eyebrow reveal" id="ebFinal">Recommendation</p>
-      <h2 class="sr" id="h-final">최종 추천</h2>
+      <h2 class="h2 reveal" id="h-final">더 깊이 보기</h2>
+      <p class="lead reveal">우리 기준 점수로 고른 최종 추천이에요. 비교 리포트 · 우리 기준 · 3D · 도면 분석은 그 아래 메뉴에서 봐요.</p>
       <div class="final reveal" id="finalPick"></div>
     </div>
   </section>
@@ -478,6 +529,16 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 </div>
 
 <div class="view" data-view="listings" hidden>
+  <section class="block glance" id="glanceList" aria-labelledby="h-glanceList">
+    <div class="wrap">
+      <p class="eyebrow">At a glance</p>
+      <h2 class="h2" id="h-glanceList">한눈에 비교</h2>
+      <p class="lead">계약 조건 · 전입신고 · 주소 · 통근 · 원문을 매물마다 나란히 봐요. 점수·평면도·3D는 "자세히 보기"에서.</p>
+      <div class="gl-sort" role="group" aria-label="정렬"><span class="hint">정렬</span>
+        <button type="button" class="small ghost" data-gsort="price">금액 낮은 순</button><button type="button" class="small ghost" data-gsort="monthly">실제 월 부담 낮은 순</button><button type="button" class="small ghost" data-gsort="commute">통근 짧은 순</button><button type="button" class="small ghost" data-gsort="area">넓은 순</button></div>
+      <div class="gl-body" data-glance></div>
+    </div>
+  </section>
   <!-- 1 TYPE 라인업 · 분양 사이트 -->
   <section class="block" id="type" aria-labelledby="h-type">
     <div class="wrap">
@@ -486,6 +547,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <p class="lead reveal">전용면적으로 이름 붙인 후보 집들이에요. 목록에서 고르면 평면과 3D가 바뀌어요.</p>
       <div class="type-grid">
         <div class="type-panel reveal">
+          <div class="facts-mini" id="typeFacts"></div>
           <div class="tabs" role="tablist" aria-label="보기 방식">
             <button type="button" role="tab" id="tab2d" aria-selected="true" aria-controls="type2d">2D 평면</button>
             <button type="button" role="tab" id="tab3d" aria-selected="false" aria-controls="type3d">3D 보기</button>
@@ -514,18 +576,25 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
             <label class="wide">이름<input name="name" required maxlength="40" placeholder="예: 망원동 투룸"></label>
             <label class="wide">지역<input name="region" maxlength="40" placeholder="예: 마포구 망원동"></label>
             <label class="wide">상세 주소 <span class="unit">(선택 · 지도 위치용)</span><input name="addr" maxlength="60" placeholder="예: 월드컵로 123"></label>
-            <label>보증금 <span class="unit">(만원)</span><input name="deposit" type="number" inputmode="decimal" min="0" step="any" required></label>
-            <label>월세 <span class="unit">(만원)</span><input name="rent" type="number" inputmode="decimal" min="0" step="any" required></label>
+            <label>거래 유형<select name="deal" id="fDeal"><option>월세</option><option>전세</option><option>매매</option></select></label>
+            <label><span id="fDepLabel">보증금</span> <span class="unit">(만원)</span><input name="deposit" type="number" inputmode="decimal" min="0" step="any" required></label>
+            <label data-deal="월세">월세 <span class="unit">(만원)</span><input name="rent" type="number" inputmode="decimal" min="0" step="any" required></label>
+            <label data-deal="매매" hidden>대출 기간 <span class="unit">(년)</span><input name="loanYears" type="number" inputmode="numeric" min="1" max="50" step="1" value="30"></label>
+            <label data-deal="매매" hidden>상환 방식<select name="repay"><option value="amort">원리금균등</option><option value="interest">이자만</option></select></label>
             <label>관리비 <span class="unit">(만원 · 모르면 비워 두기)</span><input name="fee" type="number" inputmode="decimal" min="0" step="any" placeholder="미확인"></label>
             <label>전용면적 <span class="unit">(㎡)</span><input name="area" type="number" inputmode="decimal" min="1" step="any" required></label>
             <label>방 개수<input name="rooms" type="number" inputmode="numeric" min="1" max="6" step="1" required></label>
             <label>층<select name="floor"><option>지상</option><option>반지하</option></select></label>
+            <label>층/총층 <span class="unit">(선택 · 예: 3/5)</span><input name="floorNo" maxlength="10" placeholder="예: 3/5"></label>
+            <label>전입신고<select name="moveIn"><option value="">미확인</option><option>가능</option><option value="불가">불가 (허그대출 안 됨 → 탈락)</option></select></label>
             <label>대출<select name="loan"><option>가능</option><option>불가</option></select></label>
             <label>건물 용도<select name="usage"><option>주거용</option><option value="업무용">업무용 오피스텔</option></select></label>
             <label>방향 <span class="unit">(평면도 아래쪽이 바라보는 방위)</span><select name="facing"><option value="">미확인</option><option value="S">남</option><option value="SE">남동</option><option value="E">동</option><option value="NE">북동</option><option value="N">북</option><option value="NW">북서</option><option value="W">서</option><option value="SW">남서</option></select></label>
             <label>가까운 역<input name="station" maxlength="20" placeholder="예: 망원역"></label>
             <label>역까지 도보 <span class="unit">(분 · 모르면 비워 두기)</span><input name="walk" type="number" inputmode="numeric" min="0" step="1" placeholder="미확인"></label>
-            <label>통근 시간 <span class="unit">(분, 편도)</span><input name="commute" type="number" inputmode="numeric" enterkeyhint="done" min="0" step="1" required></label>
+            <label>통근 시간 <span class="unit">(분, 편도)</span><input name="commute" type="number" inputmode="numeric" min="0" step="1" required></label>
+            <label class="wide">통근 경로 <span class="unit">(선택 · 짧게)</span><input name="route" maxlength="80" placeholder="예: 망원역 6호선 → 합정역 환승 → 여의도역 하차, 도보 5분"></label>
+            <label class="wide">매물 원문 링크 <span class="unit">(선택 · 네이버부동산·직방 등, 저장한 날짜가 같이 남아요)</span><input name="url" type="url" inputmode="url" maxlength="500" enterkeyhint="done" placeholder="https://"></label>
           </div>
           <label class="check" style="margin-top:16px"><input type="checkbox" name="current"> 지금 사는 집 <span class="unit">(순위에서 빼고 비교 기준선으로 써요 · 한 곳만)</span></label>
           <div class="row">
@@ -560,10 +629,10 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 
       <article class="chapter reveal" id="ch1" aria-labelledby="h-c1">
         <div class="ch-no">01</div>
-        <div class="ch-title"><h3 id="h-c1">비용 분석</h3><p class="hint">월세 + 관리비 + 대출 이자 = 실제 월 부담. 회색 막대는 탈락 매물.</p></div>
+        <div class="ch-title"><h3 id="h-c1">비용 분석</h3><p class="hint">거래 유형별로 매달 실제로 나가는 돈. 막대 이름 아래 줄이 계약 조건, 회색 막대는 탈락 매물.</p></div>
         <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c1"></p></aside>
         <div class="ch-body"><div class="chart-box" id="costBox"><canvas id="costChart" aria-label="매물별 실제 월 부담 막대 차트" role="img"></canvas></div></div>
-        <p class="ch-foot">계산식: 실제 월 부담 = 월세 + 관리비 + max(0, 보증금 − 내 돈 보증금) × 대출 연이율 ÷ 12 · 출처: 입력한 매물 정보와 '우리 기준'의 자금 설정</p>
+        <p class="ch-foot">계산식(실제 월 부담) — 월세: 월세 + 관리비 + max(0, 보증금 − 내 돈) × 대출 연이율 ÷ 12 · 전세: 관리비 + max(0, 전세금 − 내 돈) × 대출 연이율 ÷ 12 · 매매: 관리비 + 주택담보대출(매매가 − 내 돈) 월 상환액 — 이자만이면 대출 × 주담대 연이율 ÷ 12, 원리금균등이면 대출 × r ÷ (1 − (1 + r)<sup>−n</sup>) (r = 연이율 ÷ 12, n = 대출 기간 × 12). 매매 월 상환 중 원금은 자산으로 쌓이는 돈이라 '이자 ○만 + 원금 ○만'으로 따로 적어요 · 출처: 입력한 매물 정보와 '우리 기준'의 자금 설정</p>
       </article>
 
       <article class="chapter reveal" aria-labelledby="h-c2">
@@ -574,7 +643,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
         <p class="ch-foot">침대 판정: 평면도가 있으면 인식한 벽·설비를 피해 집 안 어디든 150 × 200cm가 놓이는지, 없으면 면적과 방 개수로 나눈 방 한 칸(벽 두께 10cm 제외)에 들어가는지로 봐요 · 출처: 입력한 전용면적·방 개수, 올린 평면도</p>
       </article>
 
-      <article class="chapter reveal" aria-labelledby="h-c3">
+      <article class="chapter reveal" id="ch3" aria-labelledby="h-c3">
         <div class="ch-no">03</div>
         <div class="ch-title"><h3 id="h-c3">통근 분석</h3><p class="hint">집에서 직장까지 편도 시간. 옅은 부분은 그중 역까지 걷는 시간.</p></div>
         <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c3"></p></aside>
@@ -594,7 +663,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <div class="tbl"><table class="rank" id="rankTable"></table></div>
           <ul class="notes" id="failNotes"></ul>
         </div>
-        <p class="ch-foot">항목 점수 = 통과 매물 사이 상대평가(가장 좋은 집 1, 가장 나쁜 집 0, 모두 같으면 1) · 적합도 = Σ(평균 가중치 × 항목 점수) ÷ Σ가중치 × 100 · 탈락 조건: 반지하, 대출 불가, 업무용 오피스텔, 전용 40㎡ 미만, 보증금 1억 3천 초과, 월세 95만 초과<br>미확인 값: 관리비를 모르면 0으로 계산하고 '관리비 미확인', 역 도보를 모르면 통과 매물의 평균 도보 시간으로 역세권 점수를 매기고 '도보 미확인'을 붙였어요 · 실제 월 부담이 상한을 넘으면 '예산 초과' 경고(설정하면 탈락) · '지금 사는 집'은 순위에서 빼고 비교 기준선으로만 써요 · 통근이 상한을 넘거나(설정하면 탈락) 지금 집보다 길면 '통근 ○분 증가' 경고 · 적합도가 같으면(반올림 점수) 공동 순위, 실제 월 부담이 낮은 순으로 놓아요</p>
+        <p class="ch-foot">항목 점수 = 통과 매물 사이 상대평가(가장 좋은 집 1, 가장 나쁜 집 0, 모두 같으면 1) · 적합도 = Σ(평균 가중치 × 항목 점수) ÷ Σ가중치 × 100 · 탈락 조건: 반지하, 대출 불가, 전입신고 불가(허그대출 안 됨), 업무용 오피스텔, 전용 40㎡ 미만, 보증금·전세금 상한 초과(기본 1억 3천, '우리 기준'에서 바꿈), 매매가 상한 초과(설정했을 때), 월세 95만 초과(월세만)<br>미확인 값: 관리비를 모르면 0으로 계산하고 '관리비 미확인', 역 도보를 모르면 통과 매물의 평균 도보 시간으로 역세권 점수를 매기고 '도보 미확인'을 붙였어요 · 실제 월 부담이 상한을 넘으면 '예산 초과' 경고(설정하면 탈락) · '지금 사는 집'은 순위에서 빼고 비교 기준선으로만 써요 · 통근이 상한을 넘거나(설정하면 탈락) 지금 집보다 길면 '통근 ○분 증가' 경고 · 적합도가 같으면(반올림 점수) 공동 순위, 실제 월 부담이 낮은 순으로 놓아요</p>
       </article>
     </div>
   </section>
@@ -641,10 +710,13 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 
       <div class="tool" id="funds">
         <h3 id="h-set">자금과 직장</h3>
-        <p class="hint">보증금에서 내 돈을 뺀 나머지는 대출로 계산해요.</p>
+        <p class="hint">보증금·전세금·매매가에서 내 돈을 뺀 나머지는 대출로 계산해요.</p>
         <div class="fields" style="margin-top:16px">
           <label>내 돈 보증금 <span class="unit">(만원)</span><input id="myCash" type="number" inputmode="decimal" min="0" step="any"></label>
-          <label>대출 연이율 <span class="unit">(%)</span><input id="rate" type="number" inputmode="decimal" min="0" step="0.1"></label>
+          <label>대출 연이율 <span class="unit">(% · 월세·전세)</span><input id="rate" type="number" inputmode="decimal" min="0" step="0.1"></label>
+          <label>주택담보대출 연이율 <span class="unit">(% · 매매)</span><input id="mortRate" type="number" inputmode="decimal" min="0" step="0.1"></label>
+          <label>보증금·전세금 상한 <span class="unit">(만원 · 넘으면 탈락 · 비우면 사용 안 함)</span><input id="depMax" type="number" inputmode="decimal" min="0" step="any" placeholder="사용 안 함"></label>
+          <label>매매가 상한 <span class="unit">(만원 · 넘으면 탈락 · 비우면 사용 안 함)</span><input id="priceMax" type="number" inputmode="decimal" min="0" step="any" placeholder="사용 안 함"></label>
           <label class="wide">직장 이름 <span class="unit">(입지 그림에 표시)</span><input id="work" maxlength="20" placeholder="예: 여의도"></label>
           <label>실제 월 부담 상한 <span class="unit">(만원 · 비우면 사용 안 함)</span><input id="budget" type="number" inputmode="decimal" min="0" step="any" placeholder="사용 안 함"></label>
           <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" id="budgetFail"> 예산 초과도 탈락으로 처리</label>
@@ -784,13 +856,14 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <button type="button" class="ghost" data-sheet-close aria-label="닫기">✕</button>
     </header>
     <div class="sheet-body">
+      <div class="facts-mini" id="shFacts"></div>
       <div class="tabs" role="tablist" aria-label="보기 방식">
         <button type="button" role="tab" id="shTab2d" aria-selected="true" aria-controls="sh2d">2D 평면</button>
         <button type="button" role="tab" id="shTab3d" aria-selected="false" aria-controls="sh3d">3D 보기</button>
       </div>
       <div class="type-stage" style="margin-top:12px"><div id="sh2d" role="tabpanel" aria-labelledby="shTab2d"></div><div id="sh3d" role="tabpanel" aria-labelledby="shTab3d" hidden></div></div>
       <p class="note" id="shNote"></p>
-      <div class="sheet-cost"><b id="shCost"></b><small>만원 / 월 실제 부담</small></div>
+      <div class="sheet-cost"><b id="shCost"></b><small>만원 / 월 실제 부담</small></div><p class="hint" id="shCond"></p><p class="hint" id="shFormula"></p>
       <div class="badges" id="shBadges" style="margin-top:8px"></div>
       <p class="why" id="shWhy"></p>
       <p class="vs" id="shVs"></p>
@@ -836,7 +909,7 @@ function confirmTap(btn, label = '한 번 더 누르면 삭제') {
 }
 // 같은 밀리초에 두 번 눌러도 겹치지 않는 ID (file://에서는 crypto.randomUUID를 못 쓴다)
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-const DEFAULT = { settings: { myCash: 5000, rate: 3, work: '여의도', budget: 95, budgetFail: false, commuteMax: null, commuteWarn: true, commuteFail: false }, people: [{ id: 'p1', name: '남편', w: { ...W5 } }, { id: 'p2', name: '아내', w: { ...W5 } }], listings: SAMPLE, selectedId: 'a', furniture: [], geo: {}, routes: {} };
+const DEFAULT = { settings: { myCash: 5000, rate: 3, work: '여의도', budget: 95, budgetFail: false, commuteMax: null, commuteWarn: true, commuteFail: false, mortRate: 4, depMax: 13000, priceMax: null }, people: [{ id: 'p1', name: '남편', w: { ...W5 } }, { id: 'p2', name: '아내', w: { ...W5 } }], listings: SAMPLE, selectedId: 'a', furniture: [], geo: {}, routes: {} };
 // 예시 매물·여의도 좌표는 미리 넣어 첫 방문에 위치 검색 요청이 나가지 않게 한다
 const GEO_PRESET = { '마포구 망원동': [37.55602, 126.90098], '망원역': [37.55565, 126.91063], '구로구 구로동': [37.49458, 126.88455],
   '구로디지털단지역': [37.48367, 126.9028], '동작구 상도동': [37.49882, 126.9441], '상도역': [37.50385, 126.949], '여의도': [37.52567, 126.92522] };
@@ -852,11 +925,18 @@ function migrate(s) {
   s.settings.budgetFail ??= false;
   if (!('commuteMax' in s.settings)) s.settings.commuteMax = null;   // v4: 통근 상한(분)
   s.settings.commuteWarn ??= true; s.settings.commuteFail ??= false;
+  s.settings.mortRate ??= 4;   // v8: 주택담보대출 연이율(매매)
+  if (!('depMax' in s.settings)) s.settings.depMax = 13000;   // v8: 보증금·전세금 상한 (예전 고정 탈락 기준 1억 3천)
+  if (!('priceMax' in s.settings)) s.settings.priceMax = null;   // v8: 매매가 상한
   if (!s.people) {   // 예전 형식(남편·아내 고정) → 사람 목록
     s.people = [{ id: 'p1', name: '남편', w: s.weights?.husband ?? { ...W5 } }, { id: 'p2', name: '아내', w: s.weights?.wife ?? { ...W5 } }];
     delete s.weights;
   }
-  for (const l of s.listings) { l.fee ??= null; l.walk ??= null; l.current = !!l.current; l.facing ??= null; }   // v6: 방향(null = 미확인)   // v3: 관리비·도보 미확인(null), 지금 사는 집
+  for (const l of s.listings) { l.fee ??= null; l.walk ??= null; l.current = !!l.current; l.facing ??= null;
+    if (!['월세', '전세', '매매'].includes(l.deal)) l.deal = '월세';
+    if (!['가능', '불가'].includes(l.moveIn)) l.moveIn = null;
+    l.loanYears = Number(l.loanYears) > 0 ? Number(l.loanYears) : 30; if (l.repay !== 'interest') l.repay = 'amort';
+    l.floorNo = String(l.floorNo ?? ''); l.route = String(l.route ?? ''); l.url = String(l.url ?? ''); l.urlSaved ??= null; }   // v8: 거래 유형·전입신고·층·경로·원문   // v6: 방향(null = 미확인)   // v3: 관리비·도보 미확인(null), 지금 사는 집
   return s;
 }
 // 여러 탭: 탭마다 데이터를 메모리에 들고 화면을 그릴 때마다 저장하므로, 다른 탭이 바꾼 뒤 이 탭이 저장하면 그 변경을 덮어쓴다.
@@ -905,16 +985,29 @@ addEventListener('storage', e => {
 document.addEventListener('visibilitychange', () => { if (!document.hidden && reloadOnShow) location.reload(); });
 
 // ---------- 계산 ----------
-function monthlyCost(l, s) { return l.rent + (l.fee ?? 0) + Math.max(0, l.deposit - s.myCash) * s.rate / 100 / 12; }   // 관리비 미확인은 0
+// 실제 월 부담 (거래 유형별). 관리비 미확인은 0. 매매는 주담대 월 상환(이자 + 원금)을 따로 돌려준다 — 원금은 자산으로 쌓이는 돈
+function costParts(l, s) {
+  const fee = l.fee ?? 0, loan = Math.max(0, l.deposit - s.myCash);
+  if (l.deal === '매매') {
+    const r = (s.mortRate ?? 4) / 100 / 12, n = (l.loanYears || 30) * 12, interest = loan * r;
+    const pay = l.repay === 'interest' || !loan ? interest : r ? loan * r / (1 - (1 + r) ** -n) : loan / n;
+    return { monthly: fee + pay, interest, principal: pay - interest };
+  }
+  const interest = loan * s.rate / 100 / 12;
+  return { monthly: (l.deal === '전세' ? 0 : l.rent) + fee + interest, interest, principal: 0 };
+}
+const monthlyCost = (l, s) => costParts(l, s).monthly;
 const overBudget = (monthly, s) => s.budget != null && monthly > s.budget + 1e-9;
-function reasons(l) {
-  const r = [];
+function reasons(l, s = {}) {
+  const r = [], deal = l.deal || '월세', depMax = s.depMax === undefined ? 13000 : s.depMax;   // depMax: 보증금·전세금 상한 (null = 사용 안 함)
   if (l.basement) r.push('반지하');
   if (!l.loanOk) r.push('대출 불가');
   if (l.usage === '업무용') r.push('업무용 오피스텔');
   if (l.area < 40) r.push(`전용 ${l.area}㎡ (40㎡ 미만)`);
-  if (l.deposit > 13000) r.push(`보증금 ${fmtMan(l.deposit)} (1억 3천 초과)`);
-  if (l.rent > 95) r.push(`월세 ${l.rent}만 (95만 초과)`);
+  if (l.moveIn === '불가') r.push('전입신고 불가');
+  if (deal !== '매매' && depMax != null && l.deposit > depMax) r.push(`${deal === '전세' ? '전세금' : '보증금'} ${fmtMan(l.deposit)} (상한 ${fmtMan(depMax)} 초과)`);
+  if (deal === '매매' && s.priceMax != null && l.deposit > s.priceMax) r.push(`매매가 ${fmtMan(l.deposit)} (상한 ${fmtMan(s.priceMax)} 초과)`);
+  if (deal === '월세' && l.rent > 95) r.push(`월세 ${l.rent}만 (95만 초과)`);
   return r;
 }
 function avgWeights(people) { const o = {}; for (const c of CRITERIA) o[c.k] = people.reduce((a, p) => a + p.w[c.k], 0) / people.length; return o; }
@@ -937,12 +1030,12 @@ function evaluate(st) {
   const s = st.settings;
   const curL = st.listings.find(l => l.current);
   const all = st.listings.map(l => {
-    const monthly = monthlyCost(l, s), over = !l.current && overBudget(monthly, s), r = l.current ? [] : reasons(l);
+    const cp = costParts(l, s), monthly = cp.monthly, over = !l.current && overBudget(monthly, s), r = l.current ? [] : reasons(l, s);
     if (over && s.budgetFail) r.push(`실제 월 부담 ${monthly.toFixed(1)}만 (상한 ${s.budget}만 초과)`);
     const overC = !l.current && s.commuteMax != null && l.commute > s.commuteMax;   // 통근 상한
     if (overC && s.commuteFail) r.push(`통근 ${fmtMin(l.commute)} (상한 ${s.commuteMax}분 초과)`);
     const longer = !l.current && curL && s.commuteWarn && l.commute > curL.commute ? l.commute - curL.commute : 0;   // 지금 집보다 긴 통근(분)
-    return { ...l, monthly, over: over && !s.budgetFail, overC: overC && !s.commuteFail, longer, reasons: r };
+    return { ...l, monthly, interest: cp.interest, principal: cp.principal, over: over && !s.budgetFail, overC: overC && !s.commuteFail, longer, reasons: r };
   });
   const cur = all.find(l => l.current) ?? null, cands = all.filter(l => !l.current);   // 지금 집: 순위·정규화에서 빼고 기준선으로
   const passed = cands.filter(l => !l.reasons.length), known = passed.filter(l => l.walk != null);
@@ -1022,6 +1115,18 @@ function ensureTypeLetters(listings) {
   eq(monthlyCost({ ...base, deposit: 3000 }, { myCash: 5000, rate: 3 }), 60, '내 돈이 더 많으면 이자 0');
   console.assert(reasons(base).length === 0, '정상 매물 통과');
   console.assert(reasons({ ...base, basement: true, loanOk: false, usage: '업무용', area: 39, deposit: 13001, rent: 96 }).length === 6, '탈락 사유 6개');
+  // v8 거래 유형 손계산 (내 돈 5000, 연이율 3%, 주담대 4%)
+  const S8 = { myCash: 5000, rate: 3, mortRate: 4 };
+  eq(monthlyCost({ deal: '월세', deposit: 13000, rent: 50, fee: 5 }, S8), 75, '월세: 50 + 5 + 8000×3%÷12');
+  eq(monthlyCost({ deal: '전세', deposit: 20000, rent: 0, fee: 10 }, S8), 47.5, '전세: 10 + 15000×3%÷12');
+  const mm = costParts({ deal: '매매', deposit: 32500, rent: 0, fee: 15, loanYears: 30, repay: 'amort' }, S8);
+  eq(mm.monthly, 15 + 27500 * (0.04 / 12) / (1 - (1 + 0.04 / 12) ** -360), '매매 원리금균등'); console.assert(Math.abs(mm.monthly - 146.29) < 0.01 && Math.abs(mm.interest - 91.6667) < 1e-3, '매매 146.3만 = 관리비 15 + 이자 91.7 + 원금 39.6', mm);
+  eq(monthlyCost({ deal: '매매', deposit: 32500, rent: 0, fee: 15, loanYears: 30, repay: 'interest' }, S8), 15 + 27500 * 0.04 / 12, '매매 이자만');
+  console.assert(reasons({ ...base, moveIn: '불가' }).includes('전입신고 불가'), '전입신고 불가 탈락');
+  console.assert(!reasons({ ...base, deal: '전세', deposit: 20000, rent: 0 }, { depMax: 25000 }).length && reasons({ ...base, deal: '전세', deposit: 20000, rent: 0 }, { depMax: 13000 }).length === 1, '전세금 상한');
+  console.assert(!reasons({ ...base, deal: '매매', deposit: 32500, rent: 0 }, { depMax: 13000, priceMax: null }).length && reasons({ ...base, deal: '매매', deposit: 32500, rent: 0 }, { priceMax: 30000 }).length === 1, '매매가 상한은 매매만');
+  console.assert(fmtWon(13000) === '1억 3,000' && fmtWon(20000) === '2억' && fmtWon(5000) === '5,000' && fmtWon(32500) === '3억 2,500', '억·천 표기');
+  console.assert(cond({ deal: '월세', deposit: 13000, rent: 50, fee: 5 }) === '월세 1억 3,000 / 50 · 관리비 5' && cond({ deal: '전세', deposit: 20000, fee: null }) === '전세 2억 · 관리비 미확인', '조건 문구');
   console.assert(reasons({ ...base, area: 40, deposit: 13000, rent: 95 }).length === 0, '경계값은 통과');
   eq(monthlyCost({ ...base, fee: null }, { myCash: 5000, rate: 3 }), 65, '관리비 미확인은 0으로');
   console.assert(overBudget(97.5, { budget: 95 }) && !overBudget(95, { budget: 95 }) && !overBudget(200, { budget: null }), '예산 상한');
@@ -1078,6 +1183,26 @@ function fmtMan(v) {
   return rest ? `${eok}억 ${rest.toLocaleString()}만` : `${eok}억`;
 }
 const fmtMonthly = v => `${v.toFixed(1)}만원`;
+// 금액 조건 표기: 13000 → '1억 3,000', 20000 → '2억' (만원 단위)
+function fmtWon(v) {
+  const eok = Math.floor(v / 10000), rest = Math.round((v % 10000) * 100) / 100;
+  return eok ? (rest ? `${eok}억 ${rest.toLocaleString()}` : `${eok}억`) : rest.toLocaleString();
+}
+// 계약 조건 한 줄: '월세 1억 3,000 / 50 · 관리비 5', '전세 2억', '매매 3억 2,500' (+관리비)
+function cond(l) { const d = l.deal || '월세';   // 함수 선언: 위 selfTest 에서도 쓴다
+  return `${d} ${fmtWon(l.deposit)}${d === '월세' ? ` / ${l.rent}` : ''} · 관리비 ${l.fee == null ? '미확인' : l.fee}`; }
+// 매매 월 상환 나눔: '이자 91.7만 + 원금 39.6만' (원금은 자산으로 쌓이는 돈)
+const split = l => l.deal === '매매' && l.principal > 0.05 ? `이자 ${l.interest.toFixed(1)}만 + 원금 ${l.principal.toFixed(1)}만` : '';
+// 실제 월 부담 + 조건: '75.0만원 / 월 · 월세 1억 3,000 / 50 · 관리비 5'
+const costLine = l => `${fmtMonthly(l.monthly)} / 월 · ${cond(l)}${split(l) ? ` (${split(l)})` : ''}`;
+// 자세히 보기용 이 매물의 계산식 (costParts 와 같은 값으로)
+function formula(l) {
+  const s = state.settings, d = l.deal || '월세', loan = Math.max(0, l.deposit - s.myCash), fe = `관리비 ${l.fee == null ? '0(미확인)' : l.fee}`;
+  if (d === '매매') return `계산: ${l.monthly.toFixed(1)} = ${fe} + 대출 ${fmtWon(loan)} · ${l.loanYears || 30}년 · ${l.repay === 'interest' ? '이자만' : '원리금균등'} · 연 ${s.mortRate}% → 이자 ${l.interest.toFixed(1)}${l.principal > 0.05 ? ` + 원금 ${l.principal.toFixed(1)}` : ''}`;
+  const lp = loan ? `(${fmtWon(l.deposit)} − 내 돈 ${fmtWon(s.myCash)}) × ${s.rate}% ÷ 12` : '대출 이자 0 (내 돈이 더 많음)';
+  return `계산: ${l.monthly.toFixed(1)} = ${d === '월세' ? `월세 ${l.rent} + ` : ''}${fe} + ${lp}`;
+}
+const dealBadge = l => `<span class="badge deal">${l.deal || '월세'}</span>`;
 // TYPE 이름: 전용면적 + 등록 순서 글자 (예: TYPE 45A)
 const typeCode = l => `TYPE ${Math.round(l.area)}${l.tl ?? ''}`;
 const badge = l => l.current ? '<span class="badge base">지금 집</span>' : l.reasons.length ? '<span class="badge fail">탈락</span>' : '<span class="badge pass">통과</span>';
@@ -1129,7 +1254,7 @@ addEventListener('hashchange', route);
 function renderGoto(ev) {
   const P = ev.passed, cheap = P.reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null);
   $('#goListings').textContent = `${ev.cands.length}곳 등록 · 통과 ${P.length}곳 · 탈락 ${ev.failed.length}곳` + (ev.cur ? ' · 지금 집 기준선' : '');
-  $('#goReport').textContent = cheap ? `최저 실제 월 부담 ${cheap.name} ${fmtMonthly(cheap.monthly)} · 비용·공간·통근·적합도·입지` : ev.cands.length ? '통과한 매물이 없어요 · 탈락 사유 보기' : '매물을 등록하면 비교가 시작돼요';
+  $('#goReport').textContent = cheap ? `최저 실제 월 부담 ${cheap.name} ${costLine(cheap)} · 비용·공간·통근·적합도·입지` : ev.cands.length ? '통과한 매물이 없어요 · 탈락 사유 보기' : '매물을 등록하면 비교가 시작돼요';
   $('#goCriteria').textContent = `${state.people.length}명 기준` + (P[0] ? ` · 지금 ${topLabel(P)} 적합도 ${Math.round(P[0].score)}점` : '');
   $('#goStudio').textContent = `평면도 ${state.listings.filter(l => l.plan).length}곳 · 가구 ${state.furniture.length}개`;
 }
@@ -1154,13 +1279,61 @@ function renderHero(ev) {
   const cheap = ev.passed.reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null), top = ev.passed[0];
   setStat('#stCount', ev.cands.length, 0, '곳');
   setStat('#stCost', cheap ? cheap.monthly : '', 1, '만원');
-  setStat('#stScore', top ? Math.round(top.score) : '', 0, '점');
-  $('#stCostSub').textContent = cheap ? `최저 실제 월 부담 · ${cheap.name}` : ev.cands.length ? '최저 실제 월 부담 · 통과한 매물 없음' : '최저 실제 월 부담';
-  $('#stScoreSub').textContent = top ? `${top.tie ? '공동 1위' : '1위 적합도'} · ${top.tie ? topLabel(ev.passed).replace(/^공동 1위 · /, '') : top.name}` : ev.cands.length ? '통과한 매물 없음' : '매물을 등록해 주세요';
+  const nearPool = ev.passed.length ? ev.passed : ev.cands, near = nearPool.reduce((a, b) => (a && a.commute <= b.commute ? a : b), null);   // 가장 가까운 집: 통과 매물 중(없으면 전체 후보)
+  setStat('#stScore', near ? near.commute : '', 0, '분');
+  $('#stCostSub').textContent = cheap ? `최저 실제 월 부담 · ${cheap.name} · ${cond(cheap)}` : ev.cands.length ? '최저 실제 월 부담 · 통과한 매물 없음' : '최저 실제 월 부담';
+  $('#stScoreSub').textContent = near ? `가장 가까운 집 · ${near.name} · 편도 ${fmtMin(near.commute)}` : '가장 가까운 집 · 매물을 등록해 주세요';
   for (const el of document.querySelectorAll('.stat span')) el.title = el.textContent;
   const t = top ?? ev.cands[0] ?? ev.all[0];
   $('#heroThumb').innerHTML = t ? schematic(t, false) : '';
   $('#heroThumb').hidden = !t;
+}
+
+// ---------- 한눈에 비교 (홈 히어로 아래 · 매물 메뉴 맨 위, 같은 내용) ----------
+const safeUrl = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; } };   // http(s)만 링크로
+const mapUrl = l => `https://map.naver.com/p/search/${encodeURIComponent([l.region, l.addr].filter(Boolean).join(' '))}`;
+const md = ymd => { const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(ymd || ''); return m ? `${+m[1]}월 ${+m[2]}일` : ''; };
+const sg1 = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1);
+const moveBadge = l => l.moveIn === '가능' ? '<span class="badge pass">전입신고 가능</span>' : l.moveIn === '불가' ? '<span class="badge fail">전입신고 불가</span>' : '<span class="badge unk">전입신고 미확인</span>';
+const loanBadge = l => l.loanOk ? '<span class="badge pass">대출 가능</span>' : '<span class="badge fail">대출 불가</span>';
+// 매물 한 곳의 항목 ①~⑧ (표·카드·시트·패널이 같이 쓴다)
+function glanceRows(l, cur) {
+  const d = l.deal || '월세', isCur = cur && l.id === cur.id, href = safeUrl(l.url), q = [l.region, l.addr].filter(Boolean).join(' ');
+  const dm = cur && !isCur ? l.monthly - cur.monthly : null, dc = cur && !isCur ? l.commute - cur.commute : null;
+  return [
+    ['조건', `${dealBadge(l)}<b class="gl-amt">${d === '월세' ? '보증금 ' : ''}${fmtWon(l.deposit)}${d === '월세' ? ` / ${l.rent}` : ''}</b><span class="gl-sub">${d === '매매' ? `대출 ${l.loanYears || 30}년 · ${l.repay === 'interest' ? '이자만' : '원리금균등'} · ` : ''}관리비 ${l.fee == null ? '미확인' : l.fee + '만'}</span>`],
+    ['실제 월 부담', `<b>${fmtMonthly(l.monthly)}</b> / 월${split(l) ? `<span class="gl-sub">${split(l)}</span>` : ''}${dm != null ? `<span class="gl-sub ${dm > 0.05 ? 'up' : dm < -0.05 ? 'down' : ''}">지금 집보다 ${Math.abs(dm) < 0.05 ? '같음' : sg1(dm) + '만원'}</span>` : isCur ? '<span class="gl-sub">기준</span>' : ''}`],
+    ['전입 · 대출', `<span class="badges">${moveBadge(l)}${loanBadge(l)}</span>`],
+    ['주소', q ? `<a href="${mapUrl(l)}" target="_blank" rel="noopener noreferrer" title="네이버지도에서 검색 (새 창)">${esc(q)} ↗</a>` : '<span class="gl-sub">주소 미입력</span>'],
+    ['통근', `편도 <b>${fmtMin(l.commute)}</b>${dc ? ` <span class="gl-sub ${dc > 0 ? 'up' : 'down'}" style="display:inline">(${dc > 0 ? '+' : '−'}${Math.abs(dc)}분)</span>` : ''}<span class="gl-sub">${l.route ? esc(l.route) : '경로 미입력'}</span>`],
+    ['면적 · 층', `전용 ${l.area}㎡ · 방 ${l.rooms}${l.basement ? ' · 반지하' : ''}${l.floorNo ? ` · ${esc(l.floorNo)}층` : ''}`],
+    ['원문', href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">원문 보기 ↗</a>${md(l.urlSaved) ? `<span class="gl-sub">${md(l.urlSaved)} 저장</span>` : ''}` : '<span class="gl-sub">원문 링크 없음</span>'],
+    ['적합도', isCur ? '<span class="gl-score">지금 집 · 순위에서 빼고 기준으로 써요</span>' : l.reasons.length ? `<span class="gl-score fail">탈락 · ${l.reasons.map(esc).join(', ')}</span>` : `<span class="gl-score">적합도 ${Math.round(l.score)}점 · ${rankTxt(l)}</span>`],
+  ];
+}
+let glSort = 'price';
+const GL_SORT = { price: (a, b) => a.deposit - b.deposit, monthly: (a, b) => a.monthly - b.monthly, commute: (a, b) => a.commute - b.commute, area: (a, b) => b.area - a.area };
+function renderGlance(ev) {
+  const cur = ev.cur, L = [...(cur ? [cur] : []), ...[...ev.cands].sort(GL_SORT[glSort])];   // 지금 집은 맨 앞(기준)
+  const head = l => `<span class="gl-name"><b>${esc(l.name)}</b><small>${typeCode(l)}${l.current ? ' · 지금 집' : ''}</small></span>`;
+  const more = l => `<button type="button" class="small ghost gl-more" data-detail="${l.id}">자세히 보기</button>`;
+  const rows = L.map(l => glanceRows(l, cur));
+  const html = !L.length ? '<p class="empty">매물을 등록하면 여기에서 나란히 비교해요.</p>'
+    : `<div class="gl-table"><table><thead><tr><th scope="col"><span class="sr">항목</span></th>${L.map(l => `<th scope="col" class="${l.current ? 'cur' : ''}">${head(l)}</th>`).join('')}</tr></thead><tbody>`
+      + rows[0].map((r, i) => `<tr><th scope="row">${r[0]}</th>${L.map((l, j) => `<td class="${l.current ? 'cur' : ''}">${rows[j][i][1]}</td>`).join('')}</tr>`).join('')
+      + `<tr><th scope="row"><span class="sr">자세히</span></th>${L.map(l => `<td class="${l.current ? 'cur' : ''}">${more(l)}</td>`).join('')}</tr></tbody></table></div>`
+      + `<ul class="gl-cards">${L.map((l, j) => `<li class="${l.current ? 'cur' : ''}">${head(l)}<dl>${rows[j].map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl>${more(l)}</li>`).join('')}</ul>`;
+  for (const el of document.querySelectorAll('[data-glance]')) el.innerHTML = html;
+  for (const b of document.querySelectorAll('[data-gsort]')) b.setAttribute('aria-pressed', b.dataset.gsort === glSort);
+}
+// 시트·데스크톱 패널 맨 위: 조건 · 전입 · 주소 · 통근 · 원문 (①③④⑤⑦)
+const factsHtml = (l, cur) => glanceRows(l, cur).filter((r, i) => [0, 2, 3, 4, 6].includes(i)).map(r => `<p><span class="k">${r[0]}</span>${r[1]}</p>`).join('');
+// 배지는 3개까지만, 나머지는 '+N' (title 에 나머지 글자)
+function foldBadges(html, max = 3) {
+  const b = html.match(/<span class="badge[^"]*"[^>]*>[^<]*<\/span>/g) || [];
+  if (b.length <= max) return b.join('');
+  const rest = b.slice(max).map(x => x.replace(/<[^>]+>/g, '')).join(', ');
+  return b.slice(0, max).join('') + `<span class="badge more" title="${esc(rest)}" aria-label="배지 ${b.length - max}개 더: ${esc(rest)}">+${b.length - max}</span>`;
 }
 
 // ---------- 1 TYPE 라인업 ----------
@@ -1168,10 +1341,12 @@ function renderTypes(ev) {
   const sel = ev.all.find(l => l.id === state.selectedId) ?? ev.all[0];
   $('#typeList').innerHTML = ev.all.map(l => `<li class="${l.id === sel?.id ? 'on' : ''}"><button type="button" data-type="${l.id}" aria-pressed="${l.id === sel?.id}">
       <span class="tcode">${typeCode(l)}</span>
-      <span class="tcost"><b>${l.monthly.toFixed(1)}</b><small>만원 / 월</small><span class="badges">${badge(l)}${costTags(l)}${commuteTags(l)}</span></span>
-      <span class="tmeta"><b>${esc(l.name)}</b>${esc(l.region)} · 방 ${l.rooms}${vsCur(l, ev.cur) ? `<span class="vs">지금 집보다 ${vsCur(l, ev.cur)}</span>` : ''}</span>
+      <span class="tcost"><b>${l.monthly.toFixed(1)}</b><small>만원 / 월</small><span class="tcond">${cond(l)}${split(l) ? ` · ${split(l)}` : ''}</span><span class="badges">${foldBadges(dealBadge(l) + badge(l) + costTags(l) + commuteTags(l) + (l.moveIn ? '' : '<span class="badge unk">전입 미확인</span>'))}</span></span>
+      <span class="tmeta"><b>${esc(l.name)}</b>${esc(l.region)} · 방 ${l.rooms}</span>
     </button></li>`).join('') || '<li class="empty">매물을 등록하면 TYPE이 생겨요.</li>';
-  if (!sel) { $('#type2d').innerHTML = ''; $('#typeCap').innerHTML = ''; return; }
+  if (!sel) { $('#type2d').innerHTML = ''; $('#typeCap').innerHTML = ''; $('#typeFacts').innerHTML = ''; return; }
+  const vs = vsCur(sel, ev.cur);
+  $('#typeFacts').innerHTML = factsHtml(sel, ev.cur) + `<p><span class="k">실제 월 부담</span>${fmtMonthly(sel.monthly)} / 월${split(sel) ? ` (${split(sel)})` : ''}</p><p class="formula">${formula(sel)}</p>` + (vs ? `<p class="vs">지금 집보다 ${vs}</p>` : '');
   $('#typeCap').innerHTML = `<span><b>${typeCode(sel)}</b>${esc(sel.name)} · ${esc(sel.region)}</span><span>전용 ${sel.area}㎡ · 방 ${sel.rooms} · ${sel.plan ? '실제 평면도' : '면적 기준 대략 구조'}</span>`;
   $('#type2d').innerHTML = sel.plan ? `<img src="${sel.plan.img}" alt="${esc(sel.name)} 평면도">` : schematic(sel, true);
 }
@@ -1189,7 +1364,8 @@ function renderSheet(ev) {
   $('#shPos').textContent = `${i + 1} / ${all.length} · ${sheet.tab === '2d' ? '좌우로 밀거나 ‹ › 로 넘겨요' : '3D 는 끌어서 돌리고, ‹ › 로 넘겨요'}`;
   $('#sh2d').innerHTML = l.plan ? `<img src="${l.plan.img}" alt="${esc(l.name)} 평면도">` : schematic(l, true);
   $('#shNote').textContent = l.plan ? '올린 평면도 기준 실제 구조예요.' : '평면도가 없어 전용면적·방 개수로 그린 대략 구조예요.';
-  $('#shCost').textContent = l.monthly.toFixed(1);
+  $('#shCost').textContent = l.monthly.toFixed(1); $('#shCond').textContent = cond(l) + (split(l) ? ` · ${split(l)}` : '');
+  $('#shFacts').innerHTML = factsHtml(l, ev.cur); $('#shFormula').textContent = formula(l);
   $('#shBadges').innerHTML = badge(l) + costTags(l) + commuteTags(l) + (l.walk == null ? ' ' + walkTag(l) : '');
   $('#shWhy').textContent = l.reasons.length ? `탈락 사유: ${l.reasons.join(', ')}` : ''; $('#shWhy').hidden = !l.reasons.length;
   const vs = vsCur(l, ev.cur); $('#shVs').textContent = vs ? `지금 집보다 ${vs}` : ''; $('#shVs').hidden = !vs;
@@ -1298,9 +1474,9 @@ function renderReport(ev) {
   // 01 비용
   const byCost = [...base].sort((a, b) => a.monthly - b.monthly);
   $('#c1').textContent = pre + (!base.length ? '비교할 매물이 없어요.'
-    : base.length === 1 ? `${base[0].name}의 실제 월 부담은 ${fmtMonthly(base[0].monthly)}이에요.`
-    : `가장 적게 드는 집은 ${byCost[0].name}, 월 ${fmtMonthly(byCost[0].monthly)}이에요. 가장 비싼 ${byCost.at(-1).name}보다 매달 ${(byCost.at(-1).monthly - byCost[0].monthly).toFixed(1)}만원, 1년이면 ${Math.round((byCost.at(-1).monthly - byCost[0].monthly) * 12).toLocaleString()}만원 덜 나가요.`)
-    + (cur && base.length ? ` 점선은 지금 집(${curName(cur.name)}) 월 ${fmtMonthly(cur.monthly)}${cur.fee == null ? ', 관리비 미확인' : ''}이에요.` : '');
+    : base.length === 1 ? `${base[0].name}(${cond(base[0])})의 실제 월 부담은 ${fmtMonthly(base[0].monthly)}이에요.${split(base[0]) ? ` 그중 ${split(base[0])}이에요.` : ''}`
+    : `가장 적게 드는 집은 ${byCost[0].name}(${cond(byCost[0])}), 월 ${fmtMonthly(byCost[0].monthly)}이에요. 가장 비싼 ${byCost.at(-1).name}(${cond(byCost.at(-1))}${split(byCost.at(-1)) ? ` · ${split(byCost.at(-1))}` : ''})보다 매달 ${(byCost.at(-1).monthly - byCost[0].monthly).toFixed(1)}만원, 1년이면 ${Math.round((byCost.at(-1).monthly - byCost[0].monthly) * 12).toLocaleString()}만원 덜 나가요.`)
+    + (cur && base.length ? ` 점선은 지금 집(${curName(cur.name)}, ${cond(cur)}) 월 ${fmtMonthly(cur.monthly)}이에요.` : '');
 
   // 02 공간
   const maxA = Math.max(1, ...ev.all.map(l => l.area)), big = [...base].sort((a, b) => b.area - a.area)[0];
@@ -1333,12 +1509,12 @@ function renderReport(ev) {
 
   // 04 종합 점수
   $('#rankTable').innerHTML = `<thead><tr><th>순위</th><th class="opt">타입</th><th>매물</th><th class="n">실제 월 부담</th><th class="n">면적</th><th class="n">통근</th><th class="n opt">역 도보</th><th class="n">적합도</th>${cur ? '<th class="opt">지금 집 대비</th>' : ''}</tr></thead><tbody>` +
-    (P.map(l => `<tr class="${l.rank === 1 ? 'top' : ''}"><td class="num">${l.tie ? '<small>공동</small> ' : ''}${l.rank}</td><td class="opt">${typeCode(l)}</td><td class="nm" title="${esc(l.name)}">${esc(short(l.name, 16))}</td><td class="n">${l.monthly.toFixed(1)}만${costTags(l)}</td><td class="n">${l.area}㎡</td><td class="n">${fmtMin(l.commute)}${commuteTags(l)}</td><td class="n opt">${l.walk == null ? walkTag(l) : fmtMin(l.walk)}</td><td class="n">${Math.round(l.score)}</td>${cur ? `<td class="opt" style="white-space:nowrap" title="${vsCur(l, cur)}">${vsCur(l, cur, true)}</td>` : ''}</tr>`).join('')
+    (P.map(l => `<tr class="${l.rank === 1 ? 'top' : ''}"><td class="num">${l.tie ? '<small>공동</small> ' : ''}${l.rank}</td><td class="opt">${typeCode(l)}</td><td class="nm" title="${esc(l.name)}">${esc(short(l.name, 16))}</td><td class="n">${l.monthly.toFixed(1)}만${costTags(l)}<small class="cond">${cond(l)}</small></td><td class="n">${l.area}㎡</td><td class="n">${fmtMin(l.commute)}${commuteTags(l)}</td><td class="n opt">${l.walk == null ? walkTag(l) : fmtMin(l.walk)}</td><td class="n">${Math.round(l.score)}</td>${cur ? `<td class="opt" style="white-space:nowrap" title="${vsCur(l, cur)}">${vsCur(l, cur, true)}</td>` : ''}</tr>`).join('')
       || `<tr><td colspan="${cur ? 9 : 8}">비교할 매물이 없어요.</td></tr>`) + '</tbody>';
   $('#failNotes').innerHTML = ev.failed.map(l => `<li>* <b>탈락</b> ${esc(l.name)} (${typeCode(l)}) — ${l.reasons.map(esc).join(', ')}</li>`).join('')
-    + P.filter(l => l.over).map(l => `<li>* <b style="color:var(--warn)">예산 초과</b> ${esc(l.name)} — 실제 월 부담 ${fmtMonthly(l.monthly)} (상한 ${s.budget}만)</li>`).join('')
+    + P.filter(l => l.over).map(l => `<li>* <b style="color:var(--warn)">예산 초과</b> ${esc(l.name)} — 실제 월 부담 ${costLine(l)} (상한 ${s.budget}만)</li>`).join('')
     + P.filter(l => l.overC || l.longer).map(l => `<li>* <b style="color:var(--warn)">통근 경고</b> ${esc(l.name)} — 편도 ${fmtMin(l.commute)}${l.overC ? ` (상한 ${s.commuteMax}분 초과)` : ''}${l.longer ? `, 지금 집보다 ${fmtMin(l.longer)} 길어요` : ''}</li>`).join('')
-    + (cur ? `<li>* <b style="color:var(--accent)">지금 집</b> ${esc(curName(cur.name))} — 순위에서 빼고 기준선으로 써요 (실제 월 ${fmtMonthly(cur.monthly)} · 통근 ${fmtMin(cur.commute)} · 전용 ${cur.area}㎡)</li>` : '');
+    + (cur ? `<li>* <b style="color:var(--accent)">지금 집</b> ${esc(curName(cur.name))} — 순위에서 빼고 기준선으로 써요 (실제 월 ${costLine(cur)} · 통근 ${fmtMin(cur.commute)} · 전용 ${cur.area}㎡)</li>` : '');
   $('#c4').textContent = !P.length ? '탈락 조건을 통과한 매물이 없어 순위를 매길 수 없어요.'
     : P.length === 1 ? `통과한 매물은 ${P[0].name} 한 곳이라 100점이에요.`
     : P[0].tie ? `적합도 1위는 ${P[0].name}, ${Math.round(P[0].score)}점이에요. ${tieWith(P, P[0])} ${Math.round(P[0].score)}점 동점이라 실제 월 부담이 낮은 ${P[0].name}${josa(P[0].name, '을', '를')} 앞에 놓았어요.`
@@ -1351,7 +1527,7 @@ function renderSim(ev) {
     || '<li class="empty" style="display:block">비교할 매물이 없어요.</li>';
   const aw = avgWeights(state.people), sum = Object.values(aw).reduce((a, b) => a + b, 0);
   $('#avgW').innerHTML = (state.people.length === 1 ? '가중치 ' : `${state.people.length}명 평균 가중치 `) + CRITERIA.map(c => `<span>${c.label} <b>${+aw[c.k].toFixed(1)}</b> (${sum ? Math.round(aw[c.k] / sum * 100) : 25}%)</span>`).join('');
-  $('#manageList').innerHTML = ev.all.map(l => `<li><div class="info"><b>${esc(l.name)}</b>${typeCode(l)} · 보증금 ${fmtMan(l.deposit)} · 월세 ${l.rent}만 · 관리비 ${l.fee == null ? '미확인' : l.fee + '만'} · 도보 ${walkTxt(l)} · 실제 월 ${l.monthly.toFixed(1)}만 ${badge(l)}${costTags(l)}${commuteTags(l)}${l.walk == null ? ' ' + walkTag(l) : ''}
+  $('#manageList').innerHTML = ev.all.map(l => `<li><div class="info"><b>${esc(l.name)}</b>${typeCode(l)} · ${cond(l)} · 도보 ${walkTxt(l)} · 실제 월 ${l.monthly.toFixed(1)}만${split(l) ? ` (${split(l)})` : ''} ${dealBadge(l)}${badge(l)}${costTags(l)}${commuteTags(l)}${l.walk == null ? ' ' + walkTag(l) : ''}
       ${l.reasons.length ? `<span class="why">${l.reasons.map(esc).join(', ')}</span>` : ''}${vsCur(l, ev.cur) ? `<span class="vs">지금 집보다 ${vsCur(l, ev.cur)}</span>` : ''}</div>
     <div class="acts"><button class="small ghost" data-act="view" data-id="${l.id}">3D</button><button class="small ghost" data-act="edit" data-id="${l.id}">수정</button><button class="small danger" data-act="del" data-id="${l.id}">삭제</button></div></li>`).join('')
     || '<li class="empty" style="display:block">아직 등록한 매물이 없어요.</li>';
@@ -1486,7 +1662,7 @@ function renderFinal(ev) {
   const rank = (k, desc) => rankOf(P, top, k, desc);
   const aw = avgWeights(state.people);
   const cand = [
-    { w: aw.price, r: rank('monthly'), t: `실제 월 부담 ${fmtMonthly(top.monthly)}, 통과한 ${P.length}곳 중 ${ord(rank('monthly'))} 적어요.` },
+    { w: aw.price, r: rank('monthly'), t: `실제 월 부담 ${fmtMonthly(top.monthly)}(${cond(top)}), 통과한 ${P.length}곳 중 ${ord(rank('monthly'))} 적어요.` },
     { w: aw.area, r: rank('area', true), t: `전용 ${top.area}㎡로 ${ord(rank('area', true))} 넓고, 퀸 침대가 ${(top.plan ? window.bedFitsPlan?.(top) : bedFitsBox(top)) === false ? '안 들어가요' : '들어가요'}.` },
     { w: aw.commute, r: rank('commute'), t: `${state.settings.work || '직장'}까지 편도 ${fmtMin(top.commute)}, ${ord(rank('commute'))} 가까워요.` },
     { w: aw.station, r: rank('walkS'), t: top.walk == null ? `${top.station || '역'}까지 도보 시간은 미확인이라 역세권은 평균으로 계산했어요.` : `${top.station || '역'}까지 걸어서 ${fmtMin(top.walk)}이에요.` },
@@ -1495,7 +1671,7 @@ function renderFinal(ev) {
     : `탈락 조건을 통과한 유일한 집이에요.`;
   const vs = vsCur(top, ev.cur), warn = [top.over ? `실제 월 부담이 상한 ${state.settings.budget}만원을 넘어요(예산 초과).` : '', top.fee == null ? '관리비는 미확인이라 0으로 계산했어요.' : ''].filter(Boolean).join(' ');
   const cw = [top.longer ? `지금 집보다 통근이 편도 ${fmtMin(top.longer)}(하루 왕복 ${fmtMin(top.longer * 2)}) 길어요.` : '', top.overC ? `통근 ${fmtMin(top.commute)}로 상한 ${state.settings.commuteMax}분을 넘어요.` : ''].filter(Boolean).join(' ');
-  $('#finalPick').innerHTML = `<div><p class="pick ${top.name.length > 12 ? 'long' : ''}"><em title="${esc(top.name)}">${esc(top.name)}</em><small>${typeCode(top)} · ${esc(top.region)} · 전용 ${top.area}㎡ · 실제 월 ${fmtMonthly(top.monthly)}</small><span class="badges">${costTags(top)}${commuteTags(top)}</span></p>
+  $('#finalPick').innerHTML = `<div><p class="pick ${top.name.length > 12 ? 'long' : ''}"><em title="${esc(top.name)}">${esc(top.name)}</em><small>${typeCode(top)} · ${esc(top.region)} · 전용 ${top.area}㎡ · 실제 월 ${costLine(top)}</small><span class="badges">${costTags(top)}${commuteTags(top)}</span></p>
       <div class="row" style="margin-top:24px"><button type="button" class="primary" data-act="view" data-id="${top.id}">3D로 살펴보기</button><a class="btn ghost" href="#report">근거 다시 보기</a></div></div>
     <ul class="why3">${[...cand.map(c => c.t), last, vs ? `지금 집(${curName(ev.cur.name)}) 대비 ${vs}.` : '', cw, warn].filter(Boolean).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
 }
@@ -1519,9 +1695,9 @@ function drawCharts(ev) {
     indexAxis: 'y', maintainAspectRatio: false, animation: reducedMotion || SHOT ? false : { duration: 300 },
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.x.toFixed(1)}${unit}` } } },
     scales: { x: { beginAtZero: true, max, grid: { color: css('--line') }, border: { display: false } },
-      y: { grid: { display: false }, border: { color: css('--ink') }, ticks: { callback(v) { return short(this.getLabelForValue(v), 9); } } } },   // 전체 이름은 툴팁 제목에
+      y: { grid: { display: false }, border: { color: css('--ink') }, ticks: { callback(v) { const t = this.getLabelForValue(v); return Array.isArray(t) ? [short(t[0], 12), t[1]] : short(t, 9); } } } },   // 전체 이름은 툴팁 제목에
   });
-  const h = n => Math.max(140, n * 40 + 40) + 'px';
+  const h = (n, k = 40) => Math.max(140, n * k + 40) + 'px';
   const P = ev.passed, C = ev.cands, cheapest = (P.length ? P : C).reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null);
   const cbox = $('#costBox');
   if (!C.length) {
@@ -1529,8 +1705,8 @@ function drawCharts(ev) {
     cbox.style.height = ''; cbox.innerHTML = '<div class="empty">매물을 등록하면 실제 월 부담을 비교해요.</div>';
   } else {
   if (!cbox.querySelector('canvas')) cbox.innerHTML = '<canvas id="costChart" aria-label="매물별 실제 월 부담 막대 차트" role="img"></canvas>';
-  cbox.style.height = h(C.length);
-  const cost = { labels: C.map(l => `${l.name}${l.reasons.length ? ' (탈락)' : l.over ? ' (예산 초과)' : ''}`), datasets: [{ data: C.map(l => l.monthly), barThickness: 18,
+  cbox.style.height = h(C.length, 52);   // 이름 + 조건 두 줄
+  const cost = { labels: C.map(l => [`${l.name}${l.reasons.length ? ' (탈락)' : l.over ? ' (예산 초과)' : ''}`, cond(l)]), datasets: [{ data: C.map(l => l.monthly), barThickness: 18,
     backgroundColor: C.map(l => l.reasons.length ? css('--line') : l.over ? css('--warn') : l === cheapest ? css('--accent') : css('--sage')) }] };
   const xMax = ev.cur ? Math.ceil(Math.max(ev.cur.monthly, ...C.map(l => l.monthly)) * 1.08) : undefined;
   if (costChart) { costChart.data = cost; costChart.options.scales.x.max = xMax; costChart.$base = ev.cur?.monthly; costChart.update('none'); }
@@ -1553,7 +1729,7 @@ function render() {
   if (!state.listings.some(l => l.id === state.selectedId)) state.selectedId = state.listings[0]?.id ?? null;
   ensureTypeLetters(state.listings);
   const ev = evaluate(state);
-  renderHero(ev); renderTypes(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
+  renderHero(ev); renderGlance(ev); renderTypes(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
   const areas = ev.all.map(l => l.area);
   const lo = Math.min(...areas), hi = Math.max(...areas);
   $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'Type lineup';
@@ -1579,6 +1755,13 @@ $('#budget').addEventListener('input', e => {
   render();
 });
 $('#budgetFail').addEventListener('change', e => { state.settings.budgetFail = e.target.checked; render(); });
+$('#mortRate').value = state.settings.mortRate;
+$('#depMax').value = state.settings.depMax ?? ''; $('#priceMax').value = state.settings.priceMax ?? '';
+for (const id of ['depMax', 'priceMax']) $('#' + id).addEventListener('input', e => {   // 비우면 사용 안 함(null)
+  const v = Number(e.target.value);
+  if (e.target.value === '') state.settings[id] = null; else if (v >= 0) state.settings[id] = v; else return;
+  render();
+});
 $('#commuteMax').value = state.settings.commuteMax ?? '';
 $('#commuteWarn').checked = !!state.settings.commuteWarn;
 $('#commuteFail').checked = !!state.settings.commuteFail;
@@ -1588,7 +1771,7 @@ $('#commuteMax').addEventListener('input', e => {
   render();
 });
 for (const id of ['commuteWarn', 'commuteFail']) $('#' + id).addEventListener('change', e => { state.settings[id] = e.target.checked; render(); });
-for (const id of ['myCash', 'rate']) $('#' + id).addEventListener('input', e => {
+for (const id of ['myCash', 'rate', 'mortRate']) $('#' + id).addEventListener('input', e => {
   const v = Number(e.target.value);
   if (e.target.value !== '' && v >= 0) { state.settings[id] = v; render(); }
 });
@@ -1618,13 +1801,26 @@ $('#addPerson').addEventListener('click', () => {
 
 const form = $('#form');
 const NUMS = ['deposit', 'rent', 'fee', 'area', 'rooms', 'walk', 'commute'], OPTIONAL = ['fee', 'walk'];   // 비우면 미확인(null)
-function resetForm() { form.reset(); form.id.value = ''; $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
+// 거래 유형에 따라 금액 칸 이름·보이는 칸을 바꾼다 (월세: 보증금·월세 / 전세: 전세금 / 매매: 매매가·대출 기간·상환 방식)
+function syncDeal() {
+  const d = form.deal.value;
+  $('#fDepLabel').textContent = { 월세: '보증금', 전세: '전세금', 매매: '매매가' }[d];
+  for (const el of form.querySelectorAll('[data-deal]')) { el.hidden = el.dataset.deal !== d; el.querySelectorAll('input').forEach(i => i.disabled = el.hidden); }
+}
+form.deal.addEventListener('change', syncDeal);
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function resetForm() { form.reset(); form.id.value = ''; syncDeal(); $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
 form.addEventListener('submit', e => {
   e.preventDefault();
   const f = Object.fromEntries(new FormData(form));
   const l = { id: f.id || uid(), name: f.name.trim(), region: f.region.trim(), addr: (f.addr || '').trim(), station: (f.station || '').trim(),
-    basement: f.floor === '반지하', loanOk: f.loan === '가능', usage: f.usage, current: !!f.current, facing: f.facing || null };
-  for (const k of NUMS) l[k] = OPTIONAL.includes(k) && f[k].trim() === '' ? null : Number(f[k]);
+    basement: f.floor === '반지하', loanOk: f.loan === '가능', usage: f.usage, current: !!f.current, facing: f.facing || null,
+    deal: f.deal, moveIn: f.moveIn || null, floorNo: (f.floorNo || '').trim(), route: (f.route || '').trim(), url: (f.url || '').trim(),
+    loanYears: Number(f.loanYears) || 30, repay: f.repay || 'amort' };
+  for (const k of NUMS) l[k] = OPTIONAL.includes(k) && (f[k] ?? '').trim() === '' ? null : Number(f[k] ?? 0);
+  if (l.deal !== '월세') l.rent = 0;   // 전세·매매는 월세 없음 (칸이 꺼져 있어 값이 안 온다)
+  const prev = state.listings.find(x => x.id === l.id);
+  l.urlSaved = !l.url ? null : prev && prev.url === l.url ? prev.urlSaved : today();   // 링크가 바뀔 때만 오늘 날짜
   if (l.current) for (const x of state.listings) x.current = false;   // 지금 집은 한 곳만
   const i = state.listings.findIndex(x => x.id === l.id);
   if (i >= 0) { const old = state.listings[i]; if (old.plan) l.plan = old.plan; if (old.layout) l.layout = old.layout; l.tl = old.tl; state.listings[i] = l; } else state.listings.push(l);
@@ -1652,6 +1848,15 @@ document.addEventListener('click', e => {
     }
     return;
   }
+  const gs = e.target.closest('[data-gsort]');
+  if (gs) { glSort = gs.dataset.gsort; renderGlance(evaluate(state)); return; }
+  const dt = e.target.closest('[data-detail]');
+  if (dt) {   // 자세히 보기: 휴대폰은 바텀시트, 데스크톱은 매물 화면의 고정 패널
+    state.selectedId = dt.dataset.detail; render();
+    if (mobileQ.matches) openSheet(dt);
+    else { go('listings', '#type'); const pn = $('.type-panel'); pn.classList.add('changed'); clearTimeout(pn._t); pn._t = setTimeout(() => pn.classList.remove('changed'), 700); }
+    return;
+  }
   const lc = e.target.closest('[data-loc]');
   if (lc) { locId = lc.dataset.loc; renderLocation(evaluate(state)); return; }
   const b = e.target.closest('button[data-act]'); if (!b) return;
@@ -1666,6 +1871,8 @@ function startEdit(id) {
     form.id.value = l.id; form.name.value = l.name; form.region.value = l.region; form.addr.value = l.addr || ''; form.station.value = l.station || '';
     for (const k of NUMS) form[k].value = l[k] ?? '';
     form.current.checked = !!l.current; form.facing.value = l.facing ?? '';
+    form.deal.value = l.deal || '월세'; form.moveIn.value = l.moveIn ?? ''; form.floorNo.value = l.floorNo || ''; form.route.value = l.route || ''; form.url.value = l.url || '';
+    form.loanYears.value = l.loanYears || 30; form.repay.value = l.repay || 'amort'; syncDeal();
     form.floor.value = l.basement ? '반지하' : '지상'; form.loan.value = l.loanOk ? '가능' : '불가'; form.usage.value = l.usage;
     $('#submitBtn').textContent = '수정 저장'; $('#cancelEdit').hidden = false;
     go('listings', '#manage'); form.name.focus({ preventScroll: true });

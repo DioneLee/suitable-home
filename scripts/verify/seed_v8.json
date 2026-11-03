@@ -1,0 +1,19 @@
+{
+  "settings": { "myCash": 5000, "rate": 3, "work": "여의도", "budget": 95, "budgetFail": false, "commuteMax": null, "commuteWarn": true, "commuteFail": false, "mortRate": 4, "depMax": 25000, "priceMax": null },
+  "people": [
+    { "id": "p1", "name": "남편", "w": { "price": 5, "area": 5, "commute": 5, "station": 5 } },
+    { "id": "p2", "name": "아내", "w": { "price": 5, "area": 5, "commute": 5, "station": 5 } }
+  ],
+  "listings": [
+    { "id": "cur", "name": "지금 집 (예시 오피스텔 801호)", "region": "마포구 공덕동", "addr": "마포대로 100", "deal": "월세", "deposit": 3000, "rent": 95, "fee": 15, "area": 38.5, "rooms": 1, "basement": false, "loanOk": true, "usage": "주거용", "station": "공덕역", "walk": 5, "commute": 45, "current": true, "moveIn": "가능", "floorNo": "8/15", "route": "공덕역 → 5호선 → 여의도역, 도보 5분", "url": "", "urlSaved": null },
+    { "id": "m1", "name": "상도동 투룸", "region": "동작구 상도동", "addr": "상도로 200", "deal": "월세", "deposit": 13000, "rent": 50, "fee": 5, "area": 45, "rooms": 2, "basement": false, "loanOk": true, "usage": "주거용", "station": "상도역", "walk": 8, "commute": 40, "moveIn": "가능", "floorNo": "3/5", "route": "상도역 → 7호선 → 대림 환승 → 2호선 → 영등포구청, 도보 10분", "url": "https://new.land.naver.com/rooms?articleId=0000000001", "urlSaved": "2026-11-01" },
+    { "id": "m2", "name": "망원동 원룸", "region": "마포구 망원동", "addr": "", "deal": "월세", "deposit": 8000, "rent": 60, "fee": null, "area": 42, "rooms": 1, "basement": false, "loanOk": true, "usage": "주거용", "station": "망원역", "walk": null, "commute": 35, "moveIn": null, "floorNo": "", "route": "", "url": "", "urlSaved": null },
+    { "id": "m3", "name": "사당동 빌라", "region": "동작구 사당동", "addr": "사당로 30", "deal": "월세", "deposit": 10000, "rent": 55, "fee": 8, "area": 48, "rooms": 2, "basement": false, "loanOk": true, "usage": "주거용", "station": "사당역", "walk": 6, "commute": 50, "moveIn": "불가", "floorNo": "2/4", "route": "사당역 → 4호선 → 동작역 환승 → 9호선 → 여의도역, 도보 5분", "url": "https://www.zigbang.com/home/villa/items/00000002", "urlSaved": "2026-11-02" },
+    { "id": "j1", "name": "구로동 전세", "region": "구로구 구로동", "addr": "디지털로 300", "deal": "전세", "deposit": 20000, "rent": 0, "fee": 10, "area": 50, "rooms": 2, "basement": false, "loanOk": true, "usage": "주거용", "station": "구로디지털단지역", "walk": 4, "commute": 30, "moveIn": "가능", "floorNo": "5/12", "route": "", "url": "https://new.land.naver.com/rooms?articleId=0000000003", "urlSaved": "2026-11-03" },
+    { "id": "b1", "name": "신길동 매매", "region": "영등포구 신길동", "addr": "신길로 50", "deal": "매매", "deposit": 32500, "rent": 0, "fee": 15, "area": 59, "rooms": 3, "basement": false, "loanOk": true, "usage": "주거용", "station": "신길역", "walk": 7, "commute": 25, "moveIn": "가능", "floorNo": "10/20", "route": "신길역 → 5호선 → 여의도역", "url": "", "urlSaved": null, "loanYears": 30, "repay": "amort" }
+  ],
+  "selectedId": "m1",
+  "furniture": [],
+  "geo": {},
+  "routes": {}
+}

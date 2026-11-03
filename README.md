@@ -15,11 +15,12 @@
 - **비교 리포트**: 01 비용 · 02 공간(퀸 침대가 들어가는지) · 03 통근 · 04 적합도 + 입지. 장마다 핵심 결론과 계산식
 - **평면도 → 3D**: 네이버 부동산 평면도 이미지를 올리면 벽·주방 카운터·변기·세면대·욕조를 자동 인식해 Three.js 3D로 세움
 - **가구 배치**: 가로·세로·높이(cm)를 넣으면 그 크기 그대로 3D 가구가 생기고, 벽·설비·다른 가구에 부딪히지 않게 끌어서 배치
-- 데이터는 브라우저(localStorage)에만 저장되고 어디로도 보내지 않습니다.
+- **입지 지도**: 지역·상세 주소·역·직장을 OpenStreetMap 위치 검색으로 찾아 Leaflet 지도에 표시(키 불필요). 못 찾으면 시간 거리 그림으로 대체
+- 데이터는 브라우저(localStorage)에만 저장됩니다. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보냅니다.
 
 ## 기술
 
-HTML · CSS · JavaScript (빌드 없음), [Chart.js](https://www.chartjs.org/) 4.4.1, [Three.js](https://threejs.org/) 0.160.0, 브라우저 이미지 처리(Otsu 임계값, 모폴로지 연산, 정규화 상관 템플릿 매칭).
+HTML · CSS · JavaScript (빌드 없음), [Chart.js](https://www.chartjs.org/) 4.4.1, [Three.js](https://threejs.org/) 0.160.0, [Leaflet](https://leafletjs.com/) 1.9.4 + OpenStreetMap, 브라우저 이미지 처리(Otsu 임계값, 모폴로지 연산, 정규화 상관 템플릿 매칭).
 
 ## 화면
 
@@ -31,6 +32,6 @@ HTML · CSS · JavaScript (빌드 없음), [Chart.js](https://www.chartjs.org/) 
 
 ## 문서
 
-- `docs/design/` — 기능별 흐름도(mermaid): 평면도 3D, 가구·설비, 인원별 가중치, 리디자인
+- `docs/design/` — 기능별 흐름도(mermaid): 평면도 3D, 가구·설비, 인원별 가중치, 리디자인, 입지 지도
 - `design-guidelines.md` — 디자인 토큰(색·글꼴·간격·모션)
 - `scripts/verify/screenshot.py` — 데스크톱 1280·모바일 390 전체 페이지 스크린샷

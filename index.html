@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Noto+Serif+KR:wght@200;300;400&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -275,6 +277,14 @@ kbd { font: 12px var(--sans); border: 1px solid var(--line); border-bottom-width
 .loc-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); margin-top: var(--s4); align-items: center; }
 @media (max-width: 960px) { .loc-grid { grid-template-columns: minmax(0, 1fr); } }
 #locSvg { width: 100%; height: auto; display: block; color: var(--ink); }
+#locMap { height: 420px; border-radius: var(--r2); border: 1px solid var(--line); background: var(--paper); font-family: var(--sans); }
+@media (max-width: 600px) { #locMap { height: 340px; } }
+#locMap .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) grayscale(.75) sepia(.25) brightness(.8) contrast(.9); }
+#locMap .leaflet-tooltip { background: var(--paper); color: var(--ink); border: 1px solid var(--line); box-shadow: none; font-size: 13px; }
+#locMap .leaflet-tooltip::before { display: none; }
+#locMap .leaflet-control-attribution { background: rgba(28,26,25,.8); color: var(--muted); }
+#locMap .leaflet-control-attribution a, #locMap .leaflet-bar a { color: var(--ink); }
+#locMap .leaflet-bar a { background: var(--paper); border-color: var(--line); }
 .facts { border-top: 1px solid var(--ink); }
 .facts div { display: grid; grid-template-columns: 6em minmax(0, 1fr); gap: var(--s2); padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
 .facts dt { font-size: 13px; color: var(--muted); }
@@ -415,6 +425,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <div class="fields">
             <label class="wide">이름<input name="name" required maxlength="40" placeholder="예: 망원동 투룸"></label>
             <label class="wide">지역<input name="region" maxlength="40" placeholder="예: 마포구 망원동"></label>
+            <label class="wide">상세 주소 <span class="unit">(선택 · 지도 위치용)</span><input name="addr" maxlength="60" placeholder="예: 월드컵로 123"></label>
             <label>보증금 <span class="unit">(만원)</span><input name="deposit" type="number" inputmode="decimal" min="0" step="any" required></label>
             <label>월세 <span class="unit">(만원)</span><input name="rent" type="number" inputmode="decimal" min="0" step="any" required></label>
             <label>관리비 <span class="unit">(만원)</span><input name="fee" type="number" inputmode="decimal" min="0" step="any" required></label>
@@ -497,7 +508,8 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <p class="lead reveal" id="locLead">집에서 역과 직장까지 걸리는 시간을 거리처럼 그렸어요.</p>
       <div class="chips reveal" id="locChips" style="margin-top:24px" aria-label="매물 고르기"></div>
       <div class="loc-grid">
-        <svg id="locSvg" class="reveal" viewBox="90 10 520 430" role="img" aria-label="입지 다이어그램"></svg>
+        <div><div id="locMap" hidden role="img" aria-label="입지 지도"></div>
+        <svg id="locSvg" class="reveal" viewBox="90 10 520 430" role="img" aria-label="입지 다이어그램"></svg></div>
         <dl class="facts reveal" id="locFacts"></dl>
       </div>
     </div>
@@ -620,7 +632,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
   </section>
 </div>
 </main>
-<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장되고 어디로도 보내지 않아요.</div></footer>
+<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요.</div></footer>
 <nav class="tabbar" aria-label="메뉴">
   <a href="#home" data-nav="home">홈</a>
   <a href="#listings" data-nav="listings">매물</a>
@@ -653,11 +665,15 @@ function confirmTap(btn, label = '한 번 더 누르면 삭제') {
 }
 // 같은 밀리초에 두 번 눌러도 겹치지 않는 ID (file://에서는 crypto.randomUUID를 못 쓴다)
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-const DEFAULT = { settings: { myCash: 5000, rate: 3, work: '여의도' }, people: [{ id: 'p1', name: '남편', w: { ...W5 } }, { id: 'p2', name: '아내', w: { ...W5 } }], listings: SAMPLE, selectedId: 'a', furniture: [] };
+const DEFAULT = { settings: { myCash: 5000, rate: 3, work: '여의도' }, people: [{ id: 'p1', name: '남편', w: { ...W5 } }, { id: 'p2', name: '아내', w: { ...W5 } }], listings: SAMPLE, selectedId: 'a', furniture: [], geo: {} };
+// 예시 매물·여의도 좌표는 미리 넣어 첫 방문에 위치 검색 요청이 나가지 않게 한다
+const GEO_PRESET = { '마포구 망원동': [37.55602, 126.90098], '망원역': [37.55565, 126.91063], '구로구 구로동': [37.49458, 126.88455],
+  '구로디지털단지역': [37.48367, 126.9028], '동작구 상도동': [37.49882, 126.9441], '상도역': [37.50385, 126.949], '여의도': [37.52567, 126.92522] };
 
 function load() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.listings)) {
     s.furniture ??= [];
+    s.geo ??= {};
     s.settings.work ??= '직장';
     if (!s.people) {   // 예전 형식(남편·아내 고정) → 사람 목록
       s.people = [{ id: 'p1', name: '남편', w: s.weights?.husband ?? { ...W5 } }, { id: 'p2', name: '아내', w: s.weights?.wife ?? { ...W5 } }];
@@ -807,6 +823,7 @@ function route() {
   for (const el of document.querySelectorAll('.view')) el.hidden = el.dataset.view !== v;
   for (const a of document.querySelectorAll('[data-nav]')) a.dataset.nav === v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
   document.title = VIEWS[v] ? `${VIEWS[v]} · SUITABLE HOME` : 'SUITABLE HOME';
+  if (v === 'report' && locMap) requestAnimationFrame(() => { const f = locMap._fitLater; locMap._fitLater = null; f ? f() : locMap.invalidateSize(); });
   const target = pendingFocus && $(pendingFocus); pendingFocus = null;
   if (target) target.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0);
 }
@@ -947,17 +964,75 @@ function buildWeights() {
 }
 
 // ---------- 4 입지 ----------
-let locId = null;
+let locId = null, locMap = null, locLayer = null, lastLocEv = null;
+// 위치 검색: 검색어 → [위도, 경도] | null(못 찾음). state.geo 에 저장해 같은 검색어는 다시 묻지 않는다.
+const geoQueue = new Set();
+const geoOf = q => q ? (q in GEO_PRESET ? GEO_PRESET[q] : state.geo[q]) : null;
+async function geocodeQueue() {   // OpenStreetMap Nominatim: 1초에 1건 이하
+  if (geocodeQueue.busy) return; geocodeQueue.busy = true;
+  for (const q of geoQueue) {
+    try {
+      const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }));
+      if (!r.ok) throw r.status;
+      const j = await r.json();
+      state.geo[q] = j[0] ? [+(+j[0].lat).toFixed(5), +(+j[0].lon).toFixed(5)] : null; save();
+    } catch (e) { geoQueue.clear(); break; }   // 네트워크 실패 → 이번엔 그림으로, 다음 렌더에 다시 시도
+    geoQueue.delete(q);
+    if (lastLocEv) renderLocation(lastLocEv);
+    await new Promise(res => setTimeout(res, 1100));
+  }
+  geocodeQueue.busy = false;
+}
+function drawLocMap(l, home, stn, work) {
+  const box = $('#locMap');
+  if (!locMap) {
+    locMap = L.map(box, { scrollWheelZoom: false, dragging: !L.Browser.mobile, zoomSnap: 0.5 });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,   // 키 없는 OSM 기본 지도 + CSS 필터로 밤 톤
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(locMap);
+    locMap.on('click', () => locMap.scrollWheelZoom.enable());   // 누른 뒤에만 휠 확대 → 페이지 스크롤을 빼앗지 않음
+    box.addEventListener('mouseleave', () => locMap.scrollWheelZoom.disable());
+  }
+  locLayer?.remove(); locLayer = L.layerGroup().addTo(locMap);
+  const tip = (m, t, d = 'top') => m.bindTooltip(t, { permanent: true, direction: d, offset: d === 'top' ? [0, -8] : d === 'bottom' ? [0, 10] : [10, 0] });
+  const pts = [home];
+  if (stn) { L.polyline([home, stn], { color: css('--ink'), weight: 1.5 }).addTo(locLayer);
+    tip(L.circleMarker(stn, { radius: 6, color: css('--sage'), fillColor: css('--sage'), fillOpacity: 1 }).addTo(locLayer), `${esc(l.station)} · 도보 ${fmtMin(l.walk)}`, 'right'); pts.push(stn); }
+  if (work) { L.polyline([home, work], { color: css('--ink'), weight: 1.5, dashArray: '6 5' }).addTo(locLayer);
+    tip(L.circleMarker(work, { radius: 6, color: css('--ink'), fillColor: css('--ink'), fillOpacity: 1 }).addTo(locLayer), `${esc(state.settings.work)} · 통근 ${fmtMin(l.commute)}`); pts.push(work); }
+  tip(L.circleMarker(home, { radius: 10, color: css('--accent'), fillColor: css('--accent'), fillOpacity: 1 }).addTo(locLayer), typeCode(l), 'bottom');
+  const fit = () => { locMap.invalidateSize(); pts.length > 1 ? locMap.fitBounds(pts, { padding: [48, 48], maxZoom: 16 }) : locMap.setView(home, 15); };
+  box.offsetWidth ? fit() : (locMap._fitLater = fit);   // 숨겨진 화면이면 보일 때 맞춤
+}
+const km = (a, b) => a && b ? `직선 ${(L.latLng(a).distanceTo(b) / 1000).toFixed(1)}km` : '';
 function renderLocation(ev) {
+  lastLocEv = ev;
   const l = ev.all.find(x => x.id === locId) ?? ev.all.find(x => x.id === state.selectedId) ?? ev.all[0];
   $('#ebLoc').textContent = l ? `Location · ${typeCode(l)} 기준` : 'Location';
   $('#locChips').innerHTML = ev.all.map(x => `<button type="button" class="chip-btn" data-loc="${x.id}" aria-pressed="${x === l}" title="${esc(x.name)}">${typeCode(x)} · ${esc(short(x.name, 14))}</button>`).join('');
-  $('#locSvg').hidden = !l;
+  $('#locSvg').toggleAttribute('hidden', !l); $('#locMap').hidden = true;
   if (!l) { $('#locSvg').innerHTML = ''; $('#locFacts').innerHTML = '<p class="empty">매물을 등록하면 역과 직장까지의 거리를 그려 드려요.</p>'; return; }
   const work = state.settings.work || '직장', stn = l.station || '역';
+  const qHome = [l.region, l.addr].filter(Boolean).join(' '), qs = [qHome, l.station, state.settings.work];
+  const g = qs.map(geoOf), mapOk = typeof L !== 'undefined' && !!g[0];
+  for (const q of qs) if (q && !(q in GEO_PRESET) && !(q in state.geo)) geoQueue.add(q);
+  if (geoQueue.size && typeof L !== 'undefined') geocodeQueue();
+  $('#locMap').hidden = !mapOk; $('#locSvg').toggleAttribute('hidden', mapOk);
+  const kmS = mapOk ? km(g[0], g[1]) : '', kmW = mapOk ? km(g[0], g[2]) : '';
+  const facts = () => {
+    const walkRank = rankOf(ev.all, l, 'walk'), comRank = rankOf(ev.all, l, 'commute'), many = ev.all.length > 1;
+    $('#locFacts').innerHTML = `
+    <div><dt>위치</dt><dd>${esc(qHome || '—')}<small>${esc(l.name)} · ${typeCode(l)}</small></dd></div>
+    <div><dt>가까운 역</dt><dd>${esc(stn)} 도보 ${fmtMin(l.walk)}${many || kmS ? `<small>${[many ? `${ev.all.length}곳 중 ${ord(walkRank)} 가까워요` : '', kmS].filter(Boolean).join(' · ')}</small>` : ''}</dd></div>
+    <div><dt>직장</dt><dd>${esc(work)} 편도 ${fmtMin(l.commute)}<small>${many ? `${ev.all.length}곳 중 ${ord(comRank)} 가까워요 · ` : ''}하루 왕복 ${fmtMin(l.commute * 2)}${kmW ? ` · ${kmW}` : ''}</small></dd></div>`;
+  };
+  if (mapOk) {
+    $('#locLead').textContent = '실제 지도 위에 집·역·직장을 찍었어요. 시간은 입력한 도보·통근 시간이에요.';
+    drawLocMap(l, g[0], g[1], g[2]); facts(); return;
+  }
   const far = Math.max(l.commute, l.walk), step = far <= 60 ? 10 : far <= 180 ? 30 : 60;
   const maxM = Math.max(30, Math.ceil(far / step) * step), cx = 340, cy = 220, R = 150 / maxM;
-  $('#locLead').textContent = `집에서 역과 직장까지 걸리는 시간을 거리처럼 그렸어요. 원 하나가 ${fmtMin(step)}이에요.`;
+  $('#locLead').textContent = `집에서 역과 직장까지 걸리는 시간을 거리처럼 그렸어요. 원 하나가 ${fmtMin(step)}이에요.` +
+    (geoQueue.has(qHome) ? ' 지도 위치를 찾는 중이에요.' : state.geo[qHome] === null ? ' 지도에서 이 지역을 찾지 못했어요. 매물에 상세 주소를 적으면 지도로 보여 드려요.' : '');
   const pt = (deg, m) => [cx + Math.cos(deg * Math.PI / 180) * m * R, cy + Math.sin(deg * Math.PI / 180) * m * R];
   const [sx, sy] = pt(205, Math.max(l.walk, 4)), [wx, wy] = pt(-28, Math.max(l.commute, 3));
   let rings = '';
@@ -974,11 +1049,7 @@ function renderLocation(ev) {
     <text x="${(wx + 12).toFixed(1)}" y="${(wy + 6).toFixed(1)}" font-size="14" fill="${css('--muted')}">통근 ${fmtMin(l.commute)}</text>
     <circle cx="${cx}" cy="${cy}" r="11" fill="${css('--accent')}"/>
     <text x="${cx}" y="${cy + 32}" text-anchor="middle" font-size="16" fill="${css('--ink')}">${typeCode(l)}</text>`;
-  const walkRank = rankOf(ev.all, l, 'walk'), comRank = rankOf(ev.all, l, 'commute'), many = ev.all.length > 1;
-  $('#locFacts').innerHTML = `
-    <div><dt>위치</dt><dd>${esc(l.region || '—')}<small>${esc(l.name)} · ${typeCode(l)}</small></dd></div>
-    <div><dt>가까운 역</dt><dd>${esc(stn)} 도보 ${fmtMin(l.walk)}${many ? `<small>${ev.all.length}곳 중 ${ord(walkRank)} 가까워요</small>` : ''}</dd></div>
-    <div><dt>직장</dt><dd>${esc(work)} 편도 ${fmtMin(l.commute)}<small>${many ? `${ev.all.length}곳 중 ${ord(comRank)} 가까워요 · ` : ''}하루 왕복 ${fmtMin(l.commute * 2)}</small></dd></div>`;
+  facts();
 }
 
 // ---------- 5 추천 ----------
@@ -1095,7 +1166,7 @@ function resetForm() { form.reset(); form.id.value = ''; $('#submitBtn').textCon
 form.addEventListener('submit', e => {
   e.preventDefault();
   const f = Object.fromEntries(new FormData(form));
-  const l = { id: f.id || uid(), name: f.name.trim(), region: f.region.trim(), station: (f.station || '').trim(),
+  const l = { id: f.id || uid(), name: f.name.trim(), region: f.region.trim(), addr: (f.addr || '').trim(), station: (f.station || '').trim(),
     basement: f.floor === '반지하', loanOk: f.loan === '가능', usage: f.usage };
   for (const k of NUMS) l[k] = Number(f[k]);
   const i = state.listings.findIndex(x => x.id === l.id);
@@ -1119,7 +1190,7 @@ document.addEventListener('click', e => {
   if (b.dataset.act === 'view') { state.selectedId = l.id; render(); go('studio'); }
   if (b.dataset.act === 'del' && confirmTap(b)) { state.listings = state.listings.filter(x => x !== l); render(); }
   if (b.dataset.act === 'edit') {
-    form.id.value = l.id; form.name.value = l.name; form.region.value = l.region; form.station.value = l.station || '';
+    form.id.value = l.id; form.name.value = l.name; form.region.value = l.region; form.addr.value = l.addr || ''; form.station.value = l.station || '';
     for (const k of NUMS) form[k].value = l[k];
     form.floor.value = l.basement ? '반지하' : '지상'; form.loan.value = l.loanOk ? '가능' : '불가'; form.usage.value = l.usage;
     $('#submitBtn').textContent = '수정 저장'; $('#cancelEdit').hidden = false;

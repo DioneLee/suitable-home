@@ -1812,7 +1812,7 @@ function planGeometry(l) {
   }
   if (maxX < 0) { minX = minY = 0; maxX = p.gw - 1; maxY = p.gh - 1; }
   for (const fx of p.fixtures || []) for (let y = fx.y0; y < fx.y1; y++) blocked.fill(1, y * p.gw + fx.x0, y * p.gw + fx.x1);
-  return { mask, cellM, free: summed(blocked, p.gw, p.gh), box: [minX, minY, maxX + 1, maxY + 1].map(v => v * cellM) };
+  return { mask, outside, cellM, free: summed(blocked, p.gw, p.gh), box: [minX, minY, maxX + 1, maxY + 1].map(v => v * cellM) };
 }
 function buildPlan(l) {
   const p = l.plan, g = planGeometry(l);
@@ -1820,8 +1820,22 @@ function buildPlan(l) {
   W = p.gw * g.cellM; D = p.gh * g.cellM;
   const [bx0, bz0, bx1, bz1] = g.box;
   focus = { x: (bx0 + bx1) / 2 - W / 2, z: (bz0 + bz1) / 2 - D / 2, w: bx1 - bx0, d: bz1 - bz0 };
-  const tex = new THREE.TextureLoader().load(p.img); tex.colorSpace = THREE.SRGBColorSpace;
-  const fl = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshBasicMaterial({ map: tex }));
+  // 바닥 그림: 2D 는 도면 이미지, 3D 렌더는 사진 속 가구가 깔리지 않게 집 안쪽만 단색. 둘 다 1m 격자를 집 범위 안에만 그린다
+  const cv = document.createElement('canvas'); cv.width = p.gw * CELL; cv.height = p.gh * CELL;
+  const cx = cv.getContext('2d'), tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const drawGrid = () => {
+    const step = CELL / g.cellM, [x0, y0, x1, y1] = g.box.map(v => v / g.cellM * CELL);
+    cx.strokeStyle = 'rgba(70,58,50,.5)'; cx.lineWidth = 1.5; cx.beginPath();
+    for (let x = x0; x <= x1 + 0.5; x += step) { cx.moveTo(x, y0); cx.lineTo(x, y1); }
+    for (let y = y0; y <= y1 + 0.5; y += step) { cx.moveTo(x0, y); cx.lineTo(x1, y); }
+    cx.stroke(); tex.needsUpdate = true;
+  };
+  if (p.mono) {
+    cx.fillStyle = '#D8C9B6';
+    for (let i = 0; i < g.mask.length; i++) if (!g.outside[i]) cx.fillRect((i % p.gw) * CELL, ((i / p.gw) | 0) * CELL, CELL, CELL);
+    cx.globalCompositeOperation = 'source-atop'; drawGrid();   // 칠한 집 안쪽에만 선
+  } else { const im = new Image(); im.onload = () => { cx.drawImage(im, 0, 0, cv.width, cv.height); drawGrid(); }; im.src = p.img; }
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshBasicMaterial({ map: tex, transparent: !!p.mono }));
   fl.rotation.x = -Math.PI / 2; house.add(fl);
   const rs = rects(g.mask, p.gw, p.gh);
   if (rs.length) {
@@ -1836,7 +1850,7 @@ function buildPlan(l) {
   for (const fx of p.fixtures || []) house.add(fixtureModel(fx, g));
   addFurniture();
   document.getElementById('planInfo').textContent =
-    `인식된 집 크기 약 ${focus.w.toFixed(1)}m × ${focus.d.toFixed(1)}m · ${p.scaleM ? '직접 맞춘 축척' : `전용 ${l.area}㎡ 기준 자동 축척`}`;
+    `인식된 집 크기 약 ${focus.w.toFixed(1)}m × ${focus.d.toFixed(1)}m · 바닥 격자 한 칸 = 1m · ${p.scaleM ? '직접 맞춘 축척' : `전용 ${l.area}㎡ 기준 자동 축척`}`;
 }
 
 // 설비 하나 → 3D. 벽이 가장 많이 붙은 쪽을 뒤(변기 물탱크·싱크대 뒷면)로 돌린다

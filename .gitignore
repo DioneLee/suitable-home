@@ -3,3 +3,5 @@
 # 디자인 반복 중간 스크린샷 (최종 before/after 만 올린다)
 screenshots/process/
 __pycache__/
+# 실제 매물 데이터·스크린샷 (실제 주소·네이버 평면도) — 절대 커밋하지 않는다
+local-data/

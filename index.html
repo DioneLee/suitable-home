@@ -141,10 +141,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 a.stat:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--r1); }
 a.stat:active .go i { transform: translateX(4px); }
 .chapter, #rankTool { scroll-margin-top: 72px; }
-.simrank li { transition: background-color .3s, box-shadow .3s; }
-.simrank li.flash { background: rgba(184,135,95,.14); box-shadow: inset 2px 0 0 var(--accent); }
+@keyframes rowFlash { 0% { background-color: transparent; } 15%, 60% { background-color: rgba(184,135,95,.18); } 100% { background-color: transparent; } }
+.simrank li.flash { animation: rowFlash 2s ease-out; box-shadow: inset 2px 0 0 var(--accent); }
+@media (prefers-reduced-motion: reduce) { .simrank li.flash { animation: none; background: none; box-shadow: none; outline: 1px solid var(--accent); outline-offset: -1px; } }
 .simrank .rk small, .rank td.num small { font: 500 11px var(--sans); color: var(--muted); margin-right: 2px; }
-.simrank li { grid-template-columns: 3.4em minmax(0, 1fr) 3em; }
+.simrank li { grid-template-columns: 4.4em minmax(0, 1fr) 3em; }
+.simrank .rk, .rank td.num { white-space: nowrap; }   /* '공동 3'이 두 줄로 꺾이지 않게 */
 .stat + .stat { padding-left: var(--s3); border-left: 1px solid var(--line); }
 .stat b { display: block; font: 200 clamp(32px, 5vw, 64px)/1.1 var(--serif); white-space: nowrap; }
 .stat b small { font: 400 14px var(--sans); margin-left: 4px; color: var(--muted); }
@@ -803,6 +805,8 @@ function josa(n, withB, noB) {
   return noB;
 }
 const gwa = n => josa(n, '과', '와');
+// '1위 ○○' 또는 동점이면 '공동 1위 · ○○ 외 1곳'
+const topLabel = P => { const n = P.filter(l => l.rank === 1).length; return n > 1 ? `공동 1위 · ${P[0].name} 외 ${n - 1}곳` : `1위 ${P[0].name}`; };
 const rankTxt = l => `${l.tie ? '공동 ' : ''}${l.rank}위`;
 // 퀸 침대(1.5×2.0m)가 방 한 칸에 들어가나: 면적·방 개수로 나눈 대략 구조 기준(3D 대략 구조와 같은 나눔)
 function bedFitsBox(l) {
@@ -942,7 +946,7 @@ function renderGoto(ev) {
   const P = ev.passed, cheap = P.reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null);
   $('#goListings').textContent = `${ev.cands.length}곳 등록 · 통과 ${P.length}곳 · 탈락 ${ev.failed.length}곳` + (ev.cur ? ' · 지금 집 기준선' : '');
   $('#goReport').textContent = cheap ? `최저 실제 월 부담 ${cheap.name} ${fmtMonthly(cheap.monthly)} · 비용·공간·통근·적합도·입지` : ev.cands.length ? '통과한 매물이 없어요 · 탈락 사유 보기' : '매물을 등록하면 비교가 시작돼요';
-  $('#goCriteria').textContent = `${state.people.length}명 기준` + (P[0] ? ` · 지금 1위 ${P[0].name} 적합도 ${Math.round(P[0].score)}점` : '');
+  $('#goCriteria').textContent = `${state.people.length}명 기준` + (P[0] ? ` · 지금 ${topLabel(P)} 적합도 ${Math.round(P[0].score)}점` : '');
   $('#goStudio').textContent = `평면도 ${state.listings.filter(l => l.plan).length}곳 · 가구 ${state.furniture.length}개`;
 }
 
@@ -968,7 +972,7 @@ function renderHero(ev) {
   setStat('#stCost', cheap ? cheap.monthly : '', 1, '만원');
   setStat('#stScore', top ? Math.round(top.score) : '', 0, '점');
   $('#stCostSub').textContent = cheap ? `최저 실제 월 부담 · ${cheap.name}` : ev.cands.length ? '최저 실제 월 부담 · 통과한 매물 없음' : '최저 실제 월 부담';
-  $('#stScoreSub').textContent = top ? `1위 적합도 · ${top.name}` : ev.cands.length ? '통과한 매물 없음' : '매물을 등록해 주세요';
+  $('#stScoreSub').textContent = top ? `${top.tie ? '공동 1위' : '1위 적합도'} · ${top.tie ? topLabel(ev.passed).replace(/^공동 1위 · /, '') : top.name}` : ev.cands.length ? '통과한 매물 없음' : '매물을 등록해 주세요';
   for (const el of document.querySelectorAll('.stat span')) el.title = el.textContent;
   const t = top ?? ev.cands[0] ?? ev.all[0];
   $('#heroThumb').innerHTML = t ? schematic(t, false) : '';
@@ -1348,7 +1352,7 @@ document.addEventListener('click', e => {
   const f = e.target.closest('a[data-focus]');
   if (f) {
     e.preventDefault(); go(f.getAttribute('href').slice(1), f.dataset.focus);
-    if (f.dataset.hl) { const tops = document.querySelectorAll('#simRank li.top'); tops.forEach(li => li.classList.add('flash')); setTimeout(() => tops.forEach(li => li.classList.remove('flash')), 2400); }
+    if (f.dataset.hl) { const tops = document.querySelectorAll('#simRank li.top'); tops.forEach(li => li.classList.add('flash')); setTimeout(() => tops.forEach(li => li.classList.remove('flash')), 2000); }
     return;
   }
   const t = e.target.closest('[data-type]');

@@ -1,0 +1,2618 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SUITABLE HOME</title>
+<meta name="theme-color" content="#1C1A19">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Noto+Serif+KR:wght@200;300;400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+/* 레이아웃: 분양 사이트(히어로·TYPE·입지·추천) → 분석 보고서(01~04, 얇은 선 격자) → 도구(시뮬레이터·매물 관리·3D)
+   토큰은 design-guidelines.md 와 같다. 여기 없는 색·간격을 새로 쓰지 않는다. */
+:root {
+  /* 밤의 모델하우스: 숯색 바탕 + 카라멜 브론즈 하나 (레퍼런스 THE CLAV 60, EFETE) */
+  --bg: #1C1A19; --paper: #252220; --ink: #EDE6DD; --muted: #A39A90; --line: #3A3532; --grid: rgba(237, 230, 221, .045);
+  --accent: #B8875F; --accent-deep: #9C6F4B; --on-accent: #1C1A19; --sage: #8C9A88; --pass: #8CC5A0; --fail: #E08A80; --warn: #E3A25C;
+  --brand: "Cormorant Garamond", "Noto Serif KR", serif;
+  --serif: "Noto Serif KR", "Nanum Myeongjo", serif;
+  --sans: "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 48px; --s5: 96px;
+  --r1: 4px; --r2: 8px; --pill: 999px;
+  color-scheme: dark;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --nav: 56px;
+  --lab: 104px;
+}
+@media (max-width: 600px) { :root { --lab: 72px; } }
+* { box-sizing: border-box; }
+html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }   /* 탭할 때 회색 번쩍임 제거 */
+button, .btn, .filebtn, .chip-btn, .tabbar a, .golist a { -webkit-user-select: none; user-select: none; }      /* 길게 눌러도 버튼 글자가 선택되지 않게 */
+button, a, .filebtn, .tools label, input[type=range] { touch-action: manipulation; }
+button:active, .btn:active, .filebtn:active { transform: scale(.97); transition: transform 100ms var(--ease); }   /* 누른 느낌 (:hover 대신 모든 기기) */
+[hidden] { display: none !important; }
+body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px); background-size: calc(100% / 6) 100%; }   /* 세로 격자선 6칸 */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: break-word; }
+h1, h2, h3, p, ol, ul, dl, dd, figure { margin: 0; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 300; letter-spacing: -0.01em; text-wrap: balance; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.num, table, output, .stat b, .tcost, .ch-no { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 900px) { .wrap { padding-left: max(48px, env(safe-area-inset-left, 0px)); padding-right: max(48px, env(safe-area-inset-right, 0px)); } }
+.block { padding-block: var(--s5); border-top: 1px solid var(--line); scroll-margin-top: var(--nav); }
+.eyebrow { font: 500 13px/1.4 var(--brand), var(--sans); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); font-variant-numeric: lining-nums; }
+.h2 { font-size: clamp(32px, 4.6vw, 56px); line-height: 1.15; margin-top: var(--s2); }
+.lead { max-width: 34em; color: var(--muted); margin-top: var(--s2); }
+.hint { font-size: 14px; color: var(--muted); }
+.unit { font-size: 12px; }
+.empty { padding: var(--s3); text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: var(--r2); }
+
+/* 버튼·입력 */
+button, .btn { font: 500 15px/1 var(--sans); min-height: 44px; padding: 0 var(--s2); border: 1px solid var(--ink); border-radius: var(--pill); background: transparent; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--s1); text-decoration: none; white-space: nowrap; transition: background .15s, color .15s, border-color .15s; }
+@media (hover: hover) { button:hover, .btn:hover { background: var(--ink); color: var(--bg); } }
+button.primary, .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+@media (hover: hover) { button.primary:hover, .btn.primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); } }
+button.ghost { border-color: var(--line); }
+button.small { min-height: 36px; padding: 0 12px; font-size: 13px; }
+button.danger { color: var(--fail); border-color: var(--line); }
+@media (hover: hover) { button.danger:hover { background: var(--fail); border-color: var(--fail); color: var(--bg); } }
+button:disabled { opacity: .4; cursor: not-allowed; }
+@media (hover: hover) { button:disabled:hover { background: transparent; color: inherit; } }
+label { display: block; font-size: 13px; color: var(--muted); }
+input, select { width: 100%; font: 16px var(--sans); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: var(--r1); padding: 10px 12px; min-height: 44px; margin-top: 6px; }
+@media (hover: hover) { input:hover, select:hover { border-color: var(--muted); } }
+.fields { display: grid; gap: var(--s2); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 720px) { .fields { grid-template-columns: repeat(4, minmax(0, 1fr)); } #furnForm .fields { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.fields .wide { grid-column: span 2; }
+.row { display: flex; gap: var(--s1); flex-wrap: wrap; align-items: center; margin-top: var(--s2); }
+.badge { display: inline-block; font: 600 12px/1 var(--sans); padding: 4px 8px; border: 1px solid currentColor; border-radius: var(--r1); }
+.badge.pass { color: var(--pass); } .badge.fail { color: var(--fail); }
+.badge.warn { color: var(--warn); } .badge.base { color: var(--accent); } .badge.unk { color: var(--muted); border-style: dashed; }
+.badges { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; }
+.vs { display: block; font-size: 13px; color: var(--muted); }
+.check { display: flex; align-items: center; gap: var(--s1); cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); flex: none; }
+.io-row { display: flex; flex-wrap: wrap; gap: var(--s1); align-items: center; margin-top: var(--s2); }
+.io-row .msg { font-size: 13px; color: var(--muted); flex-basis: 100%; }
+.baseline { position: absolute; top: 0; bottom: 0; border-left: 1.5px dashed var(--accent); pointer-events: none; }
+.baseline span { position: absolute; top: -18px; left: 4px; font-size: 11px; color: var(--accent); white-space: nowrap; }
+#timeline .track { position: relative; overflow: visible; }
+
+/* 상단 메뉴 (분양 사이트식) */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 31; background: var(--bg); }
+.nav .wrap { display: flex; align-items: center; gap: var(--s3); height: var(--nav); }
+.brand { font: 500 17px var(--brand); text-decoration: none; margin-right: auto; letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; }
+.nav .lnk { font-size: 14px; text-decoration: none; color: var(--muted); }
+@media (hover: hover) { .nav .lnk:hover { color: var(--ink); } }
+.nav .lnk[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); padding-block: 18px; }
+@media (max-width: 760px) { .nav .lnk { display: none; } }
+/* 휴대폰: 엄지가 닿는 하단 탭 */
+.tabbar { display: none; }
+@media (max-width: 760px) {
+  .tabbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bg); border-top: 1px solid var(--line);
+    padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+  .tabbar a { display: grid; place-items: center; min-height: 56px; font-size: 13px; color: var(--muted); text-decoration: none; }
+  .tabbar a[aria-current="page"] { color: var(--ink); font-weight: 600; box-shadow: inset 0 2px 0 var(--accent); }
+  body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+}
+.view > .block:first-child { border-top: 0; }
+.shot .tabbar { position: static; }
+.golist { display: grid; border-top: 1px solid var(--ink); margin-top: var(--s4); }
+.golist a { display: grid; grid-template-columns: minmax(0, 12em) minmax(0, 1fr) auto; gap: var(--s2); align-items: baseline; padding: var(--s3) 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.golist .gk { font: 300 28px/1.2 var(--serif); transition: color .2s; }
+.golist .gv { color: var(--muted); font-size: 15px; }
+.golist .ga { font-size: 20px; color: var(--muted); transition: transform .2s var(--ease), color .2s; }
+@media (hover: hover) { .golist a:hover .gk, .golist a:hover .ga { color: var(--accent); } }
+@media (hover: hover) { .golist a:hover .ga { transform: translateX(4px); } }
+@media (max-width: 600px) { .golist a { grid-template-columns: minmax(0, 1fr) auto; } .golist .gv { grid-column: 1; grid-row: 2; } .golist .ga { grid-row: 1 / span 2; align-self: center; } }
+
+/* 0 히어로 */
+.hero { position: relative; min-height: var(--hero-h, calc(100svh - var(--nav))); display: grid; align-items: end; overflow: hidden; }
+#heroCanvas { position: absolute; inset: 0 0 0 50%; }
+#heroCanvas canvas { display: block; }
+.hero .wrap { position: relative; width: 100%; padding-block: var(--s5) var(--s4); pointer-events: none; }
+.hero .wrap > * { pointer-events: auto; }
+.hero h1 { font-size: clamp(38px, 6.8vw, 94px); line-height: 1.12; font-weight: 200; letter-spacing: .02em; margin-top: var(--s3); }
+.hero h1 .dot { color: var(--accent); }
+.hero h1 .line { display: block; }
+.thumb { display: inline-block; width: 1.5em; height: .74em; vertical-align: -0.02em; margin-right: .18em; border: 1px solid var(--line); border-radius: var(--r1); background: var(--paper); color: var(--ink); overflow: hidden; }
+.thumb svg { width: 100%; height: 100%; display: block; }
+.hero .sub { max-width: 30em; margin-top: var(--s3); color: var(--muted); font-size: 18px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--s4); border-top: 1px solid var(--ink); max-width: 860px; }
+.stat { padding: var(--s2) var(--s3) var(--s2) 0; min-width: 0; display: block; color: inherit; text-decoration: none; transition: box-shadow .18s ease-out; }
+.stat .go { display: block; margin-top: var(--s1); font: 500 13px var(--sans); font-style: normal; color: var(--accent); }
+.stat .go i { display: inline-block; font-style: normal; transition: transform .18s ease-out; }
+@media (hover: hover) { a.stat:hover { box-shadow: inset 0 2px 0 var(--accent); } a.stat:hover .go i { transform: translateX(4px); } }
+a.stat:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--r1); }
+a.stat:active .go i { transform: translateX(4px); }
+.chapter, #rankTool { scroll-margin-top: 72px; }
+@keyframes rowFlash { 0% { background-color: transparent; } 15%, 60% { background-color: rgba(184,135,95,.18); } 100% { background-color: transparent; } }
+.simrank li.flash { animation: rowFlash 2s ease-out; box-shadow: inset 2px 0 0 var(--accent); }
+@media (prefers-reduced-motion: reduce) { .simrank li.flash { animation: none; background: none; box-shadow: none; outline: 1px solid var(--accent); outline-offset: -1px; } }
+.simrank .rk small, .rank td.num small { font: 500 11px var(--sans); color: var(--muted); margin-right: 2px; }
+.simrank li { grid-template-columns: 4.4em minmax(0, 1fr) 3em; }
+.simrank .rk, .rank td.num { white-space: nowrap; }   /* '공동 3'이 두 줄로 꺾이지 않게 */
+.stat + .stat { padding-left: var(--s3); border-left: 1px solid var(--line); }
+.stat b { display: block; font: 200 clamp(32px, 5vw, 64px)/1.1 var(--serif); white-space: nowrap; }
+.stat b small { font: 400 14px var(--sans); margin-left: 4px; color: var(--muted); }
+.stat span { display: block; font-size: 13px; color: var(--muted); margin-top: var(--s1); }
+.scrollbtn { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: var(--s3); width: 72px; height: 72px; padding: 0; border-color: var(--accent); color: var(--accent); font-size: 20px; }
+@media (hover: hover) { .scrollbtn:hover { background: var(--accent); color: var(--on-accent); } }
+@media (min-width: 900px) { .scrollbtn { right: 48px; } }
+@media (max-width: 760px) {
+  #heroCanvas { inset: 0; opacity: .35; }
+  .stats { grid-template-columns: minmax(0, 1fr); }
+  .stat, .stat + .stat { padding: var(--s2) 0; border-left: 0; }
+  .stat + .stat { border-top: 1px solid var(--line); }
+  .scrollbtn { display: none; }
+}
+
+/* 1 TYPE 라인업: 큰 평면 한 장 + 작은 목록 (Arkitektkontoret Vest) */
+.type-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); margin-top: var(--s4); align-items: start; }
+@media (max-width: 960px) { .type-grid { grid-template-columns: minmax(0, 1fr); } }
+.type-panel { border: 1px solid var(--line); border-radius: var(--r2); background: var(--paper); overflow: hidden; transition: border-color .2s; }
+@media (min-width: 961px) { .type-panel { position: sticky; top: 72px; } }   /* 두 단일 때: 목록을 내려도 평면·3D 가 보이게 */
+.type-panel.changed { border-color: var(--accent); }
+/* ---- 휴대폰 바텀시트 (768px 미만) ---- */
+.sheet { position: fixed; inset: 0; z-index: 60; }
+.sheet-scrim { position: absolute; inset: 0; background: rgba(10,9,8,.62); opacity: 0; transition: opacity .24s; }
+.sheet.open .sheet-scrim { opacity: 1; }
+.sheet-panel { position: absolute; left: 0; right: 0; bottom: 0; height: 85vh; height: 85dvh; display: flex; flex-direction: column;
+  background: var(--paper); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; transform: translateY(100%); transition: transform .26s cubic-bezier(.2,.7,.2,1); outline: none; }
+.sheet.open .sheet-panel { transform: none; }
+.sheet.dragging .sheet-panel { transition: none; }
+.sheet-grab { display: flex; justify-content: center; padding: 10px 0 4px; touch-action: none; cursor: grab; }
+.sheet-grab span { width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
+.sheet-head { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px 44px; align-items: center; gap: 4px; padding: 0 8px 8px; touch-action: none; }
+.sheet-head .t { text-align: center; min-width: 0; }
+.sheet-head .t .eyebrow { margin: 0; }
+.sheet-head h3 { margin: 2px 0 0; font: 400 20px/1.3 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-head .t small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-head button { min-height: 44px; width: 44px; padding: 0; border-radius: var(--pill); font-size: 20px; }
+.sheet-head button:disabled { opacity: .3; }
+.sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 16px; }
+.sheet .type-stage { aspect-ratio: 4 / 3; border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; touch-action: pan-y; }
+.sheet #sh2d { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ink); padding: 12px; }
+.sheet #sh2d img, .sheet #sh2d svg { max-width: 100%; max-height: 100%; }
+.sheet #sh3d { position: absolute; inset: 0; touch-action: none; }
+.sheet #sh3d canvas { display: block; width: 100% !important; height: 100% !important; }
+.sheet .note { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.sheet-cost { display: flex; align-items: baseline; gap: 8px; margin-top: var(--s2); }
+.sheet-cost b { font: 300 32px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+.sheet-cost small { color: var(--muted); }
+.sheet .why { color: var(--fail); font-size: 13px; margin: 6px 0 0; }
+.sheet .vs { margin-top: 6px; }
+.sheet-acts { display: grid; gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); grid-template-columns: 1fr 1fr; }
+.sheet-acts .primary { grid-column: 1 / -1; }
+.sheet-pos { text-align: center; font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+html.sheet-lock body { position: fixed; left: 0; right: 0; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .sheet-panel, .sheet-scrim { transition: none; } }
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; border-radius: 0; min-height: 48px; padding: 0 var(--s3); color: var(--muted); background: transparent; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+@media (hover: hover) { .tabs button:hover { background: transparent; color: var(--ink); } }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs .tab-link { margin-left: auto; font-size: 13px; }
+.type-stage { position: relative; aspect-ratio: 16 / 10; max-width: 100%; }
+#type2d, #type3d { position: absolute; inset: 0; }
+#type2d { display: grid; place-items: center; padding: var(--s4); color: var(--ink); }
+@media (max-width: 600px) { #type2d { padding: var(--s2); } .hero .sub { font-size: 16px; } }
+#type2d svg, #type2d img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.type-cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s1) var(--s3); padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+.type-cap b { color: var(--ink); font-weight: 600; margin-right: 6px; }
+.type-list { list-style: none; padding: 0; border-top: 1px solid var(--ink); }
+.type-list li { border-bottom: 1px solid var(--line); }
+.type-list li button { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px var(--s2); padding: var(--s3) 0; cursor: pointer; }
+.type-list li button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tcode { font: 300 30px/1.1 var(--serif); letter-spacing: -0.01em; transition: color .2s; }
+.type-list li.on .tcode { color: var(--accent); }
+@media (hover: hover) { .type-list li button:hover .tcode { color: var(--accent); } }
+.tmeta { grid-column: 1; font-size: 14px; color: var(--muted); }
+.tmeta b { color: var(--ink); font-weight: 600; margin-right: 6px; }
+.tcost { grid-column: 2; grid-row: 1 / span 2; text-align: right; align-self: center; }
+.tcost b { display: block; font: 300 24px/1.1 var(--serif); }
+.tcost small { display: block; font-size: 12px; color: var(--muted); margin: 2px 0 6px; }
+
+/* 2 분석 리포트: 얇은 선 격자 + 장 번호 + 오른쪽 핵심 결론 (Groth) */
+.rp-meta { margin-top: var(--s2); font-size: 13px; color: var(--muted); }
+.chapter { display: grid; grid-template-columns: 96px minmax(0, 1fr) 280px; grid-template-areas: "no title concl" "no body concl" "no foot foot"; gap: var(--s3) var(--s4); padding-block: var(--s4); border-top: 1px solid var(--ink); margin-top: var(--s4); }
+.ch-no { grid-area: no; font: 200 56px/1 var(--serif); color: var(--muted); }
+.ch-title { grid-area: title; }
+.ch-title h3 { font-size: 32px; line-height: 1.2; }
+.ch-title p { margin-top: var(--s1); }
+.ch-body { grid-area: body; min-width: 0; }
+.ch-concl { grid-area: concl; border-left: 1px solid var(--line); padding-left: var(--s3); align-self: start; }
+.ch-concl p { font: 400 20px/1.55 var(--serif); margin-top: var(--s1); }
+.ch-concl .eyebrow { font: 500 12px/1.4 var(--sans); margin-top: 0; }
+.ch-foot { grid-area: foot; font-size: 12px; line-height: 1.7; color: var(--muted); border-top: 1px dashed var(--line); padding-top: var(--s2); }
+@media (max-width: 1000px) {
+  .chapter { grid-template-columns: minmax(0, 1fr); grid-template-areas: "no" "title" "concl" "body" "foot"; gap: var(--s2); }
+  .ch-no { font-size: 40px; }
+  .ch-concl { border-left: 0; border-top: 1px solid var(--line); padding: var(--s2) 0 0; }
+}
+.chart-box { position: relative; width: 100%; }
+.hbars { display: grid; gap: var(--s2); }
+.hbar { display: grid; grid-template-columns: var(--lab) minmax(0, 1fr) 56px; gap: var(--s2); align-items: center; font-size: 14px; }
+.hbar .track { height: 12px; border-bottom: 1px solid var(--line); position: relative; }
+.hbar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--sage); }
+.hbar.best .fill { background: var(--accent); }
+.hbar .seg2 { position: absolute; top: 0; bottom: 0; background: var(--sage); opacity: .45; }
+.hbar .v { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hbar > span:first-child, .stat span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hbar .fit { grid-column: 2 / -1; font-size: 13px; color: var(--muted); margin-top: -10px; }
+.axis { display: grid; grid-template-columns: var(--lab) minmax(0, 1fr) 56px; gap: var(--s2); font-size: 12px; color: var(--muted); margin-top: var(--s1); }
+.axis .ticks { position: relative; height: 16px; }
+.axis .ticks span { position: absolute; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--s3); font-size: 13px; color: var(--muted); margin-bottom: var(--s2); }
+.legend i { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 6px; background: var(--sage); }
+.legend i.light { opacity: .45; }
+.tbl { overflow-x: auto; }
+table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.rank th, table.rank td.n, table.rank .opt, table.rank td.num { white-space: nowrap; }
+@media (max-width: 600px) { table.rank .opt { display: none; } }
+table.rank th { font-weight: 500; color: var(--muted); text-align: left; border-bottom: 1px solid var(--ink); padding: 8px; font-size: 12px; letter-spacing: .04em; }
+table.rank td { padding: 14px 8px; border-bottom: 1px solid var(--line); }
+table.rank .n { text-align: right; }
+table.rank tr.top td { color: var(--accent); }
+table.rank tr.top td.nm { font-weight: 600; }
+.notes { list-style: none; padding: 0; margin-top: var(--s2); font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+.notes b { color: var(--fail); font-weight: 600; }
+
+/* 3 시뮬레이터 · 매물 관리 · 3D: 도구 화면 (밀도 있게, 패널로 구분) */
+.tool { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r2); padding: var(--s3); margin-top: var(--s3); }
+.tool h3 { font: 600 18px/1.4 var(--sans); letter-spacing: 0; }
+.tool button.primary, .tool .filebtn { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+@media (hover: hover) { .tool button.primary:hover, .tool .filebtn:hover { background: var(--muted); border-color: var(--muted); } }
+.tool > .hint { margin-top: 4px; }
+.sim-grid { display: grid; gap: var(--s3); grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); margin-top: var(--s4); align-items: start; }
+@media (max-width: 960px) { .sim-grid { grid-template-columns: minmax(0, 1fr); } }
+.sim-grid > .tool { margin-top: 0; }
+.couple { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--s3); margin-top: var(--s2); }
+.person { border: 0; padding: 0; margin: 0; min-width: 0; }
+.person-head { display: flex; gap: var(--s1); align-items: center; margin-bottom: var(--s1); }
+.person-head input { font: 400 18px var(--serif); margin: 0; min-height: 40px; padding: 4px 10px; }
+.person-head button { flex: none; }
+.slider { display: grid; grid-template-columns: 4em minmax(0, 1fr) 1.6em; align-items: center; gap: var(--s1); color: var(--ink); font-size: 14px; }
+.slider input { padding: 0; min-height: 32px; margin: 0; background: none; border: 0; accent-color: var(--sage); }
+.slider output { text-align: right; }
+.avg { margin-top: var(--s2); padding-top: var(--s2); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px var(--s2); }
+.avg b { color: var(--ink); }
+.simrank { list-style: none; padding: 0; margin-top: var(--s2); border-top: 1px solid var(--ink); }
+.simrank li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr) 3em; gap: var(--s1); align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.simrank .rk { font: 300 22px var(--serif); }
+.simrank li.top .rk, .simrank li.top .sc { color: var(--accent); }
+.simrank .sc { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.manage { list-style: none; padding: 0; margin-top: var(--s3); border-top: 1px solid var(--ink); }
+.manage li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s1) var(--s2); align-items: center; padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
+.manage .info { min-width: 0; font-size: 14px; color: var(--muted); }
+.manage .info b { color: var(--ink); font-weight: 600; margin-right: 6px; }
+.manage .acts { display: flex; gap: var(--s1); flex-wrap: wrap; justify-content: flex-end; }
+.manage .why { display: block; color: var(--fail); font-size: 13px; }
+@media (max-width: 600px) { .manage li { grid-template-columns: minmax(0, 1fr); } .manage .acts { justify-content: flex-start; } }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.chip-btn { min-height: 36px; font-size: 13px; border-color: var(--line); display: inline-block; line-height: 34px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.chip-btn[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+
+/* 3D 스튜디오 */
+.note { font-size: 14px; color: var(--muted); padding: 12px var(--s2); border-left: 2px solid var(--accent); background: var(--bg); margin: var(--s2) 0; }
+#view3d { position: relative; width: 100%; height: 480px; border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; background: var(--paper); touch-action: none; margin-top: var(--s2); }
+@media (max-width: 640px) { #view3d { height: min(360px, 55svh); } }
+#view3d .msg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); padding: var(--s2); text-align: center; }
+.selname { font-size: 13px; color: var(--muted); }
+kbd { font: 12px var(--sans); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: var(--r1); padding: 0 5px; background: var(--paper); }
+.filebtn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--s2); border-radius: var(--pill); background: var(--accent); color: var(--on-accent); cursor: pointer; font: 500 15px var(--sans); }
+@media (hover: hover) { .filebtn:hover { background: var(--accent-deep); } }
+.filebtn:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+.filebtn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.plan-wrap { border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; background: var(--paper); margin-top: var(--s2); }
+#planCanvas { display: block; width: auto; max-width: 100%; max-height: 70svh; height: auto; margin-inline: auto; touch-action: none; cursor: crosshair; }
+#planCanvas, #view3d { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.tools { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); align-items: center; margin-top: var(--s2); }
+.tools > label:not(.slider) { display: inline-flex; gap: 6px; align-items: center; color: var(--ink); font-size: 14px; min-height: 44px; }
+.tools input[type=radio] { width: 18px; height: 18px; min-height: 0; margin: 0; accent-color: var(--accent); }
+.tools .slider { grid-template-columns: 6.5em 140px 2.5em; }
+.flist { list-style: none; padding: 0; margin-top: var(--s2); display: grid; gap: var(--s1); }
+.flist li { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); padding: var(--s1) 12px; border: 1px solid var(--line); border-radius: var(--r1); background: var(--bg); font-size: 14px; }
+.flist li span { font-variant-numeric: tabular-nums; }
+.flist .empty { justify-content: center; color: var(--muted); }
+.studio-grid { display: grid; gap: var(--s3); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 960px) { .studio-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* 4 입지 (분양 사이트 입지환경) */
+.loc-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); margin-top: var(--s4); align-items: center; }
+@media (max-width: 960px) { .loc-grid { grid-template-columns: minmax(0, 1fr); } }
+#locSvg { width: 100%; height: auto; display: block; color: var(--ink); }
+#locMap { height: 420px; border-radius: var(--r2); border: 1px solid var(--line); background: var(--paper); font-family: var(--sans); }
+@media (max-width: 600px) { #locMap { height: 340px; } }
+#locMap .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) grayscale(.75) sepia(.25) brightness(.8) contrast(.9); }
+#locMap .leaflet-tooltip { background: var(--paper); color: var(--ink); border: 1px solid var(--line); box-shadow: none; font-size: 13px; }
+#locMap .leaflet-tooltip::before { display: none; }
+#locMap .leaflet-control-attribution { background: rgba(28,26,25,.8); color: var(--muted); }
+#locMap .leaflet-control-attribution a, #locMap .leaflet-bar a { color: var(--ink); }
+#locMap .leaflet-bar a { background: var(--paper); border-color: var(--line); }
+.facts { border-top: 1px solid var(--ink); }
+.facts div { display: grid; grid-template-columns: 6em minmax(0, 1fr); gap: var(--s2); padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
+.facts dt { font-size: 13px; color: var(--muted); }
+.facts dd { font: 300 22px/1.3 var(--serif); }
+.facts dd small { display: block; font: 400 13px var(--sans); color: var(--muted); margin-top: 2px; }
+
+/* 5 추천 */
+.final { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: var(--s4); align-items: end; }
+@media (max-width: 960px) { .final { grid-template-columns: minmax(0, 1fr); } }
+.final .pick { font: 200 clamp(48px, 7vw, 96px)/1.05 var(--serif); letter-spacing: -0.03em; }
+.final .pick small { display: block; font: 400 16px var(--sans); color: var(--muted); margin-top: var(--s2); letter-spacing: 0; }
+.final .pick em { font-style: normal; color: var(--accent); }
+.final .pick.long { font-size: clamp(32px, 4vw, 56px); }
+.final .pick.long em { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.why3 { list-style: none; padding: 0; border-top: 1px solid var(--ink); }
+.why3 li { padding: var(--s2) 0; border-bottom: 1px solid var(--line); font-size: 17px; }
+footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+
+/* 스크롤 등장 (화면에 이미 보이는 요소는 처음부터 보인다) */
+#intro { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--bg); cursor: pointer; animation: introBg 1.6s var(--ease) forwards; }
+#intro > * { grid-area: 1 / 1; }
+#intro.out { opacity: 0; transition: opacity .35s ease; }
+@keyframes introBg { 0%, 30% { background: var(--accent); } 46%, 100% { background: var(--bg); } }
+.intro-k { font: 500 14px var(--brand), var(--sans); letter-spacing: .5em; color: var(--on-accent); opacity: 0; animation: introK 1.6s forwards; }
+@keyframes introK { 10%, 28% { opacity: 1; } 40%, 100% { opacity: 0; } }
+.intro-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5vh 6vw; width: min(80vw, 900px); opacity: 0; animation: introGrid 1.6s forwards; }
+@keyframes introGrid { 0%, 38% { opacity: 0; } 50%, 70% { opacity: 1; } 86%, 100% { opacity: 0; } }
+.intro-grid span { width: var(--sz); height: var(--sz); justify-self: center; background: var(--ink); opacity: .12; animation: win .24s steps(1) infinite alternate; animation-delay: var(--d); }
+@keyframes win { to { opacity: .85; } }
+.intro-logo { font: 500 clamp(26px, 4vw, 46px) var(--brand); letter-spacing: .32em; color: var(--accent); opacity: 0; animation: introLogo 1.6s forwards; }
+@keyframes introLogo { 0%, 64% { opacity: 0; transform: translateY(8px); } 80%, 100% { opacity: 1; transform: none; } }
+.js-reveal .reveal { opacity: 0; transform: translateY(12px); transition: opacity .4s var(--ease), transform .4s var(--ease); }
+.js-reveal .reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal, .golist .ga { transform: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="intro" hidden aria-hidden="true">
+  <p class="intro-k">전월세 비교</p>
+  <div class="intro-grid"></div>
+  <p class="intro-logo">SUITABLE HOME</p>
+</div>
+<nav class="nav" aria-label="메뉴">
+  <div class="wrap">
+    <a class="brand" href="#home">Suitable Home</a>
+    <a class="lnk" href="#home" data-nav="home">홈</a>
+    <a class="lnk" href="#listings" data-nav="listings">매물</a>
+    <a class="lnk" href="#report" data-nav="report">비교 리포트</a>
+    <a class="lnk" href="#criteria" data-nav="criteria">우리 기준</a>
+    <a class="lnk" href="#studio" data-nav="studio">3D 집 보기</a>
+    <a class="btn primary" href="#listings" data-focus="#manage" style="min-height:36px;font-size:13px">매물 등록</a>
+  </div>
+</nav>
+
+<main id="top">
+<div class="view" data-view="home">
+  <!-- 0 히어로 · 분양 사이트 -->
+  <header class="hero">
+    <div id="heroCanvas" aria-hidden="true"></div>
+    <div class="wrap">
+      <p class="eyebrow">전월세 비교</p>
+      <h1>
+        <span class="line">우리의 보금자리를</span>
+        <span class="line"><span class="thumb" id="heroThumb" aria-hidden="true"></span>고르는 가장</span>
+        <span class="line">정확한 방법<span class="dot">.</span></span>
+      </h1>
+      <p class="sub">월세에 대출 이자까지 더한 실제 월 부담, 우리 기준으로 매긴 적합도, 실제 평면도로 만든 3D까지 한 곳에서 비교해요.</p>
+      <div class="stats" id="heroStats">
+        <a class="stat" href="#listings"><b id="stCount">0</b><span>비교 중인 매물</span><em class="go">매물 보기 <i aria-hidden="true">→</i></em></a>
+        <a class="stat" href="#report" data-focus="#ch1"><b id="stCost">0</b><span id="stCostSub">최저 실제 월 부담</span><em class="go">비용 분석 보기 <i aria-hidden="true">→</i></em></a>
+        <a class="stat" href="#criteria" data-focus="#rankTool" data-hl="top"><b id="stScore">0</b><span id="stScoreSub">1위 적합도</span><em class="go">순위 보기 <i aria-hidden="true">→</i></em></a>
+      </div>
+    </div>
+    <button type="button" class="scrollbtn" data-scroll="#final" aria-label="추천 매물로 내려가기">↓</button>
+  </header>
+
+
+  <!-- 5 마무리 -->
+  <section class="block" id="final" aria-labelledby="h-final">
+    <div class="wrap">
+      <p class="eyebrow reveal" id="ebFinal">Recommendation</p>
+      <h2 class="sr" id="h-final">최종 추천</h2>
+      <div class="final reveal" id="finalPick"></div>
+    </div>
+  </section>
+
+  <!-- 홈: 메뉴 바로가기 (각 화면의 지금 상태를 한 줄로) -->
+  <section class="block" id="goto" aria-labelledby="h-goto">
+    <div class="wrap">
+      <p class="eyebrow reveal">Menu</p>
+      <h2 class="h2 reveal" id="h-goto">더 자세히 보기</h2>
+      <nav class="golist reveal" aria-label="메뉴 바로가기">
+        <a href="#listings"><span class="gk">매물</span><span class="gv" id="goListings"></span><span class="ga" aria-hidden="true">→</span></a>
+        <a href="#report"><span class="gk">비교 리포트</span><span class="gv" id="goReport"></span><span class="ga" aria-hidden="true">→</span></a>
+        <a href="#criteria"><span class="gk">우리 기준</span><span class="gv" id="goCriteria"></span><span class="ga" aria-hidden="true">→</span></a>
+        <a href="#studio"><span class="gk">3D 집 보기</span><span class="gv" id="goStudio"></span><span class="ga" aria-hidden="true">→</span></a>
+      </nav>
+    </div>
+  </section>
+</div>
+
+<div class="view" data-view="listings" hidden>
+  <!-- 1 TYPE 라인업 · 분양 사이트 -->
+  <section class="block" id="type" aria-labelledby="h-type">
+    <div class="wrap">
+      <p class="eyebrow reveal" id="ebType">Type lineup</p>
+      <h2 class="h2 reveal" id="h-type">매물 타입</h2>
+      <p class="lead reveal">전용면적으로 이름 붙인 후보 집들이에요. 목록에서 고르면 평면과 3D가 바뀌어요.</p>
+      <div class="type-grid">
+        <div class="type-panel reveal">
+          <div class="tabs" role="tablist" aria-label="보기 방식">
+            <button type="button" role="tab" id="tab2d" aria-selected="true" aria-controls="type2d">2D 평면</button>
+            <button type="button" role="tab" id="tab3d" aria-selected="false" aria-controls="type3d">3D 보기</button>
+            <a class="tab-link btn ghost small" href="#studio" data-focus="#studioTool" style="margin:6px 8px 6px auto;min-height:36px">가구 배치하러 가기</a>
+          </div>
+          <div class="type-stage">
+            <div id="type2d" role="tabpanel" aria-labelledby="tab2d"></div>
+            <div id="type3d" role="tabpanel" aria-labelledby="tab3d" hidden></div>
+          </div>
+          <div class="type-cap" id="typeCap"></div>
+        </div>
+        <ul class="type-list reveal" id="typeList" aria-label="매물 타입 목록"></ul>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="block" id="manageSec" aria-labelledby="h-form">
+    <div class="wrap">
+      <div class="tool" id="manage" style="scroll-margin-top:72px">
+        <h3 id="h-form">매물 등록</h3>
+        <p class="hint">금액은 만원 단위로 적어 주세요. 예: 1억 2천 → 12000</p>
+        <form id="form" style="margin-top:16px">
+          <input type="hidden" name="id">
+          <div class="fields">
+            <label class="wide">이름<input name="name" required maxlength="40" placeholder="예: 망원동 투룸"></label>
+            <label class="wide">지역<input name="region" maxlength="40" placeholder="예: 마포구 망원동"></label>
+            <label class="wide">상세 주소 <span class="unit">(선택 · 지도 위치용)</span><input name="addr" maxlength="60" placeholder="예: 월드컵로 123"></label>
+            <label>보증금 <span class="unit">(만원)</span><input name="deposit" type="number" inputmode="decimal" min="0" step="any" required></label>
+            <label>월세 <span class="unit">(만원)</span><input name="rent" type="number" inputmode="decimal" min="0" step="any" required></label>
+            <label>관리비 <span class="unit">(만원 · 모르면 비워 두기)</span><input name="fee" type="number" inputmode="decimal" min="0" step="any" placeholder="미확인"></label>
+            <label>전용면적 <span class="unit">(㎡)</span><input name="area" type="number" inputmode="decimal" min="1" step="any" required></label>
+            <label>방 개수<input name="rooms" type="number" inputmode="numeric" min="1" max="6" step="1" required></label>
+            <label>층<select name="floor"><option>지상</option><option>반지하</option></select></label>
+            <label>대출<select name="loan"><option>가능</option><option>불가</option></select></label>
+            <label>건물 용도<select name="usage"><option>주거용</option><option value="업무용">업무용 오피스텔</option></select></label>
+            <label>가까운 역<input name="station" maxlength="20" placeholder="예: 망원역"></label>
+            <label>역까지 도보 <span class="unit">(분 · 모르면 비워 두기)</span><input name="walk" type="number" inputmode="numeric" min="0" step="1" placeholder="미확인"></label>
+            <label>통근 시간 <span class="unit">(분, 편도)</span><input name="commute" type="number" inputmode="numeric" enterkeyhint="done" min="0" step="1" required></label>
+          </div>
+          <label class="check" style="margin-top:16px"><input type="checkbox" name="current"> 지금 사는 집 <span class="unit">(순위에서 빼고 비교 기준선으로 써요 · 한 곳만)</span></label>
+          <div class="row">
+            <button class="primary" type="submit" id="submitBtn">매물 추가</button>
+            <button type="button" class="ghost" id="cancelEdit" hidden>수정 취소</button>
+          </div>
+        </form>
+        <ul class="manage" id="manageList" aria-label="등록한 매물"></ul>
+      </div>
+      <div class="tool" id="io">
+        <h3>데이터 옮기기</h3>
+        <p class="hint">매물·사람별 가중치·자금 설정·가구·평면도를 파일 하나로 저장하고, 다른 기기나 발표 PC에서 불러와요.</p>
+        <div class="io-row">
+          <button type="button" class="ghost" id="exportBtn">JSON 내보내기</button>
+          <label class="filebtn ghost">JSON 불러오기<input type="file" id="importFile" accept="application/json,.json"></label>
+          <button type="button" class="danger" id="resetBtn">예시 데이터로 초기화</button>
+          <span class="msg" id="ioMsg" role="status"></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div class="view" data-view="report" hidden>
+  <!-- 2 분석 리포트 · 보고서 -->
+  <section class="block" id="report" aria-labelledby="h-report">
+    <div class="wrap">
+      <p class="eyebrow reveal">Analysis report</p>
+      <h2 class="h2 reveal" id="h-report">분석 리포트</h2>
+      <p class="rp-meta reveal" id="rpMeta"></p>
+
+      <article class="chapter reveal" id="ch1" aria-labelledby="h-c1">
+        <div class="ch-no">01</div>
+        <div class="ch-title"><h3 id="h-c1">비용 분석</h3><p class="hint">월세 + 관리비 + 대출 이자 = 실제 월 부담. 회색 막대는 탈락 매물.</p></div>
+        <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c1"></p></aside>
+        <div class="ch-body"><div class="chart-box" id="costBox"><canvas id="costChart" aria-label="매물별 실제 월 부담 막대 차트" role="img"></canvas></div></div>
+        <p class="ch-foot">계산식: 실제 월 부담 = 월세 + 관리비 + max(0, 보증금 − 내 돈 보증금) × 대출 연이율 ÷ 12 · 출처: 입력한 매물 정보와 '우리 기준'의 자금 설정</p>
+      </article>
+
+      <article class="chapter reveal" aria-labelledby="h-c2">
+        <div class="ch-no">02</div>
+        <div class="ch-title"><h3 id="h-c2">공간 분석</h3><p class="hint">전용면적 비교와, 퀸 침대(150 × 200cm)가 들어가는지.</p></div>
+        <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c2"></p></aside>
+        <div class="ch-body"><div class="hbars" id="areaBars"></div></div>
+        <p class="ch-foot">침대 판정: 평면도가 있으면 인식한 벽·설비를 피해 집 안 어디든 150 × 200cm가 놓이는지, 없으면 면적과 방 개수로 나눈 방 한 칸(벽 두께 10cm 제외)에 들어가는지로 봐요 · 출처: 입력한 전용면적·방 개수, 올린 평면도</p>
+      </article>
+
+      <article class="chapter reveal" aria-labelledby="h-c3">
+        <div class="ch-no">03</div>
+        <div class="ch-title"><h3 id="h-c3">통근 분석</h3><p class="hint">집에서 직장까지 편도 시간. 옅은 부분은 그중 역까지 걷는 시간.</p></div>
+        <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c3"></p></aside>
+        <div class="ch-body">
+          <div class="legend"><span><i class="light"></i>역까지 도보</span><span><i></i>나머지 이동</span></div>
+          <div class="hbars" id="timeline"></div>
+          <div class="axis" aria-hidden="true"><span></span><div class="ticks" id="tlTicks"></div><span></span></div>
+        </div>
+        <p class="ch-foot">통근 시간은 입력한 편도 시간이고, 역까지 도보 시간이 그 안에 포함된 것으로 그렸어요 · 출처: 입력한 매물 정보</p>
+      </article>
+
+      <article class="chapter reveal" aria-labelledby="h-c4">
+        <div class="ch-no">04</div>
+        <div class="ch-title"><h3 id="h-c4">적합도</h3><p class="hint">탈락 조건을 통과한 집끼리 비교한, 우리 기준에 얼마나 맞는지 100점 만점.</p></div>
+        <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c4"></p></aside>
+        <div class="ch-body">
+          <div class="tbl"><table class="rank" id="rankTable"></table></div>
+          <ul class="notes" id="failNotes"></ul>
+        </div>
+        <p class="ch-foot">항목 점수 = 통과 매물 사이 상대평가(가장 좋은 집 1, 가장 나쁜 집 0, 모두 같으면 1) · 적합도 = Σ(평균 가중치 × 항목 점수) ÷ Σ가중치 × 100 · 탈락 조건: 반지하, 대출 불가, 업무용 오피스텔, 전용 40㎡ 미만, 보증금 1억 3천 초과, 월세 95만 초과<br>미확인 값: 관리비를 모르면 0으로 계산하고 '관리비 미확인', 역 도보를 모르면 통과 매물의 평균 도보 시간으로 역세권 점수를 매기고 '도보 미확인'을 붙였어요 · 실제 월 부담이 상한을 넘으면 '예산 초과' 경고(설정하면 탈락) · '지금 사는 집'은 순위에서 빼고 비교 기준선으로만 써요 · 통근이 상한을 넘거나(설정하면 탈락) 지금 집보다 길면 '통근 ○분 증가' 경고 · 적합도가 같으면(반올림 점수) 공동 순위, 실제 월 부담이 낮은 순으로 놓아요</p>
+      </article>
+    </div>
+  </section>
+
+
+  <!-- 4 입지 · 분양 사이트 -->
+  <section class="block" id="location" aria-labelledby="h-loc">
+    <div class="wrap">
+      <p class="eyebrow reveal" id="ebLoc">Location</p>
+      <h2 class="h2 reveal" id="h-loc">입지 환경</h2>
+      <p class="lead reveal" id="locLead">집에서 역과 직장까지 걸리는 시간을 거리처럼 그렸어요.</p>
+      <div class="chips reveal" id="locChips" style="margin-top:24px" aria-label="매물 고르기"></div>
+      <div class="loc-grid">
+        <div><div id="locMap" hidden role="img" aria-label="입지 지도"></div>
+        <svg id="locSvg" class="reveal" viewBox="90 10 520 430" role="img" aria-label="입지 다이어그램"></svg></div>
+        <dl class="facts reveal" id="locFacts"></dl>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="view" data-view="criteria" hidden>
+  <!-- 3 시뮬레이터 · 인터랙티브 -->
+  <section class="block" id="sim" aria-labelledby="h-sim">
+    <div class="wrap">
+      <p class="eyebrow reveal" id="ebSim">Simulator</p>
+      <h2 class="h2 reveal" id="h-sim">우리 기준</h2>
+      <p class="lead reveal">누가 무엇을 더 중요하게 보는지 슬라이더로 정하면 순위와 차트가 바로 바뀌어요. 혼자면 한 명만, 가족이면 인원수만큼 두세요.</p>
+      <div class="sim-grid">
+        <div class="tool">
+          <h3 id="h-w">중요도 (0~10)</h3>
+          <div class="couple" id="weights"></div>
+          <div class="row"><button type="button" class="ghost" id="addPerson">+ 사람 추가</button></div>
+          <div class="avg" id="avgW"></div>
+        </div>
+        <div class="tool" id="rankTool">
+          <h3>지금 순위</h3>
+          <ol class="simrank" id="simRank"></ol>
+          <div class="chart-box" id="scoreBox" style="margin-top:16px"><canvas id="scoreChart" aria-label="매물별 적합도 막대 차트" role="img"></canvas></div>
+        </div>
+      </div>
+
+
+      <div class="tool" id="funds">
+        <h3 id="h-set">자금과 직장</h3>
+        <p class="hint">보증금에서 내 돈을 뺀 나머지는 대출로 계산해요.</p>
+        <div class="fields" style="margin-top:16px">
+          <label>내 돈 보증금 <span class="unit">(만원)</span><input id="myCash" type="number" inputmode="decimal" min="0" step="any"></label>
+          <label>대출 연이율 <span class="unit">(%)</span><input id="rate" type="number" inputmode="decimal" min="0" step="0.1"></label>
+          <label class="wide">직장 이름 <span class="unit">(입지 그림에 표시)</span><input id="work" maxlength="20" placeholder="예: 여의도"></label>
+          <label>실제 월 부담 상한 <span class="unit">(만원 · 비우면 사용 안 함)</span><input id="budget" type="number" inputmode="decimal" min="0" step="any" placeholder="사용 안 함"></label>
+          <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" id="budgetFail"> 예산 초과도 탈락으로 처리</label>
+          <label>통근 상한 <span class="unit">(분 · 비우면 사용 안 함)</span><input id="commuteMax" type="number" inputmode="numeric" min="0" step="1" placeholder="사용 안 함"></label>
+          <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" id="commuteFail"> 통근 초과도 탈락으로 처리</label>
+          <label class="check wide"><input type="checkbox" id="commuteWarn"> 지금 집보다 통근이 길면 경고</label>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div class="view" data-view="studio" hidden>
+  <section class="block" id="studioSec" aria-labelledby="h-studio">
+    <div class="wrap">
+      <p class="eyebrow reveal" id="ebStudio">3D studio</p>
+      <h2 class="h2 reveal" id="h-studio">3D 집 보기</h2>
+      <p class="lead reveal">실제 평면도를 올리면 그 구조대로 3D가 만들어져요. 가구를 치수대로 만들어 끌어다 놓아 보세요.</p>
+      <div class="tool" id="studioTool">
+        <h3 id="h-3d" class="sr">3D 배치 도구</h3>
+        <p class="note" id="note3d"></p>
+        <div class="studio-grid">
+          <div>
+            <label>볼 매물<select id="sel3d"></select></label>
+            <div class="row">
+              <label class="filebtn">평면도 올리기<input type="file" id="planFile" accept="image/*"></label>
+              <button type="button" class="danger" id="planDel" hidden>평면도 지우기</button>
+              <span class="selname" id="planMsg" role="status"></span>
+            </div>
+            <p class="hint">2D 평면도가 가장 정확해요. 위에서 본 3D 이미지도 되지만, 비스듬히 본(사선) 이미지는 구조를 알 수 없어요.</p>
+          </div>
+          <div>
+            <p class="hint" style="margin-top:22px">끌면 회전, 3D 화면을 한 번 누른 뒤 휠(휴대폰은 두 손가락)로 확대해요. 가구는 눌러서 끌고 <kbd>R</kbd>로 돌려요.</p>
+          </div>
+        </div>
+
+        <div id="planEditor" hidden>
+          <p class="hint" style="margin-top:16px">빨간 부분이 벽으로 인식된 곳이에요. 틀린 곳은 지우개나 벽 그리기로 고쳐 주세요.</p>
+          <div class="plan-wrap"><canvas id="planCanvas"></canvas></div>
+          <div class="tools" role="radiogroup" aria-label="보정 도구">
+            <label><input type="radio" name="tool" value="erase" checked> 지우개</label>
+            <label><input type="radio" name="tool" value="draw"> 벽 그리기</label>
+            <label><input type="radio" name="tool" value="measure"> 치수 맞추기</label>
+            <label><input type="radio" name="tool" value="fixture"> 설비 지정</label>
+            <label id="fixTypeBox" hidden>설비 종류 <select id="fixType" style="width:auto;margin:0 0 0 6px">
+              <option value="toilet">변기</option><option value="basin">세면대</option><option value="bath">욕조</option>
+              <option value="sink">싱크대</option><option value="counter">주방 카운터</option><option value="storage">수납장</option>
+            </select></label>
+            <label class="slider"><span>붓 크기</span><input type="range" id="brush" min="1" max="12" value="4"><output>4</output></label>
+          </div>
+          <div class="row" id="measureRow" hidden>
+            <label style="flex:1">찍은 두 점 사이 실제 길이 <span class="unit">(m)</span><input type="number" inputmode="decimal" id="measureLen" min="0.1" step="0.01" placeholder="예: 3.6"></label>
+            <button type="button" class="primary" id="measureApply">축척 적용</button>
+          </div>
+          <div class="tools">
+            <label class="slider"><span>벽 진하기</span><input type="range" id="thr" min="10" max="245"><output></output></label>
+            <label class="slider"><span>얇은 선 제거</span><input type="range" id="thin" min="0" max="6"><output></output></label>
+          </div>
+          <p class="hint">슬라이더로 다시 인식하면 손으로 고친 벽은 사라져요. 설비는 그대로 남아요.</p>
+          <p class="hint" id="fixHint" hidden>자동 인식이 놓친 설비만 아이콘 위를 사각형으로 드래그해 추가해요. 높이는 표준 높이를 써요.</p>
+          <ul class="flist" id="fixList"></ul>
+          <div class="row"><span class="selname" id="planInfo"></span><button type="button" class="small ghost" id="scaleReset" hidden>면적 기준 축척으로 되돌리기</button></div>
+        </div>
+
+        <h3 id="h-furn" style="margin-top:32px">가구 추가</h3>
+        <p class="hint">가로·세로·높이를 넣고 만들기를 누르면 그 크기 그대로 3D에 생겨요. 가로는 정면에서 본 폭, 세로는 앞뒤 길이예요 (침대는 가로 = 폭, 세로 = 길이). 만든 가구는 모든 매물에 같이 들어가고, 위치는 매물마다 따로 저장돼요.</p>
+        <form id="furnForm" style="margin-top:16px">
+          <div class="fields">
+            <label>종류<select name="type">
+              <option value="bed">침대</option><option value="sofa">소파</option><option value="fridge">냉장고</option>
+              <option value="wardrobe">옷장</option><option value="desk">책상</option><option value="table">식탁</option>
+              <option value="washer">세탁기</option><option value="box">기타 (상자)</option>
+            </select></label>
+            <label>이름 <span class="unit">(선택)</span><input name="name" maxlength="20" placeholder="예: 우리 침대"></label>
+            <label>가로 <span class="unit">(cm)</span><input name="w" type="number" inputmode="decimal" min="10" max="600" step="any" required></label>
+            <label>세로 <span class="unit">(cm)</span><input name="d" type="number" inputmode="decimal" min="10" max="600" step="any" required></label>
+            <label>높이 <span class="unit">(cm)</span><input name="h" type="number" inputmode="decimal" min="5" max="300" step="any" required></label>
+          </div>
+          <div class="row"><button class="primary" type="submit">가구 만들기</button></div>
+        </form>
+        <ul class="flist" id="furnList"></ul>
+        <div class="row">
+          <button type="button" class="ghost" id="topBtn">위에서 보기</button>
+          <button type="button" class="ghost" id="rotBtn">선택한 가구 90° 회전</button>
+          <span class="selname" id="selName">가구를 눌러 선택하고 끌어서 옮겨요. <kbd>R</kbd> 회전</span>
+        </div>
+        <div id="view3d"><div class="msg" id="msg3d">3D 화면을 불러오는 중…</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요.</div></footer>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-scrim" data-sheet-close></div>
+  <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="shTitle" tabindex="-1">
+    <div class="sheet-grab" aria-hidden="true"><span></span></div>
+    <header class="sheet-head">
+      <button type="button" class="ghost" id="shPrev" aria-label="이전 매물">‹</button>
+      <div class="t"><p class="eyebrow" id="shType"></p><h3 id="shTitle"></h3><small id="shRegion"></small></div>
+      <button type="button" class="ghost" id="shNext" aria-label="다음 매물">›</button>
+      <button type="button" class="ghost" data-sheet-close aria-label="닫기">✕</button>
+    </header>
+    <div class="sheet-body">
+      <div class="tabs" role="tablist" aria-label="보기 방식">
+        <button type="button" role="tab" id="shTab2d" aria-selected="true" aria-controls="sh2d">2D 평면</button>
+        <button type="button" role="tab" id="shTab3d" aria-selected="false" aria-controls="sh3d">3D 보기</button>
+      </div>
+      <div class="type-stage" style="margin-top:12px"><div id="sh2d" role="tabpanel" aria-labelledby="shTab2d"></div><div id="sh3d" role="tabpanel" aria-labelledby="shTab3d" hidden></div></div>
+      <p class="note" id="shNote"></p>
+      <div class="sheet-cost"><b id="shCost"></b><small>만원 / 월 실제 부담</small></div>
+      <div class="badges" id="shBadges" style="margin-top:8px"></div>
+      <p class="why" id="shWhy"></p>
+      <p class="vs" id="shVs"></p>
+      <p class="sheet-pos" id="shPos"></p>
+    </div>
+    <div class="sheet-acts">
+      <button type="button" class="primary" id="shStudio">3D 크게 보기·가구 배치</button>
+      <button type="button" class="ghost" id="shEdit">수정</button>
+      <button type="button" class="ghost" data-sheet-close>닫기</button>
+    </div>
+  </section>
+</div>
+
+<nav class="tabbar" aria-label="메뉴">
+  <a href="#home" data-nav="home">홈</a>
+  <a href="#listings" data-nav="listings">매물</a>
+  <a href="#report" data-nav="report">리포트</a>
+  <a href="#criteria" data-nav="criteria">우리 기준</a>
+  <a href="#studio" data-nav="studio">3D</a>
+</nav>
+
+<script>
+// ---------- 데이터 ----------
+const KEY = 'newlywed-home-v1';
+const CRITERIA = [
+  { k: 'price',   label: '가격',   lower: true,  get: l => l.monthly },
+  { k: 'area',    label: '면적',   lower: false, get: l => l.area },
+  { k: 'commute', label: '통근',   lower: true,  get: l => l.commute },
+  { k: 'station', label: '역세권', lower: true,  get: l => l.walkS ?? l.walk },   // walkS: 도보 미확인이면 통과 매물 평균
+];
+const SAMPLE = [
+  { id: 'a', name: '후보 A', region: '마포구 망원동', deposit: 10000, rent: 60, fee: 10, area: 45, rooms: 2, basement: false, loanOk: true, usage: '주거용', station: '망원역', walk: 7,  commute: 35 },
+  { id: 'b', name: '후보 B', region: '구로구 구로동', deposit: 8000,  rent: 70, fee: 15, area: 42, rooms: 1, basement: false, loanOk: true, usage: '업무용', station: '구로디지털단지역', walk: 3,  commute: 25 },
+  { id: 'c', name: '후보 C', region: '동작구 상도동', deposit: 12000, rent: 50, fee: 12, area: 59, rooms: 3, basement: false, loanOk: true, usage: '주거용', station: '상도역', walk: 12, commute: 30 },
+];
+const W5 = { price: 5, area: 5, commute: 5, station: 5 };
+// 확인창 대신 버튼을 한 번 더 누르게 한다 (공유 링크 화면에서는 confirm()이 항상 취소로 처리된다)
+function confirmTap(btn, label = '한 번 더 누르면 삭제') {
+  if (btn.dataset.armed) { clearTimeout(+btn.dataset.armed); btn.textContent = btn.dataset.label; delete btn.dataset.armed; return true; }
+  btn.dataset.label = btn.textContent; btn.textContent = label;
+  btn.dataset.armed = setTimeout(() => { btn.textContent = btn.dataset.label; delete btn.dataset.armed; }, 3000);
+  return false;
+}
+// 같은 밀리초에 두 번 눌러도 겹치지 않는 ID (file://에서는 crypto.randomUUID를 못 쓴다)
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const DEFAULT = { settings: { myCash: 5000, rate: 3, work: '여의도', budget: 95, budgetFail: false, commuteMax: null, commuteWarn: true, commuteFail: false }, people: [{ id: 'p1', name: '남편', w: { ...W5 } }, { id: 'p2', name: '아내', w: { ...W5 } }], listings: SAMPLE, selectedId: 'a', furniture: [], geo: {}, routes: {} };
+// 예시 매물·여의도 좌표는 미리 넣어 첫 방문에 위치 검색 요청이 나가지 않게 한다
+const GEO_PRESET = { '마포구 망원동': [37.55602, 126.90098], '망원역': [37.55565, 126.91063], '구로구 구로동': [37.49458, 126.88455],
+  '구로디지털단지역': [37.48367, 126.9028], '동작구 상도동': [37.49882, 126.9441], '상도역': [37.50385, 126.949], '여의도': [37.52567, 126.92522] };
+
+// 예전 형식 → 지금 형식 (localStorage 와 JSON 불러오기 공통). 형식이 아니면 null
+function migrate(s) {
+  if (!s || !Array.isArray(s.listings)) return null;
+  s.settings ??= { ...DEFAULT.settings };
+  s.furniture ??= [];
+  s.geo ??= {}; s.routes ??= {};
+  s.settings.work ??= '직장';
+  if (!('budget' in s.settings)) s.settings.budget = 95;   // v3: 실제 월 부담 상한 (null = 사용 안 함)
+  s.settings.budgetFail ??= false;
+  if (!('commuteMax' in s.settings)) s.settings.commuteMax = null;   // v4: 통근 상한(분)
+  s.settings.commuteWarn ??= true; s.settings.commuteFail ??= false;
+  if (!s.people) {   // 예전 형식(남편·아내 고정) → 사람 목록
+    s.people = [{ id: 'p1', name: '남편', w: s.weights?.husband ?? { ...W5 } }, { id: 'p2', name: '아내', w: s.weights?.wife ?? { ...W5 } }];
+    delete s.weights;
+  }
+  for (const l of s.listings) { l.fee ??= null; l.walk ??= null; l.current = !!l.current; }   // v3: 관리비·도보 미확인(null), 지금 사는 집
+  return s;
+}
+function load() {
+  try { const s = migrate(JSON.parse(localStorage.getItem(KEY))); if (s) return s; } catch (e) {}
+  return migrate(structuredClone(DEFAULT));
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); return true; } catch (e) { return false; } }
+
+// ---------- 계산 ----------
+function monthlyCost(l, s) { return l.rent + (l.fee ?? 0) + Math.max(0, l.deposit - s.myCash) * s.rate / 100 / 12; }   // 관리비 미확인은 0
+const overBudget = (monthly, s) => s.budget != null && monthly > s.budget + 1e-9;
+function reasons(l) {
+  const r = [];
+  if (l.basement) r.push('반지하');
+  if (!l.loanOk) r.push('대출 불가');
+  if (l.usage === '업무용') r.push('업무용 오피스텔');
+  if (l.area < 40) r.push(`전용 ${l.area}㎡ (40㎡ 미만)`);
+  if (l.deposit > 13000) r.push(`보증금 ${fmtMan(l.deposit)} (1억 3천 초과)`);
+  if (l.rent > 95) r.push(`월세 ${l.rent}만 (95만 초과)`);
+  return r;
+}
+function avgWeights(people) { const o = {}; for (const c of CRITERIA) o[c.k] = people.reduce((a, p) => a + p.w[c.k], 0) / people.length; return o; }
+// 통과 매물끼리 상대평가. 값이 모두 같은 항목은 1점, 가중치 합이 0이면 균등 가중치.
+function scores(passed, w) {
+  const sum = CRITERIA.reduce((a, c) => a + w[c.k], 0);
+  const out = passed.map(l => {
+    let t = 0;
+    for (const c of CRITERIA) {
+      const vs = passed.map(c.get), mn = Math.min(...vs), mx = Math.max(...vs), v = c.get(l);
+      const s = mx === mn ? 1 : c.lower ? (mx - v) / (mx - mn) : (v - mn) / (mx - mn);
+      t += (sum ? w[c.k] : 1) * s;
+    }
+    return t / (sum || CRITERIA.length) * 100;
+  });
+  if (out.every(s => Math.abs(s - out[0]) < 1e-9)) return out.map(() => 100);
+  return out;
+}
+function evaluate(st) {
+  const s = st.settings;
+  const curL = st.listings.find(l => l.current);
+  const all = st.listings.map(l => {
+    const monthly = monthlyCost(l, s), over = !l.current && overBudget(monthly, s), r = l.current ? [] : reasons(l);
+    if (over && s.budgetFail) r.push(`실제 월 부담 ${monthly.toFixed(1)}만 (상한 ${s.budget}만 초과)`);
+    const overC = !l.current && s.commuteMax != null && l.commute > s.commuteMax;   // 통근 상한
+    if (overC && s.commuteFail) r.push(`통근 ${fmtMin(l.commute)} (상한 ${s.commuteMax}분 초과)`);
+    const longer = !l.current && curL && s.commuteWarn && l.commute > curL.commute ? l.commute - curL.commute : 0;   // 지금 집보다 긴 통근(분)
+    return { ...l, monthly, over: over && !s.budgetFail, overC: overC && !s.commuteFail, longer, reasons: r };
+  });
+  const cur = all.find(l => l.current) ?? null, cands = all.filter(l => !l.current);   // 지금 집: 순위·정규화에서 빼고 기준선으로
+  const passed = cands.filter(l => !l.reasons.length), known = passed.filter(l => l.walk != null);
+  const avgWalk = known.length ? known.reduce((a, l) => a + l.walk, 0) / known.length : 0;
+  for (const l of passed) l.walkS = l.walk ?? avgWalk;
+  const sc = scores(passed, avgWeights(st.people));
+  passed.forEach((l, i) => l.score = sc[i]);
+  // 동점 = 화면에 보이는 반올림 점수가 같음 → 같은 순위, 실제 월 부담이 낮은 순
+  passed.sort((a, b) => Math.round(b.score) - Math.round(a.score) || a.monthly - b.monthly);
+  for (const l of passed) { const r = Math.round(l.score); l.rank = 1 + passed.filter(x => Math.round(x.score) > r).length; l.tie = passed.filter(x => Math.round(x.score) === r).length > 1; }
+  return { all, cands, passed, failed: cands.filter(l => l.reasons.length), cur };
+}
+// 지금 집 대비: 월 부담·통근·전용면적 차이 문구
+function vsCur(l, cur, compact) {
+  if (!cur || l === cur || l.id === cur.id) return '';
+  const dm = l.monthly - cur.monthly, dc = l.commute - cur.commute, da = l.area - cur.area, sg = v => v > 0 ? '+' : v < 0 ? '−' : '±';
+  const unk = l.fee == null ? `(관리비 미확인, 실제는 더 ${dm < 0 ? '적을' : '많을'} 수 있음)` : '';   // 관리비를 0으로 계산했으니
+  if (compact) return `월 ${sg(dm)}${Math.abs(dm).toFixed(1)}만${unk ? '*' : ''} · ${sg(dc)}${Math.abs(dc)}분 · ${sg(da)}${+Math.abs(da).toFixed(1)}㎡`;   // 표 칸용
+  return [Math.abs(dm) < 0.05 ? `월 부담 같음${unk}` : `월 ${Math.abs(dm).toFixed(1)}만원 ${dm < 0 ? '절약' : '추가'}${unk}`,
+    dc ? `통근 ${fmtMin(Math.abs(dc))} ${dc < 0 ? '단축' : '증가'}` : '통근 같음',
+    `전용 ${da >= 0 ? '+' : '−'}${+Math.abs(da).toFixed(2)}㎡`].join(' · ');
+}
+// 기준선 문구용 이름: '지금 집 (한강오피스텔 301호)' → '한강오피스텔 301호' (지금 집이 두 번 나오지 않게)
+const curName = n => String(n).replace(/^\s*지금\s*집\s*[(（]?\s*/, '').replace(/[)）]\s*$/, '').trim() || n;
+// 받침에 맞는 '과/와': 한글 마지막 글자, 숫자는 읽는 소리(영·일·삼·육·칠·팔 = 받침)
+function josa(n, withB, noB) {
+  const c = String(n).trim().slice(-1), code = c.charCodeAt(0) - 0xAC00;
+  if (code >= 0 && code <= 11171) return code % 28 ? withB : noB;
+  if (/[0-9]/.test(c)) return '013678'.includes(c) ? withB : noB;
+  return noB;
+}
+const gwa = n => josa(n, '과', '와');
+// '1위 ○○' 또는 동점이면 '공동 1위 · ○○ 외 1곳'
+const topLabel = P => { const n = P.filter(l => l.rank === 1).length; return n > 1 ? `공동 1위 · ${P[0].name} 외 ${n - 1}곳` : `1위 ${P[0].name}`; };
+const rankTxt = l => `${l.tie ? '공동 ' : ''}${l.rank}위`;
+// 퀸 침대(1.5×2.0m)가 방 한 칸에 들어가나: 면적·방 개수로 나눈 대략 구조 기준(3D 대략 구조와 같은 나눔)
+function bedFitsBox(l) {
+  const n = Math.max(1, Math.round(l.rooms)), W = Math.sqrt(l.area * 1.3), D = l.area / W;
+  const w = W / n - 0.1, d = D / 2 - 0.1;
+  return (w >= 1.5 && d >= 2.0) || (w >= 2.0 && d >= 1.5);
+}
+// 순위 말(1위 → '가장')
+const ord = r => r === 1 ? '가장' : `${r}번째로`;
+// 동점이면 같은 순위: 1 + 나보다 엄격히 나은 매물 수
+const rankOf = (list, l, key, desc) => 1 + list.filter(x => desc ? x[key] > l[key] : x[key] < l[key]).length;
+// 분 → '1시간 30분'
+const fmtMin = m => m >= 60 ? `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ''}` : `${m}분`;
+// 좁은 자리에 들어갈 이름은 n자에서 자른다 (전체 이름은 title 로)
+const short = (t, n) => (t = String(t ?? '')).length > n ? t.slice(0, n) + '…' : t;
+// TYPE 글자: 매물마다 한 번 받은 글자를 계속 쓴다 (지워도 다른 매물 코드가 바뀌지 않게). 1·0과 헷갈리는 I·O는 건너뜀
+const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+function ensureTypeLetters(listings) {
+  const used = new Set(listings.map(l => l.tl).filter(Boolean));
+  for (const l of listings) if (!l.tl) {
+    let i = 0, t;
+    do { t = LETTERS[i % LETTERS.length] + (i >= LETTERS.length ? Math.floor(i / LETTERS.length) + 1 : ''); i++; } while (used.has(t));
+    l.tl = t; used.add(t);
+  }
+}
+
+// 계산 자체검사: 깨지면 콘솔에 Assertion failed 가 찍힌다
+(function selfTest() {
+  const eq = (a, b, m) => console.assert(Math.abs(a - b) < 1e-6, m, a, b);
+  const base = { rent: 50, fee: 10, deposit: 11000, area: 50, basement: false, loanOk: true, usage: '주거용', walk: 5, commute: 30 };
+  eq(monthlyCost(base, { myCash: 5000, rate: 3 }), 75, '월 부담: 60 + 6000×3%÷12');
+  eq(monthlyCost({ ...base, deposit: 3000 }, { myCash: 5000, rate: 3 }), 60, '내 돈이 더 많으면 이자 0');
+  console.assert(reasons(base).length === 0, '정상 매물 통과');
+  console.assert(reasons({ ...base, basement: true, loanOk: false, usage: '업무용', area: 39, deposit: 13001, rent: 96 }).length === 6, '탈락 사유 6개');
+  console.assert(reasons({ ...base, area: 40, deposit: 13000, rent: 95 }).length === 0, '경계값은 통과');
+  eq(monthlyCost({ ...base, fee: null }, { myCash: 5000, rate: 3 }), 65, '관리비 미확인은 0으로');
+  console.assert(overBudget(97.5, { budget: 95 }) && !overBudget(95, { budget: 95 }) && !overBudget(200, { budget: null }), '예산 상한');
+  const ev3 = evaluate({ settings: { myCash: 5000, rate: 3, budget: 95, budgetFail: false }, people: [{ w: W5 }], listings: [
+    { ...base, id: 'x', walk: 4 }, { ...base, id: 'y', walk: null, rent: 82.5 }, { ...base, id: 'z', walk: 8, current: true, usage: '업무용' }] });
+  console.assert(ev3.passed.length === 2 && ev3.cur.id === 'z' && !ev3.failed.length, '지금 집은 순위·탈락에서 빠짐');
+  console.assert(ev3.passed.find(l => l.id === 'y').walkS === 4 && ev3.passed.find(l => l.id === 'y').over, '도보 미확인 = 통과 매물 평균, 97.5만 경고');
+  const ev4 = evaluate({ settings: { myCash: 5000, rate: 3, budget: 95, budgetFail: true }, people: [{ w: W5 }], listings: [{ ...base, id: 'y', rent: 82.5 }] });
+  console.assert(ev4.failed.length === 1 && /상한 95만 초과/.test(ev4.failed[0].reasons[0]), '체크하면 예산 초과 탈락');
+  const ev5 = evaluate({ settings: { myCash: 5000, rate: 3, budget: null, commuteMax: 40, commuteWarn: true, commuteFail: false }, people: [{ w: { price: 0, area: 10, commute: 0, station: 0 } }], listings: [
+    { ...base, id: 'p', rent: 60 }, { ...base, id: 'q', rent: 50, commute: 45 }, { ...base, id: 'r', area: 45, commute: 20 }, { ...base, id: 'n', commute: 25, current: true }] });
+  console.assert(ev5.passed[0].id === 'q' && ev5.passed[1].id === 'p' && ev5.passed[0].rank === 1 && ev5.passed[1].rank === 1 && ev5.passed[0].tie && ev5.passed[2].rank === 3, '동점은 공동 1위, 월 부담 낮은 순');
+  console.assert(ev5.passed[0].overC && ev5.passed[0].longer === 20 && !ev5.passed[2].longer, '통근 상한 경고 · 지금 집보다 20분 증가');
+  const ev6 = evaluate({ settings: { myCash: 5000, rate: 3, budget: null, commuteMax: 40, commuteWarn: true, commuteFail: true }, people: [{ w: W5 }], listings: [{ ...base, id: 'q', commute: 45 }] });
+  console.assert(ev6.failed.length === 1 && /상한 40분 초과/.test(ev6.failed[0].reasons[0]), '체크하면 통근 초과 탈락');
+  console.assert(curName('지금 집 (한강오피스텔 301호)') === '한강오피스텔 301호' && curName('지금집(301호)') === '301호' && curName('지금 집') === '지금 집' && curName('한강오피스텔 301호') === '한강오피스텔 301호', '지금 집 이름 정리');
+  console.assert(gwa('망원동 100-1 방3') === '과' && gwa('후보 A') === '와' && gwa('후보 C') === '와' && gwa('망원동') === '과' && gwa('투룸') === '과' && gwa('오피스') === '와', '과/와');
+  const w = W5, m = x => ({ ...base, ...x, monthly: x.monthly ?? 70 });
+  console.assert(scores([], w).length === 0, '0개');
+  const aw3 = avgWeights([{ w: { price: 2, area: 9, commute: 0, station: 4 } }, { w: { price: 6, area: 3, commute: 3, station: 4 } }, { w: { price: 1, area: 0, commute: 0, station: 4 } }]);
+  console.assert(aw3.price === 3 && aw3.area === 4 && aw3.commute === 1 && aw3.station === 4, '3명 평균 가중치', aw3);
+  console.assert(avgWeights([{ w: { ...W5, price: 8 } }]).price === 8, '1명이면 그 사람 값 그대로');
+  eq(scores([m({})], w)[0], 100, '1개면 100점');
+  const two = scores([m({ monthly: 60, area: 60, commute: 20, walk: 3 }), m({ monthly: 80, area: 40, commute: 50, walk: 10 })], w);
+  eq(two[0], 100, '모두 우세 100'); eq(two[1], 0, '모두 열세 0');
+  const tie = scores([m({ monthly: 60, area: 40 }), m({ monthly: 80, area: 60 })], { price: 5, area: 5, commute: 0, station: 0 });
+  eq(tie[0], 100, '동점이면 100'); eq(tie[1], 100, '동점이면 100');
+  console.assert(bedFitsBox({ area: 59, rooms: 3 }) && !bedFitsBox({ area: 20, rooms: 3 }), '퀸 침대 판정(대략 구조)');
+  console.assert(ord(1) === '가장' && ord(2) === '2번째로', '순위 말');
+  const L3 = [{ walk: 0 }, { walk: 0 }, { walk: 5 }];
+  console.assert(rankOf(L3, L3[1], 'walk') === 1 && rankOf(L3, L3[2], 'walk') === 3, '동점은 같은 순위');
+  console.assert(fmtMin(30) === '30분' && fmtMin(90) === '1시간 30분' && fmtMin(120) === '2시간', '분 표기');
+  const TL = [{ tl: 'A' }, {}, {}]; ensureTypeLetters(TL);
+  console.assert(TL[1].tl === 'B' && TL[2].tl === 'C', 'TYPE 글자 이어 받기');
+  const TL2 = [{ tl: 'B' }, {}]; ensureTypeLetters(TL2);
+  console.assert(TL2[1].tl === 'A', '빈 글자부터 채움');
+})();
+
+// ---------- 화면 공통 ----------
+let state = load();
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 스크린샷용: 주소 끝 #shot=800 이면 히어로 높이를 그 화면 높이로 고정하고 등장 효과를 끈다
+const SHOT = /^#shot=(\d+)(?:-([a-z]+))?$/.exec(location.hash);
+if (SHOT) { document.documentElement.style.setProperty('--hero-h', `${+SHOT[1] - 57}px`); document.documentElement.classList.add('shot'); }
+function fmtMan(v) {
+  if (v < 10000) return `${v.toLocaleString()}만`;
+  const eok = Math.floor(v / 10000), rest = v % 10000;
+  return rest ? `${eok}억 ${rest.toLocaleString()}만` : `${eok}억`;
+}
+const fmtMonthly = v => `${v.toFixed(1)}만원`;
+// TYPE 이름: 전용면적 + 등록 순서 글자 (예: TYPE 45A)
+const typeCode = l => `TYPE ${Math.round(l.area)}${l.tl ?? ''}`;
+const badge = l => l.current ? '<span class="badge base">지금 집</span>' : l.reasons.length ? '<span class="badge fail">탈락</span>' : '<span class="badge pass">통과</span>';
+// 값 옆 배지: 관리비 미확인 · 예산 초과 (금액 옆), 도보 미확인 (도보 옆)
+const costTags = l => (l.fee == null ? ' <span class="badge unk">관리비 미확인</span>' : '') + (l.over ? ' <span class="badge warn">예산 초과</span>' : '');
+const commuteTags = l => (l.overC ? ` <span class="badge warn">통근 ${fmtMin(l.commute)} (상한 ${state.settings.commuteMax}분 초과)</span>` : '') + (l.longer ? ` <span class="badge warn">통근 ${fmtMin(l.longer)} 증가</span>` : '');
+const walkTag = l => l.walk == null ? '<span class="badge unk">도보 미확인</span>' : '';
+const walkTxt = l => l.walk == null ? '미확인' : fmtMin(l.walk);
+
+// 대략 구조 2D 평면 (3D 대략 구조와 같은 나눔: 안쪽 절반 = 방 N개, 앞쪽 절반 = 거실·주방)
+function schematic(l, labels) {
+  const n = Math.max(1, Math.round(l.rooms)), W = Math.sqrt(l.area * 1.3), D = l.area / W, s = 100, w = W * s, d = D * s, cw = w / n;
+  const ln = (x1, y1, x2, y2) => `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+  const tx = (x, y, t) => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}">${t}</text>`;
+  let lines = '', texts = '';
+  for (let i = 0; i < n; i++) {
+    const x0 = i * cw, xc = x0 + cw / 2;
+    if (i) lines += ln(x0, 0, x0, d / 2);
+    lines += cw > 140 ? ln(x0, d / 2, xc - 45, d / 2) + ln(xc + 45, d / 2, x0 + cw, d / 2) : ln(x0, d / 2, x0 + cw, d / 2);   // 문 틈 0.9m
+    texts += tx(xc, d / 4 + 12, `방 ${i + 1}`);
+  }
+  texts += tx(w / 2, d * 0.75 + 12, '거실·주방');
+  return `<svg viewBox="-12 -12 ${(w + 24).toFixed(0)} ${(d + 24).toFixed(0)}" preserveAspectRatio="xMidYMid meet">
+    <rect x="0" y="0" width="${w.toFixed(1)}" height="${d.toFixed(1)}" fill="none" stroke="currentColor" stroke-width="${labels ? 10 : 18}"/>
+    <g stroke="currentColor" stroke-width="${labels ? 6 : 12}" fill="none">${lines}</g>
+    ${labels ? `<g fill="currentColor" font-size="34" font-family="Pretendard, sans-serif" text-anchor="middle" opacity=".7">${texts}</g>` : ''}</svg>`;
+}
+
+// ---------- 화면 전환: 메뉴별로 한 화면만 보인다 (주소 끝 #home, #listings, #report, #criteria, #studio) ----------
+const VIEWS = { home: '', listings: '매물', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기' };
+const OLD = { top: 'home', type: 'listings', manage: 'listings', sim: 'criteria', location: 'report', final: 'home', goto: 'home' };   // 예전 한 페이지 주소
+let pendingFocus = null;
+function route() {
+  const h = location.hash.slice(1), v = SHOT ? (SHOT[2] in VIEWS ? SHOT[2] : 'home') : h in VIEWS ? h : OLD[h] ?? 'home';
+  for (const el of document.querySelectorAll('.view')) el.hidden = el.dataset.view !== v;
+  for (const a of document.querySelectorAll('[data-nav]')) a.dataset.nav === v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+  document.title = VIEWS[v] ? `${VIEWS[v]} · SUITABLE HOME` : 'SUITABLE HOME';
+  if (v === 'report' && locMap) requestAnimationFrame(() => { const f = locMap._fitLater; locMap._fitLater = null; f ? f() : locMap.invalidateSize(); });
+  const target = pendingFocus && $(pendingFocus); pendingFocus = null;
+  if (target) target.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0);
+}
+function go(view, focus) {
+  pendingFocus = focus || null;
+  if (location.hash === '#' + view) route(); else location.hash = view;
+}
+addEventListener('hashchange', route);
+
+// ---------- 홈: 메뉴 바로가기 한 줄 요약 ----------
+function renderGoto(ev) {
+  const P = ev.passed, cheap = P.reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null);
+  $('#goListings').textContent = `${ev.cands.length}곳 등록 · 통과 ${P.length}곳 · 탈락 ${ev.failed.length}곳` + (ev.cur ? ' · 지금 집 기준선' : '');
+  $('#goReport').textContent = cheap ? `최저 실제 월 부담 ${cheap.name} ${fmtMonthly(cheap.monthly)} · 비용·공간·통근·적합도·입지` : ev.cands.length ? '통과한 매물이 없어요 · 탈락 사유 보기' : '매물을 등록하면 비교가 시작돼요';
+  $('#goCriteria').textContent = `${state.people.length}명 기준` + (P[0] ? ` · 지금 ${topLabel(P)} 적합도 ${Math.round(P[0].score)}점` : '');
+  $('#goStudio').textContent = `평면도 ${state.listings.filter(l => l.plan).length}곳 · 가구 ${state.furniture.length}개`;
+}
+
+// ---------- 0 히어로: 숫자 3개 (화면에 들어오면 카운트업) ----------
+let counted = !!SHOT || reducedMotion || !('IntersectionObserver' in window), counting = false;
+const fmtStat = (v, dec, unit) => v === '' ? '—' : `${(+v).toFixed(dec)}<small>${unit}</small>`;
+function setStat(id, v, dec, unit) {
+  const el = $(id); el.dataset.to = v; el.dataset.dec = dec; el.dataset.unit = unit;
+  if (counted && !counting) el.innerHTML = fmtStat(v, dec, unit);   // 카운트업 중이면 목표값만 바꾸고 step 이 따라간다
+}
+function countUp() {
+  if (counted) return; counted = counting = true;
+  const els = [...document.querySelectorAll('#heroStats b')], t0 = performance.now();
+  (function step(t) {
+    const k = Math.min(1, (t - t0) / 900), e = 1 - (1 - k) ** 3;
+    for (const el of els) el.innerHTML = fmtStat(el.dataset.to === '' ? '' : +el.dataset.to * e, +el.dataset.dec, el.dataset.unit);
+    if (k < 1) requestAnimationFrame(step); else counting = false;
+  })(t0);
+}
+function renderHero(ev) {
+  const cheap = ev.passed.reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null), top = ev.passed[0];
+  setStat('#stCount', ev.cands.length, 0, '곳');
+  setStat('#stCost', cheap ? cheap.monthly : '', 1, '만원');
+  setStat('#stScore', top ? Math.round(top.score) : '', 0, '점');
+  $('#stCostSub').textContent = cheap ? `최저 실제 월 부담 · ${cheap.name}` : ev.cands.length ? '최저 실제 월 부담 · 통과한 매물 없음' : '최저 실제 월 부담';
+  $('#stScoreSub').textContent = top ? `${top.tie ? '공동 1위' : '1위 적합도'} · ${top.tie ? topLabel(ev.passed).replace(/^공동 1위 · /, '') : top.name}` : ev.cands.length ? '통과한 매물 없음' : '매물을 등록해 주세요';
+  for (const el of document.querySelectorAll('.stat span')) el.title = el.textContent;
+  const t = top ?? ev.cands[0] ?? ev.all[0];
+  $('#heroThumb').innerHTML = t ? schematic(t, false) : '';
+  $('#heroThumb').hidden = !t;
+}
+
+// ---------- 1 TYPE 라인업 ----------
+function renderTypes(ev) {
+  const sel = ev.all.find(l => l.id === state.selectedId) ?? ev.all[0];
+  $('#typeList').innerHTML = ev.all.map(l => `<li class="${l.id === sel?.id ? 'on' : ''}"><button type="button" data-type="${l.id}" aria-pressed="${l.id === sel?.id}">
+      <span class="tcode">${typeCode(l)}</span>
+      <span class="tcost"><b>${l.monthly.toFixed(1)}</b><small>만원 / 월</small><span class="badges">${badge(l)}${costTags(l)}${commuteTags(l)}</span></span>
+      <span class="tmeta"><b>${esc(l.name)}</b>${esc(l.region)} · 방 ${l.rooms}${vsCur(l, ev.cur) ? `<span class="vs">지금 집보다 ${vsCur(l, ev.cur)}</span>` : ''}</span>
+    </button></li>`).join('') || '<li class="empty">매물을 등록하면 TYPE이 생겨요.</li>';
+  if (!sel) { $('#type2d').innerHTML = ''; $('#typeCap').innerHTML = ''; return; }
+  $('#typeCap').innerHTML = `<span><b>${typeCode(sel)}</b>${esc(sel.name)} · ${esc(sel.region)}</span><span>전용 ${sel.area}㎡ · 방 ${sel.rooms} · ${sel.plan ? '실제 평면도' : '면적 기준 대략 구조'}</span>`;
+  $('#type2d').innerHTML = sel.plan ? `<img src="${sel.plan.img}" alt="${esc(sel.name)} 평면도">` : schematic(sel, true);
+}
+// ---------- 휴대폰 바텀시트: 카드를 누르면 그 매물을 바로 보여준다. 내용은 render 의 selectedId 하나만 읽는다 ----------
+const mobileQ = matchMedia('(max-width: 767.98px)');
+const sheet = { open: false, tab: '2d', y: 0, from: null, after: null };
+function renderSheet(ev) {
+  if (!sheet.open) return;
+  const all = ev.all, i = all.findIndex(l => l.id === state.selectedId), l = all[i];
+  if (!l) return closeSheet();
+  $('#shType').textContent = typeCode(l); $('#shTitle').textContent = l.name; $('#shRegion').textContent = `${l.region || '지역 미입력'} · 전용 ${l.area}㎡ · 방 ${l.rooms}`;
+  $('#shPrev').disabled = i <= 0; $('#shNext').disabled = i >= all.length - 1;
+  $('#shPos').textContent = `${i + 1} / ${all.length} · ${sheet.tab === '2d' ? '좌우로 밀거나 ‹ › 로 넘겨요' : '3D 는 끌어서 돌리고, ‹ › 로 넘겨요'}`;
+  $('#sh2d').innerHTML = l.plan ? `<img src="${l.plan.img}" alt="${esc(l.name)} 평면도">` : schematic(l, true);
+  $('#shNote').textContent = l.plan ? '올린 평면도 기준 실제 구조예요.' : '평면도가 없어 전용면적·방 개수로 그린 대략 구조예요.';
+  $('#shCost').textContent = l.monthly.toFixed(1);
+  $('#shBadges').innerHTML = badge(l) + costTags(l) + commuteTags(l) + (l.walk == null ? ' ' + walkTag(l) : '');
+  $('#shWhy').textContent = l.reasons.length ? `탈락 사유: ${l.reasons.join(', ')}` : ''; $('#shWhy').hidden = !l.reasons.length;
+  const vs = vsCur(l, ev.cur); $('#shVs').textContent = vs ? `지금 집보다 ${vs}` : ''; $('#shVs').hidden = !vs;
+  $('#sheet').dataset.id = l.id;   // 검증용: 시트가 보여주는 매물
+}
+function setSheetTab(which) {
+  sheet.tab = which; const is3d = which === '3d';
+  $('#shTab2d').setAttribute('aria-selected', !is3d); $('#shTab3d').setAttribute('aria-selected', is3d);
+  $('#sh2d').hidden = is3d; $('#sh3d').hidden = !is3d;
+  window.mount3D?.(is3d ? $('#sh3d') : null);   // 3D 는 3D 탭을 눌렀을 때만 (3D 집 보기와 같은 모형을 시트로 옮겨 그림)
+  renderSheet(evaluate(state));
+}
+function openSheet(from) {
+  if (sheet.open) return;
+  sheet.open = true; sheet.from = from || null; sheet.y = scrollY;
+  document.documentElement.classList.add('sheet-lock'); document.body.style.top = `-${sheet.y}px`;   // 뒤 페이지 스크롤 고정
+  $('#sheet').hidden = false; setSheetTab('2d');
+  void $('.sheet-panel').offsetHeight; $('#sheet').classList.add('open');   // 한 번 그린 위치(화면 아래)에서 바로 올라오게
+  history.pushState({ sheet: 1 }, '');   // 휴대폰 뒤로 가기 = 시트만 닫기
+  $('.sheet-panel').focus({ preventScroll: true });
+}
+function hideSheet() {   // 실제로 닫기 (popstate 에서 부른다)
+  if (!sheet.open) return;
+  sheet.open = false; window.mount3D?.(null);
+  $('#sheet').classList.remove('open'); $('.sheet-panel').style.transform = '';
+  setTimeout(() => { if (!sheet.open) $('#sheet').hidden = true; }, reducedMotion ? 0 : 260);
+  document.documentElement.classList.remove('sheet-lock'); document.body.style.top = ''; window.scrollTo({ top: sheet.y, behavior: 'instant' });   // 부드러운 스크롤 없이 원래 자리로
+  const after = sheet.after; sheet.after = null;
+  if (after) after(); else sheet.from?.isConnected ? sheet.from.focus({ preventScroll: true }) : document.querySelector(`[data-type="${state.selectedId}"]`)?.focus({ preventScroll: true });
+}
+function closeSheet(after) {   // X·바깥·끌어내리기·Esc·버튼: 기록 한 칸 뒤로 → popstate 가 닫는다
+  if (!sheet.open) return;
+  sheet.after = after || null;
+  if (history.state?.sheet) history.back(); else hideSheet();
+}
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';   // 뒤로 가기로 시트를 닫을 때 브라우저가 스크롤을 덮어쓰지 않게 (화면 전환 스크롤은 route 가 직접 한다)
+addEventListener('popstate', () => { if (sheet.open) hideSheet(); });
+mobileQ.addEventListener?.('change', e => { if (!e.matches && sheet.open) closeSheet(); });
+function stepSheet(d) {
+  const all = evaluate(state).all, i = all.findIndex(l => l.id === state.selectedId), n = all[i + d];
+  if (!n) return; state.selectedId = n.id; render();
+}
+$('#shPrev').addEventListener('click', () => stepSheet(-1));
+$('#shNext').addEventListener('click', () => stepSheet(1));
+$('#shTab2d').addEventListener('click', () => setSheetTab('2d'));
+$('#shTab3d').addEventListener('click', () => setSheetTab('3d'));
+$('#sheet').addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) closeSheet(); });
+$('#shStudio').addEventListener('click', () => closeSheet(() => go('studio')));
+$('#shEdit').addEventListener('click', () => { const id = state.selectedId; closeSheet(() => startEdit(id)); });
+// 키보드: Esc 닫기, Tab 은 시트 안에서만 돈다
+$('#sheet').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); closeSheet(); return; }
+  if (e.key !== 'Tab') return;
+  const f = [...$('.sheet-panel').querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')].filter(el => el.offsetParent !== null);
+  if (!f.length) return;
+  const first = f[0], last = f.at(-1);
+  if (e.shiftKey && (document.activeElement === first || document.activeElement === $('.sheet-panel'))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+// 손잡이·머리를 아래로 끌면 닫기
+(function dragToClose() {
+  const panel = $('.sheet-panel'); let y0 = null, dy = 0, t0 = 0, pid = null;
+  for (const h of [$('.sheet-grab'), $('.sheet-head')]) h.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    y0 = e.clientY; dy = 0; t0 = performance.now(); pid = e.pointerId; try { h.setPointerCapture(pid); } catch (err) {}   // 끝난 포인터면 캡처 없이 진행
+    $('#sheet').classList.add('dragging');
+  });
+  addEventListener('pointermove', e => { if (y0 === null || e.pointerId !== pid) return; dy = Math.max(0, e.clientY - y0); panel.style.transform = `translateY(${dy}px)`; });
+  const end = e => {
+    if (y0 === null || e.pointerId !== pid) return;
+    y0 = null; $('#sheet').classList.remove('dragging');
+    const fast = dy / Math.max(1, performance.now() - t0) > 0.6;
+    if (dy > 110 || (fast && dy > 30)) closeSheet(); else panel.style.transform = '';
+  };
+  addEventListener('pointerup', end); addEventListener('pointercancel', end);
+})();
+// 2D 탭에서만 좌우로 밀어 이전·다음 (3D 탭은 모형 회전과 겹치니 ‹ › 만)
+(function swipe() {
+  const st = $('#sheet .type-stage'); let x0 = null, y0 = 0, pid = null;
+  st.addEventListener('pointerdown', e => { if (sheet.tab !== '2d') return; x0 = e.clientX; y0 = e.clientY; pid = e.pointerId; });
+  st.addEventListener('pointerup', e => {
+    if (x0 === null || e.pointerId !== pid || sheet.tab !== '2d') { x0 = null; return; }
+    const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) stepSheet(dx < 0 ? 1 : -1);
+  });
+  st.addEventListener('pointercancel', () => { x0 = null; });
+})();
+
+function setTypeTab(which) {
+  const is3d = which === '3d';
+  $('#tab2d').setAttribute('aria-selected', !is3d); $('#tab3d').setAttribute('aria-selected', is3d);
+  $('#type2d').hidden = is3d; $('#type3d').hidden = !is3d;
+}
+
+// ---------- 2 분석 리포트 ----------
+// '망원동 100-1 방3과' — top 과 같은 점수인 다른 매물들 + 과/와
+function tieWith(P, top) {
+  const o = P.filter(x => x !== top && Math.round(x.score) === Math.round(top.score)).map(x => x.name);
+  return `${o.join(', ')}${gwa(o.at(-1))}`;
+}
+function renderReport(ev) {
+  const P = ev.passed, base = P.length ? P : ev.cands, s = state.settings, cur = ev.cur, pre = P.length || !ev.cands.length ? '' : '통과한 매물이 없어 탈락 매물끼리 비교했어요. ';
+  const today = new Date(), ymd = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+  $('#rpMeta').textContent = `기준일 ${ymd} · 매물 ${ev.cands.length}곳 (통과 ${P.length}곳) · 내 돈 보증금 ${fmtMan(s.myCash)} · 대출 연이율 ${s.rate}% · 월 부담 상한 ${s.budget == null ? '없음' : s.budget + '만'} · ${state.people.length}명 기준` + (cur ? ` · 기준선: 지금 집(${curName(cur.name)})` : '');
+
+  // 01 비용
+  const byCost = [...base].sort((a, b) => a.monthly - b.monthly);
+  $('#c1').textContent = pre + (!base.length ? '비교할 매물이 없어요.'
+    : base.length === 1 ? `${base[0].name}의 실제 월 부담은 ${fmtMonthly(base[0].monthly)}이에요.`
+    : `가장 적게 드는 집은 ${byCost[0].name}, 월 ${fmtMonthly(byCost[0].monthly)}이에요. 가장 비싼 ${byCost.at(-1).name}보다 매달 ${(byCost.at(-1).monthly - byCost[0].monthly).toFixed(1)}만원, 1년이면 ${Math.round((byCost.at(-1).monthly - byCost[0].monthly) * 12).toLocaleString()}만원 덜 나가요.`)
+    + (cur && base.length ? ` 점선은 지금 집(${curName(cur.name)}) 월 ${fmtMonthly(cur.monthly)}${cur.fee == null ? ', 관리비 미확인' : ''}이에요.` : '');
+
+  // 02 공간
+  const maxA = Math.max(1, ...ev.all.map(l => l.area)), big = [...base].sort((a, b) => b.area - a.area)[0];
+  const fit = l => l.plan ? (window.bedFitsPlan ? window.bedFitsPlan(l) : null) : bedFitsBox(l);
+  const fitTxt = f => f === null ? '침대 판정 준비 중' : f ? '퀸 침대 들어가요' : '퀸 침대 안 들어가요';
+  $('#areaBars').innerHTML = ev.all.map(l => `<div class="hbar ${P.length && l === big ? 'best' : ''}"><span title="${esc(l.name)}">${esc(l.name)}</span>
+      <div class="track"><div class="fill" style="width:${(l.area / maxA * 100).toFixed(1)}%"></div></div><span class="v">${l.area}㎡</span>
+      <span class="fit">${typeCode(l)} · 방 ${l.rooms} · ${fitTxt(fit(l))}${l.current ? ' · 지금 집' : l.reasons.length ? ' · 탈락 매물' : ''}</span></div>`).join('') || '<p class="empty">매물이 없어요.</p>';
+  const fits = base.map(fit), known = fits.filter(f => f !== null);
+  $('#c2').textContent = pre + (!big ? '비교할 매물이 없어요.'
+    : base.length === 1 ? `${big.name}의 전용면적은 ${big.area}㎡이고, 퀸 침대가 ${fits[0] === false ? '안 들어가요' : '들어가요'}.`
+    : `가장 넓은 집은 ${big.name}, 전용 ${big.area}㎡예요. 퀸 침대는 ${known.length}곳 중 ${known.filter(Boolean).length}곳에 들어가요.`);
+
+  // 03 통근
+  const longest = Math.max(0, ...ev.all.map(l => l.commute)), step = longest <= 60 ? 10 : longest <= 180 ? 30 : 60;
+  const maxM = Math.max(30, Math.ceil(longest / step) * step), near = [...base].sort((a, b) => a.commute - b.commute);
+  const bl = (i) => cur ? `<div class="baseline" style="left:${(Math.min(1, cur.commute / maxM) * 100).toFixed(1)}%">${i ? '' : `<span>지금 집 ${fmtMin(cur.commute)}</span>`}</div>` : '';   // 지금 집 통근 점선
+  $('#timeline').innerHTML = ev.cands.map((l, i) => {
+    const walk = Math.min(l.walk ?? 0, l.commute);
+    return `<div class="hbar ${P.length && l === near[0] ? 'best' : ''}"><span title="${esc(l.name)}">${esc(l.name)}</span>
+      <div class="track"><div class="seg2" style="left:0;width:${(walk / maxM * 100).toFixed(1)}%"></div><div class="fill" style="left:${(walk / maxM * 100).toFixed(1)}%;width:${((l.commute - walk) / maxM * 100).toFixed(1)}%"></div>${bl(i)}</div>
+      <span class="v">${fmtMin(l.commute)}</span>
+      <span class="fit">${esc(l.station || '역')}까지 도보 ${walkTxt(l)}${l.reasons.length ? ' · 탈락 매물' : ''}${vsCur(l, cur) ? ` · 지금 집보다 통근 ${l.commute === cur.commute ? '같음' : `${fmtMin(Math.abs(l.commute - cur.commute))} ${l.commute < cur.commute ? '단축' : '증가'}`}` : ''}</span></div>`;
+  }).join('') || '<p class="empty">매물을 등록하면 통근 시간을 비교해요.</p>';
+  $('#tlTicks').innerHTML = ev.all.length ? Array.from({ length: maxM / step + 1 }, (_, i) => `<span style="left:${(i * step / maxM * 100).toFixed(1)}%">${i * step}</span>`).join('') : '';
+  $('#c3').textContent = pre + (!near.length ? '비교할 매물이 없어요.'
+    : near.length === 1 ? `${near[0].name}의 통근 시간은 편도 ${fmtMin(near[0].commute)}이에요.`
+    : `통근이 가장 짧은 집은 ${near[0].name}, 편도 ${fmtMin(near[0].commute)}이에요. 가장 먼 ${near.at(-1).name}보다 하루 왕복 ${fmtMin((near.at(-1).commute - near[0].commute) * 2)} 덜 걸려요.`)
+    + (cur && near.length ? ` 점선은 지금 집 ${fmtMin(cur.commute)}이에요.` : '');
+
+  // 04 종합 점수
+  $('#rankTable').innerHTML = `<thead><tr><th>순위</th><th class="opt">타입</th><th>매물</th><th class="n">실제 월 부담</th><th class="n">면적</th><th class="n">통근</th><th class="n opt">역 도보</th><th class="n">적합도</th>${cur ? '<th class="opt">지금 집 대비</th>' : ''}</tr></thead><tbody>` +
+    (P.map(l => `<tr class="${l.rank === 1 ? 'top' : ''}"><td class="num">${l.tie ? '<small>공동</small> ' : ''}${l.rank}</td><td class="opt">${typeCode(l)}</td><td class="nm" title="${esc(l.name)}">${esc(short(l.name, 16))}</td><td class="n">${l.monthly.toFixed(1)}만${costTags(l)}</td><td class="n">${l.area}㎡</td><td class="n">${fmtMin(l.commute)}${commuteTags(l)}</td><td class="n opt">${l.walk == null ? walkTag(l) : fmtMin(l.walk)}</td><td class="n">${Math.round(l.score)}</td>${cur ? `<td class="opt" style="white-space:nowrap" title="${vsCur(l, cur)}">${vsCur(l, cur, true)}</td>` : ''}</tr>`).join('')
+      || `<tr><td colspan="${cur ? 9 : 8}">비교할 매물이 없어요.</td></tr>`) + '</tbody>';
+  $('#failNotes').innerHTML = ev.failed.map(l => `<li>* <b>탈락</b> ${esc(l.name)} (${typeCode(l)}) — ${l.reasons.map(esc).join(', ')}</li>`).join('')
+    + P.filter(l => l.over).map(l => `<li>* <b style="color:var(--warn)">예산 초과</b> ${esc(l.name)} — 실제 월 부담 ${fmtMonthly(l.monthly)} (상한 ${s.budget}만)</li>`).join('')
+    + P.filter(l => l.overC || l.longer).map(l => `<li>* <b style="color:var(--warn)">통근 경고</b> ${esc(l.name)} — 편도 ${fmtMin(l.commute)}${l.overC ? ` (상한 ${s.commuteMax}분 초과)` : ''}${l.longer ? `, 지금 집보다 ${fmtMin(l.longer)} 길어요` : ''}</li>`).join('')
+    + (cur ? `<li>* <b style="color:var(--accent)">지금 집</b> ${esc(curName(cur.name))} — 순위에서 빼고 기준선으로 써요 (실제 월 ${fmtMonthly(cur.monthly)} · 통근 ${fmtMin(cur.commute)} · 전용 ${cur.area}㎡)</li>` : '');
+  $('#c4').textContent = !P.length ? '탈락 조건을 통과한 매물이 없어 순위를 매길 수 없어요.'
+    : P.length === 1 ? `통과한 매물은 ${P[0].name} 한 곳이라 100점이에요.`
+    : P[0].tie ? `적합도 1위는 ${P[0].name}, ${Math.round(P[0].score)}점이에요. ${tieWith(P, P[0])} ${Math.round(P[0].score)}점 동점이라 실제 월 부담이 낮은 ${P[0].name}${josa(P[0].name, '을', '를')} 앞에 놓았어요.`
+    : `적합도 1위는 ${P[0].name}, ${Math.round(P[0].score)}점이에요. 2위 ${P[1].name}보다 ${Math.round(P[0].score - P[1].score)}점 높아요.`;
+}
+
+// ---------- 3 시뮬레이터 ----------
+function renderSim(ev) {
+  $('#simRank').innerHTML = ev.passed.map(l => `<li class="${l.rank === 1 ? 'top' : ''}"><span class="rk">${l.tie ? '<small>공동</small>' : ''}${l.rank}</span><span title="${esc(l.name)}">${esc(short(l.name, 18))} <span class="hint">${typeCode(l)}</span></span><span class="sc">${Math.round(l.score)}</span></li>`).join('')
+    || '<li class="empty" style="display:block">비교할 매물이 없어요.</li>';
+  const aw = avgWeights(state.people), sum = Object.values(aw).reduce((a, b) => a + b, 0);
+  $('#avgW').innerHTML = (state.people.length === 1 ? '가중치 ' : `${state.people.length}명 평균 가중치 `) + CRITERIA.map(c => `<span>${c.label} <b>${+aw[c.k].toFixed(1)}</b> (${sum ? Math.round(aw[c.k] / sum * 100) : 25}%)</span>`).join('');
+  $('#manageList').innerHTML = ev.all.map(l => `<li><div class="info"><b>${esc(l.name)}</b>${typeCode(l)} · 보증금 ${fmtMan(l.deposit)} · 월세 ${l.rent}만 · 관리비 ${l.fee == null ? '미확인' : l.fee + '만'} · 도보 ${walkTxt(l)} · 실제 월 ${l.monthly.toFixed(1)}만 ${badge(l)}${costTags(l)}${commuteTags(l)}${l.walk == null ? ' ' + walkTag(l) : ''}
+      ${l.reasons.length ? `<span class="why">${l.reasons.map(esc).join(', ')}</span>` : ''}${vsCur(l, ev.cur) ? `<span class="vs">지금 집보다 ${vsCur(l, ev.cur)}</span>` : ''}</div>
+    <div class="acts"><button class="small ghost" data-act="view" data-id="${l.id}">3D</button><button class="small ghost" data-act="edit" data-id="${l.id}">수정</button><button class="small danger" data-act="del" data-id="${l.id}">삭제</button></div></li>`).join('')
+    || '<li class="empty" style="display:block">아직 등록한 매물이 없어요.</li>';
+}
+function buildWeights() {
+  const one = state.people.length === 1;
+  $('#weights').innerHTML = state.people.map(p => `
+    <fieldset class="person"><legend class="sr">${esc(p.name)}</legend>
+      <div class="person-head">
+        <input data-name="${p.id}" value="${esc(p.name)}" maxlength="12" aria-label="이름">
+        <button type="button" class="small danger" data-del-person="${p.id}" ${one ? 'disabled title="최소 한 명은 있어야 해요"' : ''}>삭제</button>
+      </div>
+      ${CRITERIA.map(c => `<label class="slider"><span>${c.label}</span>
+        <input type="range" min="0" max="10" step="1" data-p="${p.id}" data-k="${c.k}" value="${p.w[c.k]}" aria-label="${esc(p.name)} ${c.label} 중요도">
+        <output>${p.w[c.k]}</output></label>`).join('')}
+    </fieldset>`).join('');
+}
+
+// ---------- 4 입지 ----------
+let locId = null, locMap = null, locLayer = null, lastLocEv = null;
+// 위치 검색: 검색어 → [위도, 경도] | null(못 찾음). state.geo 에 저장해 같은 검색어는 다시 묻지 않는다.
+const geoQueue = new Set();
+const geoOf = q => q ? (q in GEO_PRESET ? GEO_PRESET[q] : state.geo[q]) : null;
+async function geocodeQueue() {   // OpenStreetMap Nominatim: 1초에 1건 이하
+  if (geocodeQueue.busy) return; geocodeQueue.busy = true;
+  for (const q of geoQueue) {
+    try {
+      const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }));
+      if (!r.ok) throw r.status;
+      const j = await r.json();
+      state.geo[q] = j[0] ? [+(+j[0].lat).toFixed(5), +(+j[0].lon).toFixed(5)] : null; save();
+    } catch (e) { geoQueue.clear(); break; }   // 네트워크 실패 → 이번엔 그림으로, 다음 렌더에 다시 시도
+    geoQueue.delete(q);
+    if (lastLocEv) renderLocation(lastLocEv);
+    await new Promise(res => setTimeout(res, 1100));
+  }
+  geocodeQueue.busy = false;
+}
+function drawLocMap(l, home, stn, work) {
+  const box = $('#locMap');
+  if (!locMap) {
+    locMap = L.map(box, { scrollWheelZoom: false, dragging: !L.Browser.mobile, zoomSnap: 0.5 });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,   // 키 없는 OSM 기본 지도 + CSS 필터로 밤 톤
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(locMap);
+    locMap.on('click', () => locMap.scrollWheelZoom.enable());   // 누른 뒤에만 휠 확대 → 페이지 스크롤을 빼앗지 않음
+    box.addEventListener('mouseleave', () => locMap.scrollWheelZoom.disable());
+  }
+  locLayer?.remove(); locLayer = L.layerGroup().addTo(locMap);
+  const tip = (m, t, d = 'top') => m.bindTooltip(t, { permanent: true, direction: d, offset: d === 'top' ? [0, -8] : d === 'bottom' ? [0, 10] : [10, 0] });
+  const pts = [home];
+  const wr = stn && state.routes[routeKey(home, stn)];
+  if (stn && wr === undefined) fetchRoute(home, stn);
+  const cr = work && state.routes[routeKey(home, work, true)];
+  if (work && cr === undefined) fetchRoute(home, work, true);
+  if (stn) { L.polyline(wr ? wr.p : [home, stn], { color: css('--ink'), weight: wr ? 3.5 : 1.5, opacity: wr ? .85 : .5 }).addTo(locLayer);
+    tip(L.circleMarker(stn, { radius: 6, color: css('--sage'), fillColor: css('--sage'), fillOpacity: 1 }).addTo(locLayer), `${esc(l.station)} · 도보 ${walkTxt(l)}`, 'right'); pts.push(stn); }
+  if (work) { L.polyline(cr ? cr.p : [home, work], { color: css('--accent'), weight: cr ? 3 : 1.5, opacity: cr ? .85 : .5, dashArray: cr ? null : '6 5' }).addTo(locLayer);
+    tip(L.circleMarker(work, { radius: 6, color: css('--ink'), fillColor: css('--ink'), fillOpacity: 1 }).addTo(locLayer), `${esc(state.settings.work)} · 통근 ${fmtMin(l.commute)}`); pts.push(work); }
+  tip(L.circleMarker(home, { radius: 10, color: css('--accent'), fillColor: css('--accent'), fillOpacity: 1 }).addTo(locLayer), typeCode(l), 'bottom');
+  const fit = () => { locMap.invalidateSize(); pts.length > 1 ? locMap.fitBounds(pts, { padding: [48, 48], maxZoom: 16 }) : locMap.setView(home, 15); };
+  box.offsetWidth ? fit() : (locMap._fitLater = fit);   // 숨겨진 화면이면 보일 때 맞춤
+}
+const routeBusy = new Set();
+const routeKey = (a, b, car) => `${car ? 'car:' : ''}${a}|${b}`;
+async function fetchRoute(a, b, car) {   // OpenStreetMap FOSSGIS 도보·차도 경로(키 불필요)
+  const k = routeKey(a, b, car);
+  if (k in state.routes || routeBusy.has(k)) return; routeBusy.add(k);
+  try {
+    const r = await fetch(`https://routing.openstreetmap.de/${car ? 'routed-car/route/v1/driving' : 'routed-foot/route/v1/foot'}/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`);
+    if (!r.ok) throw r.status;
+    const t = (await r.json()).routes?.[0];
+    state.routes[k] = t ? { d: Math.round(t.distance), p: t.geometry.coordinates.map(([x, y]) => [+y.toFixed(5), +x.toFixed(5)]) } : null; save();
+    if (lastLocEv) renderLocation(lastLocEv);
+  } catch (e) {}   // 실패하면 직선 그대로, 다음 렌더에 다시 시도
+  routeBusy.delete(k);
+}
+const km = (a, b) => a && b ? `직선 ${(L.latLng(a).distanceTo(b) / 1000).toFixed(1)}km` : '';
+function renderLocation(ev) {
+  lastLocEv = ev;
+  const l = ev.all.find(x => x.id === locId) ?? ev.all.find(x => x.id === state.selectedId) ?? ev.all[0];
+  $('#ebLoc').textContent = l ? `Location · ${typeCode(l)} 기준` : 'Location';
+  $('#locChips').innerHTML = ev.all.map(x => `<button type="button" class="chip-btn" data-loc="${x.id}" aria-pressed="${x === l}" title="${esc(x.name)}">${typeCode(x)} · ${esc(short(x.name, 14))}</button>`).join('');
+  $('#locSvg').toggleAttribute('hidden', !l); $('#locMap').hidden = true;
+  if (!l) { $('#locSvg').innerHTML = ''; $('#locFacts').innerHTML = '<p class="empty">매물을 등록하면 역과 직장까지의 거리를 그려 드려요.</p>'; return; }
+  const work = state.settings.work || '직장', stn = l.station || '역';
+  const qHome = [l.region, l.addr].filter(Boolean).join(' '), qs = [qHome, l.station, state.settings.work];
+  const g = qs.map(geoOf), mapOk = typeof L !== 'undefined' && !!g[0];
+  for (const q of qs) if (q && !(q in GEO_PRESET) && !(q in state.geo)) geoQueue.add(q);
+  if (geoQueue.size && typeof L !== 'undefined') geocodeQueue();
+  $('#locMap').hidden = !mapOk; $('#locSvg').toggleAttribute('hidden', mapOk);
+  const wr = mapOk && g[1] && state.routes[routeKey(g[0], g[1])];
+  const cr = mapOk && g[2] && state.routes[routeKey(g[0], g[2], true)];
+  const kmS = wr ? `걷는 길 ${(wr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[1]) : '', kmW = cr ? `도로 ${(cr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[2]) : '';
+  const facts = () => {
+    const wk = ev.all.filter(x => x.walk != null), walkRank = rankOf(wk, l, 'walk'), comRank = rankOf(ev.all, l, 'commute'), many = ev.all.length > 1;
+    $('#locFacts').innerHTML = `
+    <div><dt>위치</dt><dd>${esc(qHome || '—')}<small>${esc(l.name)} · ${typeCode(l)}</small></dd></div>
+    <div><dt>가까운 역</dt><dd>${esc(stn)} 도보 ${walkTxt(l)}${many || kmS ? `<small>${[many && l.walk != null && wk.length > 1 ? `${wk.length}곳 중 ${ord(walkRank)} 가까워요` : '', kmS].filter(Boolean).join(' · ')}</small>` : ''}</dd></div>
+    <div><dt>직장</dt><dd>${esc(work)} 편도 ${fmtMin(l.commute)}<small>${many ? `${ev.all.length}곳 중 ${ord(comRank)} 가까워요 · ` : ''}하루 왕복 ${fmtMin(l.commute * 2)}${kmW ? ` · ${kmW}` : ''}</small></dd></div>`;
+  };
+  if (mapOk) {
+    $('#locLead').textContent = '역까지는 걷는 길, 직장까지는 도로를 따라 그렸어요. 직장 경로는 지하철·버스 노선이 아닌 도로 기준이고, 시간은 입력한 도보·통근 시간이에요.';
+    drawLocMap(l, g[0], g[1], g[2]); facts(); return;
+  }
+  const far = Math.max(l.commute, l.walk ?? 0), step = far <= 60 ? 10 : far <= 180 ? 30 : 60;
+  const maxM = Math.max(30, Math.ceil(far / step) * step), cx = 340, cy = 220, R = 150 / maxM;
+  $('#locLead').textContent = `집에서 역과 직장까지 걸리는 시간을 거리처럼 그렸어요. 원 하나가 ${fmtMin(step)}이에요.` +
+    (geoQueue.has(qHome) ? ' 지도 위치를 찾는 중이에요.' : state.geo[qHome] === null ? ' 지도에서 이 지역을 찾지 못했어요. 매물에 상세 주소를 적으면 지도로 보여 드려요.' : '');
+  const pt = (deg, m) => [cx + Math.cos(deg * Math.PI / 180) * m * R, cy + Math.sin(deg * Math.PI / 180) * m * R];
+  const [sx, sy] = pt(205, Math.max(l.walk ?? 4, 4)), [wx, wy] = pt(-28, Math.max(l.commute, 3));
+  let rings = '';
+  for (let m = step; m <= maxM; m += step) rings += `<circle cx="${cx}" cy="${cy}" r="${(m * R).toFixed(1)}" fill="none" stroke="${css('--line')}" ${m === maxM ? '' : 'stroke-dasharray="3 5"'}/>
+    ${m * R >= 45 ? `<text x="${cx}" y="${(cy + m * R + 15).toFixed(1)}" text-anchor="middle" font-size="12" fill="${css('--muted')}">${fmtMin(m)}</text>` : ''}`;   // 너무 작은 원은 집 라벨과 겹쳐 생략
+  $('#locSvg').innerHTML = `${rings}
+    <line x1="${cx}" y1="${cy}" x2="${sx.toFixed(1)}" y2="${sy.toFixed(1)}" stroke="${css('--ink')}" stroke-width="1.5"/>
+    <line x1="${cx}" y1="${cy}" x2="${wx.toFixed(1)}" y2="${wy.toFixed(1)}" stroke="${css('--ink')}" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="6" fill="${css('--sage')}"/>
+    <text x="${sx.toFixed(1)}" y="${(sy - 30).toFixed(1)}" text-anchor="middle" font-size="17" fill="${css('--ink')}"><title>${esc(stn)}</title>${esc(short(stn, 9))}</text>
+    <text x="${sx.toFixed(1)}" y="${(sy - 13).toFixed(1)}" text-anchor="middle" font-size="14" fill="${css('--muted')}">도보 ${walkTxt(l)}</text>
+    <rect x="${(wx - 6).toFixed(1)}" y="${(wy - 6).toFixed(1)}" width="12" height="12" fill="${css('--ink')}"/>
+    <text x="${(wx + 12).toFixed(1)}" y="${(wy - 12).toFixed(1)}" font-size="17" fill="${css('--ink')}"><title>${esc(work)}</title>${esc(short(work, 9))}</text>
+    <text x="${(wx + 12).toFixed(1)}" y="${(wy + 6).toFixed(1)}" font-size="14" fill="${css('--muted')}">통근 ${fmtMin(l.commute)}</text>
+    <circle cx="${cx}" cy="${cy}" r="11" fill="${css('--accent')}"/>
+    <text x="${cx}" y="${cy + 32}" text-anchor="middle" font-size="16" fill="${css('--ink')}">${typeCode(l)}</text>`;
+  facts();
+}
+
+// ---------- 5 추천 ----------
+function renderFinal(ev) {
+  const P = ev.passed, top = P[0];
+  if (!top) { $('#finalPick').innerHTML = `<p class="pick">추천할 집이 아직 없어요<small>탈락 조건을 통과한 매물을 등록하면 여기에서 한 곳을 골라 드려요.</small></p><div></div>`; return; }
+  const rank = (k, desc) => rankOf(P, top, k, desc);
+  const aw = avgWeights(state.people);
+  const cand = [
+    { w: aw.price, r: rank('monthly'), t: `실제 월 부담 ${fmtMonthly(top.monthly)}, 통과한 ${P.length}곳 중 ${ord(rank('monthly'))} 적어요.` },
+    { w: aw.area, r: rank('area', true), t: `전용 ${top.area}㎡로 ${ord(rank('area', true))} 넓고, 퀸 침대가 ${(top.plan ? window.bedFitsPlan?.(top) : bedFitsBox(top)) === false ? '안 들어가요' : '들어가요'}.` },
+    { w: aw.commute, r: rank('commute'), t: `${state.settings.work || '직장'}까지 편도 ${fmtMin(top.commute)}, ${ord(rank('commute'))} 가까워요.` },
+    { w: aw.station, r: rank('walkS'), t: top.walk == null ? `${top.station || '역'}까지 도보 시간은 미확인이라 역세권은 평균으로 계산했어요.` : `${top.station || '역'}까지 걸어서 ${fmtMin(top.walk)}이에요.` },
+  ].sort((a, b) => a.r - b.r || b.w - a.w).slice(0, 2);
+  const last = P.length > 1 ? `${state.people.length === 1 ? `${state.people[0].name}의 기준으로` : `${state.people.length}명의 기준을 평균하면`} ${top.tie ? `${tieWith(P, top)} 적합도 ${Math.round(top.score)}점으로 동점이에요. 실제 월 부담이 더 낮아 먼저 추천했어요.` : `적합도 ${Math.round(top.score)}점, 2위 ${P[1].name}보다 ${Math.round(top.score - P[1].score)}점 높아요.`}`
+    : `탈락 조건을 통과한 유일한 집이에요.`;
+  const vs = vsCur(top, ev.cur), warn = [top.over ? `실제 월 부담이 상한 ${state.settings.budget}만원을 넘어요(예산 초과).` : '', top.fee == null ? '관리비는 미확인이라 0으로 계산했어요.' : ''].filter(Boolean).join(' ');
+  const cw = [top.longer ? `지금 집보다 통근이 편도 ${fmtMin(top.longer)}(하루 왕복 ${fmtMin(top.longer * 2)}) 길어요.` : '', top.overC ? `통근 ${fmtMin(top.commute)}로 상한 ${state.settings.commuteMax}분을 넘어요.` : ''].filter(Boolean).join(' ');
+  $('#finalPick').innerHTML = `<div><p class="pick ${top.name.length > 12 ? 'long' : ''}"><em title="${esc(top.name)}">${esc(top.name)}</em><small>${typeCode(top)} · ${esc(top.region)} · 전용 ${top.area}㎡ · 실제 월 ${fmtMonthly(top.monthly)}</small><span class="badges">${costTags(top)}${commuteTags(top)}</span></p>
+      <div class="row" style="margin-top:24px"><button type="button" class="primary" data-act="view" data-id="${top.id}">3D로 살펴보기</button><a class="btn ghost" href="#report">근거 다시 보기</a></div></div>
+    <ul class="why3">${[...cand.map(c => c.t), last, vs ? `지금 집(${curName(ev.cur.name)}) 대비 ${vs}.` : '', cw, warn].filter(Boolean).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+}
+
+// ---------- 차트 ----------
+let costChart, scoreChart;
+// 지금 집 월 부담을 세로 점선으로 (chart.$base 가 있을 때만)
+const baselinePlugin = { id: 'baseline', afterDatasetsDraw(c) {
+  if (c.$base == null) return;
+  const x = c.scales.x.getPixelForValue(c.$base), { top, bottom } = c.chartArea, g = c.ctx;
+  g.save(); g.strokeStyle = css('--accent'); g.lineWidth = 1.5; g.setLineDash([5, 4]);
+  g.beginPath(); g.moveTo(x, top); g.lineTo(x, bottom); g.stroke(); g.setLineDash([]);
+  g.fillStyle = css('--accent'); g.font = '11px ' + Chart.defaults.font.family; g.textAlign = x > c.chartArea.right - 90 ? 'right' : 'left';
+  g.fillText(`지금 집 ${c.$base.toFixed(1)}만`, x + (g.textAlign === 'right' ? -4 : 4), top + 10); g.restore();
+} };
+function drawCharts(ev) {
+  if (!window.Chart) { $('#costBox').innerHTML = $('#scoreBox').innerHTML = '<div class="empty">차트 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.</div>'; return; }
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  Chart.defaults.color = css('--muted');
+  const opts = (max, unit) => ({
+    indexAxis: 'y', maintainAspectRatio: false, animation: reducedMotion || SHOT ? false : { duration: 300 },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.x.toFixed(1)}${unit}` } } },
+    scales: { x: { beginAtZero: true, max, grid: { color: css('--line') }, border: { display: false } },
+      y: { grid: { display: false }, border: { color: css('--ink') }, ticks: { callback(v) { return short(this.getLabelForValue(v), 9); } } } },   // 전체 이름은 툴팁 제목에
+  });
+  const h = n => Math.max(140, n * 40 + 40) + 'px';
+  const P = ev.passed, C = ev.cands, cheapest = (P.length ? P : C).reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null);
+  const cbox = $('#costBox');
+  if (!C.length) {
+    if (costChart) { costChart.destroy(); costChart = null; }
+    cbox.style.height = ''; cbox.innerHTML = '<div class="empty">매물을 등록하면 실제 월 부담을 비교해요.</div>';
+  } else {
+  if (!cbox.querySelector('canvas')) cbox.innerHTML = '<canvas id="costChart" aria-label="매물별 실제 월 부담 막대 차트" role="img"></canvas>';
+  cbox.style.height = h(C.length);
+  const cost = { labels: C.map(l => `${l.name}${l.reasons.length ? ' (탈락)' : l.over ? ' (예산 초과)' : ''}`), datasets: [{ data: C.map(l => l.monthly), barThickness: 18,
+    backgroundColor: C.map(l => l.reasons.length ? css('--line') : l.over ? css('--warn') : l === cheapest ? css('--accent') : css('--sage')) }] };
+  const xMax = ev.cur ? Math.ceil(Math.max(ev.cur.monthly, ...C.map(l => l.monthly)) * 1.08) : undefined;
+  if (costChart) { costChart.data = cost; costChart.options.scales.x.max = xMax; costChart.$base = ev.cur?.monthly; costChart.update('none'); }
+  else { costChart = new Chart($('#costChart'), { type: 'bar', data: cost, options: opts(xMax, '만원'), plugins: [baselinePlugin] }); costChart.$base = ev.cur?.monthly; costChart.update('none'); }
+  }
+
+  const box = $('#scoreBox');
+  if (!P.length) {
+    if (scoreChart) { scoreChart.destroy(); scoreChart = null; }
+    box.style.height = ''; box.innerHTML = '<div class="empty">비교할 매물이 없어요.</div>'; return;
+  }
+  if (!box.querySelector('canvas')) box.innerHTML = '<canvas id="scoreChart" aria-label="매물별 적합도 막대 차트" role="img"></canvas>';
+  box.style.height = h(P.length);
+  const sc = { labels: P.map(l => l.name), datasets: [{ data: P.map(l => l.score), barThickness: 18, backgroundColor: P.map((l, i) => i ? css('--sage') : css('--accent')) }] };
+  if (scoreChart) { scoreChart.data = sc; scoreChart.update('none'); }
+  else scoreChart = new Chart($('#scoreChart'), { type: 'bar', data: sc, options: opts(100, '점') });
+}
+
+function render() {
+  if (!state.listings.some(l => l.id === state.selectedId)) state.selectedId = state.listings[0]?.id ?? null;
+  ensureTypeLetters(state.listings);
+  const ev = evaluate(state);
+  renderHero(ev); renderTypes(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
+  const areas = ev.all.map(l => l.area);
+  const lo = Math.min(...areas), hi = Math.max(...areas);
+  $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'Type lineup';
+  $('#ebSim').textContent = `Criteria · ${state.people.length}명 기준`;
+  $('#ebFinal').textContent = `Recommendation · 통과 ${ev.passed.length}곳 중`;
+  $('#sel3d').innerHTML = state.listings.map(l => `<option value="${l.id}" ${l.id === state.selectedId ? 'selected' : ''}>${typeCode(l)} · ${esc(l.name)}</option>`).join('');
+  drawCharts(ev);
+  const sel = state.listings.find(l => l.id === state.selectedId);
+  window.show3D?.(sel);
+  window.updateShowcase?.(ev.passed[0] ?? ev.all[0], sel);
+  save();
+}
+
+// ---------- 입력 ----------
+$('#myCash').value = state.settings.myCash;
+$('#rate').value = state.settings.rate;
+$('#work').value = state.settings.work ?? '';
+$('#budget').value = state.settings.budget ?? '';
+$('#budgetFail').checked = !!state.settings.budgetFail;
+$('#budget').addEventListener('input', e => {
+  const v = Number(e.target.value);
+  if (e.target.value === '') state.settings.budget = null; else if (v >= 0) state.settings.budget = v; else return;
+  render();
+});
+$('#budgetFail').addEventListener('change', e => { state.settings.budgetFail = e.target.checked; render(); });
+$('#commuteMax').value = state.settings.commuteMax ?? '';
+$('#commuteWarn').checked = !!state.settings.commuteWarn;
+$('#commuteFail').checked = !!state.settings.commuteFail;
+$('#commuteMax').addEventListener('input', e => {
+  const v = Number(e.target.value);
+  if (e.target.value === '') state.settings.commuteMax = null; else if (v >= 0) state.settings.commuteMax = v; else return;
+  render();
+});
+for (const id of ['commuteWarn', 'commuteFail']) $('#' + id).addEventListener('change', e => { state.settings[id] = e.target.checked; render(); });
+for (const id of ['myCash', 'rate']) $('#' + id).addEventListener('input', e => {
+  const v = Number(e.target.value);
+  if (e.target.value !== '' && v >= 0) { state.settings[id] = v; render(); }
+});
+$('#work').addEventListener('input', e => { state.settings.work = e.target.value.trim(); render(); });
+buildWeights();
+const person = id => state.people.find(p => p.id === id);
+$('#weights').addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.name) { person(t.dataset.name).name = t.value.trim() || '이름 없음'; save(); return; }
+  if (!t.dataset.p) return;
+  person(t.dataset.p).w[t.dataset.k] = Number(t.value);
+  t.nextElementSibling.value = t.value;
+  render();
+});
+$('#weights').addEventListener('click', e => {
+  const id = e.target.closest('[data-del-person]')?.dataset.delPerson;
+  if (!id || state.people.length === 1) return;
+  state.people = state.people.filter(p => p.id !== id);
+  buildWeights(); render();
+});
+$('#addPerson').addEventListener('click', () => {
+  let n = 1; while (state.people.some(p => p.name === `가족 ${n}`)) n++;   // 지웠다 다시 추가해도 이름이 겹치지 않게
+  state.people.push({ id: uid(), name: `가족 ${n}`, w: { ...W5 } });
+  buildWeights(); render();
+  $('#weights .person:last-child [data-name]').select();
+});
+
+const form = $('#form');
+const NUMS = ['deposit', 'rent', 'fee', 'area', 'rooms', 'walk', 'commute'], OPTIONAL = ['fee', 'walk'];   // 비우면 미확인(null)
+function resetForm() { form.reset(); form.id.value = ''; $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(form));
+  const l = { id: f.id || uid(), name: f.name.trim(), region: f.region.trim(), addr: (f.addr || '').trim(), station: (f.station || '').trim(),
+    basement: f.floor === '반지하', loanOk: f.loan === '가능', usage: f.usage, current: !!f.current };
+  for (const k of NUMS) l[k] = OPTIONAL.includes(k) && f[k].trim() === '' ? null : Number(f[k]);
+  if (l.current) for (const x of state.listings) x.current = false;   // 지금 집은 한 곳만
+  const i = state.listings.findIndex(x => x.id === l.id);
+  if (i >= 0) { const old = state.listings[i]; if (old.plan) l.plan = old.plan; if (old.layout) l.layout = old.layout; l.tl = old.tl; state.listings[i] = l; } else state.listings.push(l);
+  state.selectedId = l.id;
+  resetForm(); render();
+});
+$('#cancelEdit').addEventListener('click', resetForm);
+
+document.addEventListener('click', e => {
+  const sc = e.target.closest('[data-scroll]');
+  if (sc) { $(sc.dataset.scroll).scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' }); return; }
+  const f = e.target.closest('a[data-focus]');
+  if (f) {
+    e.preventDefault(); go(f.getAttribute('href').slice(1), f.dataset.focus);
+    if (f.dataset.hl) { const tops = document.querySelectorAll('#simRank li.top'); tops.forEach(li => li.classList.add('flash')); setTimeout(() => tops.forEach(li => li.classList.remove('flash')), 2000); }
+    return;
+  }
+  const t = e.target.closest('[data-type]');
+  if (t) {
+    state.selectedId = t.dataset.type; render();
+    if (mobileQ.matches) openSheet(t);
+    else {   // 데스크톱: 패널이 바뀐 걸 바로 보이게
+      const pn = $('.type-panel'); pn.classList.add('changed'); clearTimeout(pn._t); pn._t = setTimeout(() => pn.classList.remove('changed'), 700);
+      if (pn.getBoundingClientRect().bottom < 80 || pn.getBoundingClientRect().top > innerHeight) pn.scrollIntoView({ block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
+    }
+    return;
+  }
+  const lc = e.target.closest('[data-loc]');
+  if (lc) { locId = lc.dataset.loc; renderLocation(evaluate(state)); return; }
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const l = state.listings.find(x => x.id === b.dataset.id); if (!l) return;
+  if (b.dataset.act === 'view') { state.selectedId = l.id; render(); go('studio'); }
+  if (b.dataset.act === 'del' && confirmTap(b)) { state.listings = state.listings.filter(x => x !== l); render(); }
+  if (b.dataset.act === 'edit') startEdit(l.id);
+});
+function startEdit(id) {
+  const l = state.listings.find(x => x.id === id); if (!l) return;
+  {
+    form.id.value = l.id; form.name.value = l.name; form.region.value = l.region; form.addr.value = l.addr || ''; form.station.value = l.station || '';
+    for (const k of NUMS) form[k].value = l[k] ?? '';
+    form.current.checked = !!l.current;
+    form.floor.value = l.basement ? '반지하' : '지상'; form.loan.value = l.loanOk ? '가능' : '불가'; form.usage.value = l.usage;
+    $('#submitBtn').textContent = '수정 저장'; $('#cancelEdit').hidden = false;
+    go('listings', '#manage'); form.name.focus({ preventScroll: true });
+  }
+}
+$('#sel3d').addEventListener('change', e => { state.selectedId = e.target.value; render(); });
+
+// 데이터 옮기기: 내보낸 파일 = { app, version, exportedAt, data(state 그대로, 큰 평면도는 다시 압축) }
+const shrinkImg = src => new Promise(ok => {   // 300KB 넘는 평면도만 긴 변 900px·JPEG 0.75로
+  if (src.length < 400000) return ok(src);
+  const im = new Image();
+  im.onload = () => { const k = Math.min(1, 900 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+    c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+    ok(c.toDataURL('image/jpeg', 0.75)); };
+  im.onerror = () => ok(src); im.src = src;
+});
+$('#exportBtn').addEventListener('click', async () => {
+  const data = structuredClone(state);
+  for (const l of data.listings) if (l.plan?.img) l.plan.img = await shrinkImg(l.plan.img);
+  const d = new Date(), ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const blob = new Blob([JSON.stringify({ app: 'suitable-home', version: 3, exportedAt: d.toISOString(), data })], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `suitable-home-${ymd}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  $('#ioMsg').textContent = `내보냈어요: 매물 ${data.listings.length}곳 · 평면도 ${data.listings.filter(l => l.plan).length}개 · 가구 ${data.furniture.length}개 (${(blob.size / 1024).toFixed(0)}KB)`;
+});
+const replaceState = (s, msg) => {   // 저장한 뒤 다시 열어 3D·가구 목록까지 새 데이터로 그린다
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { $('#ioMsg').textContent = '브라우저 저장 공간이 부족해 불러오지 못했어요.'; return; }
+  try { sessionStorage.setItem('suitable-io-msg', msg); } catch (e) {}
+  location.hash = 'listings'; location.reload();
+};
+$('#importFile').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  let s;
+  try { const j = JSON.parse(await file.text()); s = migrate(j.data ?? j); } catch (err) {}
+  if (!s) { $('#ioMsg').textContent = 'SUITABLE HOME에서 내보낸 JSON 파일이 아니에요.'; return; }
+  const sum = `매물 ${s.listings.length}곳 · 평면도 ${s.listings.filter(l => l.plan).length}개 · 가구 ${s.furniture.length}개`;
+  $('#ioMsg').innerHTML = `${esc(file.name)}: ${sum}. 지금 데이터를 덮어쓸까요? <button type="button" class="small danger" id="ioYes">덮어쓰기</button> <button type="button" class="small ghost" id="ioNo">취소</button>`;
+  $('#ioYes').onclick = () => replaceState(s, `불러왔어요: ${sum}`);
+  $('#ioNo').onclick = () => { $('#ioMsg').textContent = '불러오기를 취소했어요.'; };
+});
+$('#resetBtn').addEventListener('click', e => {
+  if (confirmTap(e.currentTarget, '한 번 더 누르면 초기화')) replaceState(migrate(structuredClone(DEFAULT)), '예시 데이터로 초기화했어요.');
+});
+try { const m = sessionStorage.getItem('suitable-io-msg'); if (m) { $('#ioMsg').textContent = m; sessionStorage.removeItem('suitable-io-msg'); } } catch (e) {}
+$('#tab2d').addEventListener('click', () => setTypeTab('2d'));
+$('#tab3d').addEventListener('click', () => setTypeTab('3d'));
+
+// 입장 연출: 첫 방문 때만 (스크린샷·움직임 줄이기면 생략). 누르거나 키를 누르면 바로 건너뜀
+(function intro() {
+  let seen = false; try { seen = !!localStorage.getItem('suitable-intro'); localStorage.setItem('suitable-intro', '1'); } catch (e) {}
+  if (seen || SHOT || reducedMotion) return;
+  const el = $('#intro');
+  el.querySelector('.intro-grid').innerHTML = Array.from({ length: 40 }, () => `<span style="--sz:${8 + Math.round(Math.random() * 10)}px;--d:${-Math.round(Math.random() * 240)}ms"></span>`).join('');
+  el.hidden = false;
+  let done = false;
+  const end = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 360); removeEventListener('keydown', end); };
+  el.addEventListener('click', end); addEventListener('keydown', end);
+  setTimeout(end, 1650);
+})();
+
+// 스크롤 등장 + 히어로 숫자 카운트업
+if (!SHOT && !reducedMotion && 'IntersectionObserver' in window) {
+  document.documentElement.classList.add('js-reveal');
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  const io2 = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { countUp(); io2.disconnect(); } });
+  io2.observe($('#heroStats'));
+}
+
+route();
+render();
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ================= 평면도 이미지 처리 (순수 함수) =================
+const WORK = 900;   // 평면도 긴 변을 이 크기(px)로 줄여서 처리·저장 (가는 벽이 남도록 900)
+const CELL = 3;     // 벽 격자 1칸 = 3px
+const MAX_THR = 80; // 실제 평면도의 벽은 거의 검정. 이보다 밝은 원목 바닥·주방 카운터는 기본값에서 제외
+
+// 네이버 3D 렌더(위에서 본 모습): 벽면 음영(무채 중간 회색)+검정 비율이 2D 도면보다 높다.
+// 측정(301호 등 12장): 2D ≤ 0.079, 3D ≥ 0.122 → 기준 0.10
+const RENDER_RATIO = 0.10, MONO = 15;   // MONO: 3D 에서 벽으로 볼 최대 채도(max-min). 짙은 갈색 가구·문 제외
+function isRender(img) {
+  const d = img.data, n = img.width * img.height; let c = 0;
+  for (let i = 0; i < n; i++) {
+    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2], mx = Math.max(r, g, b);
+    if ((mx - Math.min(r, g, b) < 12 && r > 150 && r < 235) || mx < 50) c++;
+  }
+  return c / n >= RENDER_RATIO;
+}
+function luminance(img) {
+  const n = img.width * img.height, L = new Uint8Array(n), d = img.data;
+  for (let i = 0; i < n; i++) { const p = i * 4; L[i] = d[p + 3] < 128 ? 255 : (d[p] * 299 + d[p + 1] * 587 + d[p + 2] * 114) / 1000; }
+  return L;
+}
+// Otsu: 어두운 쪽/밝은 쪽 분산이 가장 잘 갈리는 밝기
+function otsu(L) {
+  const h = new Float64Array(256); for (const v of L) h[v]++;
+  let sum = 0; for (let i = 0; i < 256; i++) sum += i * h[i];
+  let sB = 0, wB = 0, best = -1, thr = 128;
+  for (let t = 0; t < 256; t++) {
+    wB += h[t]; if (!wB) continue;
+    const wF = L.length - wB; if (!wF) break;
+    sB += t * h[t];
+    const v = wB * wF * (sB / wB - (sum - sB) / wF) ** 2;
+    if (v > best) { best = v; thr = t; }
+  }
+  return thr;
+}
+// 정사각형 커널 (2r+1) 팽창(max) / 침식(min). 가로→세로로 나눠서 계산
+function morph(a, w, h, r, dilate) {
+  if (!r) return a;
+  const pass = (src, horiz) => {
+    const out = new Uint8Array(src.length);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let v = dilate ? 0 : 1;
+      for (let k = -r; k <= r; k++) {
+        const xx = horiz ? x + k : x, yy = horiz ? y : y + k;
+        const s = xx < 0 || yy < 0 || xx >= w || yy >= h ? 0 : src[yy * w + xx];
+        if (dilate ? s : !s) { v = dilate ? 1 : 0; break; }
+      }
+      out[y * w + x] = v;
+    }
+    return out;
+  };
+  return pass(pass(a, true), false);
+}
+function removeSmall(mask, w, h, min) {
+  const seen = new Uint8Array(mask.length), stack = [];
+  for (let s = 0; s < mask.length; s++) {
+    if (!mask[s] || seen[s]) continue;
+    const comp = []; stack.push(s); seen[s] = 1;
+    while (stack.length) {
+      const i = stack.pop(); comp.push(i);
+      const x = i % w, y = (i / w) | 0;
+      for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1])
+        if (j >= 0 && mask[j] && !seen[j]) { seen[j] = 1; stack.push(j); }
+    }
+    if (comp.length < min) for (const i of comp) mask[i] = 0;
+  }
+  return mask;
+}
+// 픽셀 → 벽 격자
+function detect(img, thr, thin, mono) {   // mono: 채도(max-min)가 이 값 이하인 픽셀만 벽 (3D 렌더용)
+  const w = img.width, h = img.height, L = luminance(img), d = img.data;
+  let px = new Uint8Array(w * h);
+  for (let i = 0; i < px.length; i++) px[i] = L[i] <= thr && (!mono || Math.max(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]) - Math.min(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]) <= mono) ? 1 : 0;
+  px = morph(morph(px, w, h, thin, false), w, h, thin, true);   // 열림: 얇은 선 제거
+  const gw = Math.floor(w / CELL), gh = Math.floor(h / CELL), mask = new Uint8Array(gw * gh);
+  for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+    let s = 0;
+    for (let dy = 0; dy < CELL; dy++) for (let dx = 0; dx < CELL; dx++) s += px[(y * CELL + dy) * w + x * CELL + dx];
+    mask[y * gw + x] = s * 2 >= CELL * CELL ? 1 : 0;
+  }
+  return { gw, gh, mask: removeSmall(mask, gw, gh, 15) };
+}
+// 주방 카운터: 원목 바닥(채도 0.5+, 명도 0.9+)과 구분되는 탁한 갈색(색상 15~45°, 채도 0.2~0.48, 명도 0.45~0.75)
+function detectCounters(img) {
+  const w = img.width, h = img.height, d = img.data;
+  let px = new Uint8Array(w * h);
+  for (let i = 0; i < px.length; i++) {
+    const r = d[i * 4] / 255, g = d[i * 4 + 1] / 255, b = d[i * 4 + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    if (mx === mn) continue;
+    const s = (mx - mn) / mx, hue = mx === r ? 60 * (((g - b) / (mx - mn)) % 6) : mx === g ? 60 * ((b - r) / (mx - mn) + 2) : 60 * ((r - g) / (mx - mn) + 4);
+    if (hue >= 15 && hue <= 45 && s >= 0.2 && s <= 0.48 && mx >= 0.45 && mx <= 0.75) px[i] = 1;
+  }
+  px = morph(morph(px, w, h, 3, true), w, h, 3, false);   // 닫힘: 가스레인지·개수대 아이콘 구멍 메우기
+  px = morph(morph(px, w, h, 2, false), w, h, 2, true);   // 열림: 원목 무늬 점 제거
+  const gw = Math.floor(w / CELL), gh = Math.floor(h / CELL), mask = new Uint8Array(gw * gh);
+  for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+    let s = 0;
+    for (let dy = 0; dy < CELL; dy++) for (let dx = 0; dx < CELL; dx++) s += px[(y * CELL + dy) * w + x * CELL + dx];
+    mask[y * gw + x] = s * 2 >= CELL * CELL ? 1 : 0;
+  }
+  fillHoles(removeSmall(mask, gw, gh, 60), gw, gh);
+  // 덩어리마다: 외곽 사각형을 60% 이상 채우면 그 사각형 하나, 아니면(ㄱ자 등) 직사각형 여러 개로
+  const out = [], seen = new Uint8Array(mask.length);
+  for (let s = 0; s < mask.length; s++) {
+    if (!mask[s] || seen[s]) continue;
+    const cells = [s]; seen[s] = 1; let x0 = gw, y0 = gh, x1 = 0, y1 = 0;
+    for (let k = 0; k < cells.length; k++) {
+      const i = cells[k], x = i % gw, y = (i / gw) | 0;
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      for (const j of [x > 0 ? i - 1 : -1, x < gw - 1 ? i + 1 : -1, y > 0 ? i - gw : -1, y < gh - 1 ? i + gw : -1])
+        if (j >= 0 && mask[j] && !seen[j]) { seen[j] = 1; cells.push(j); }
+    }
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    if (cells.length >= bw * bh * 0.6) out.push([x0, y0, bw, bh]);
+    else { const one = new Uint8Array(mask.length); for (const i of cells) one[i] = 1; out.push(...rects(one, gw, gh)); }
+  }
+  return out.filter(([, , rw, rh]) => rw >= 4 && rh >= 4);
+}
+// ---------- 욕실 설비: 네이버 부동산 도면 아이콘 견본 매칭 ----------
+// 네이버 도면(긴 변 923px)은 집 크기와 관계없이 아이콘을 같은 픽셀 크기로 그린다 → 견본을 긴 변 비율로만 맞추면 된다.
+// 견본은 한강오피스텔 301호 2D 도면에서 잘라낸 흑백 픽셀. 다른 회사 양식 도면은 잡히지 않는다(설비 지정으로 추가).
+const TPL = {"toilet":{"w":23,"h":34,"d":"7+/z6fD7797k9fbt5eXt8/Lt7+/v7+/v7+jy6OL2/fbs6e71+Pb08/Tv7+/v7+/v7P3w4vrxxbN+ZVp+vu3z5e/v7+/v7+/s8enz2WYnWpCwtn8+RKD97+/v7+/v7+r57cgsX+v6/vf7/v6VDp/t6+zt8e/v8uLdJT7+8f71/vz3/fI/Jqr96+vo7+/64UMdz/7+/vn//vf+/4wMQuXs8u/v7+urFWP+9P76//L/9//60jEoj/b08+/v5kses/z+////8v/2/v76OWlE+evs7+/dGgz+/vD//f///P/z/v52gifW7O7v76wqR/7///ny///5/vX+/sFgVpfz8u/vg1lY8//09//2//73/v7+v1GoaPLo+upsXl3/8v/6+P/5+/7/9v/PU8JN7vL28FGTTv///O///f///f///MVX3jDz5+nuTbwi////9P/7////+P/9vFz6E/rj5e1Vvhrz9///9P/+/v/29v+bcv8O+uvt81C5Xrj0+P/+//39//77/1am/x3u7+7xUsCsW//5/P/////1///ZL+H/J+Pr7exWyd025f/6/v////b//35p/v8f7Or170vO/FGf//3+//n////pMMX++xL+7+j0S8X8yzfHzcrJv8HHyFth//r9Gufx9Olevv/zVEI7VlhLXk9GQejz//Id/uD27kXQ//5Rx//y/fv/97lm8//p/xDo8ej6Wx8bFR8XIiQWLiQeHhgdFyIYFf7j5PNKGbb2///t/v/r8v/w///hREYZ5+z16FucJK/5////+f////778E1D/iDk/vTtUMPULx8QFh4bHBUQJRApOfT6FO3o3/gf7/lZzPX/8v39//r+/5GU/vof9vXr7B73/1DY+P7///Xz/v/8x4j68Tbg6e/0GP//Q8r///b/////9vLQmf//CPju9OYe/f9bxPP//+38//r//813/vsl9+pVYyBhTybK///k////+///tlFbVRRQV7vIxsfOxvP3///5+Pv8///yycW/27vJ////8///+PT////////5+f33/vr/+/0="},"basin":{"w":29,"h":26,"d":"7+/v7+/v7/Lv7e3u7efi5unu8vPx7erv7+/v7+/v7+/v7+/v8/Du7/P3+Pj29PLv7u7v8O/v7+/v7+/v7+/v7+/l6/Hy7ejn6Orr7O3u7u/v7+/v7+/v7+/v7+/v7/D28tepe11RXniiy+j08+/v7+/v7+/d+/Ln7uvs6L5fJVKcwM2ykGslNITi+eX46u726Ort7fHv8cdVOJX+25uVlZOky//NYymr/ezu8Ov08ev05/OVPY7ssC0ybYCQi2pHL4fkrThz6vLx5Pfk/d35piq9tjQ9wP7/////9fXKWkXlzTCT9uzx8fHm+Mgx1ak5s/7///r6///2//v0qBrdyju18Pjy+/fdYZDbLsXy/vD3///47///+/7+rUX/mTbv5/Xo7dcz0Jh3/f7+/vb7//r/+f35/Pv4PK3/K7Xi8e3zZYP/Ktj+/vv8/v/9//b/7P/4/v6bd/qdYPXo4/JZu/Il/vz3+P79/f/3//H+9P7+8tBD9ewo9fD35Tbc2in+/v73/u3xkJTc//n+9Pb+3y789ind6fXsMv7vK/X3/vX+/nNxaULn/vfy/v7IOv/8QsTr9PEd8/5D1/79/vjuHc7+Jc/+/vzw/qB4/v1TuvH18SLl/nxz9Pf+/eJXS2YyuOj+/v7+MsP4/jjH8vTrSuj50j/O0GEuRltPZ11YLDaF2JNG9vf+G+Lz9uNnofj+pBNNlNf+/P79/vP41YMwIPD+/uQv7/bq9JVf//n+sSWk/vP+9fz+/v7+jiS38Pz+pFro9eDz1yX/9/7+rE9HkeH++fDdkkVfyP78+/92i/3u8PrdPb/1//r/87VnOUBZIjh0xv3///v/+jzN2/nq+viNnf/5//7+///y3Mr48PP///r8///AV/b1+lVHTz5Y/f/7//////////j////7///1/3NCSk5FwsbQysT/9f/8+fr+//z4//v6/Pz7///9wcXKytL5///59P/5+P/////7/v//+vj///r6//v//////w=="},"bath":{"w":30,"h":74,"d":"Iuzm4Oj68/Pz8/Pz8/Pz8/Pz8/Pz8/Xs+Pfr++HcH+j+/uXs7e3t7e3t7e3t7e3t7e3t7eTv/Orm6P32EBgaEBciHx8fHx8fHx8fHx8fHx8fHx8eFgw0Gdz2JCn4+/70/f39/f39/f39/f39/f39/f77/f38LvLrIRT+9f3//v/+//7//v/+//7//////v/5/P7+DvTxHhH+/vL+/v7+/v7+/v7+//////////z9/vz5FvroGRn6/v77/vz+/v77/vv+8vr/+vr9//7//v35He37HCX+/Pb9+/795f7+7P78/f//+/7/6vr8/v7+Je7mGRn+/v3+/vb+/v795bq72vP2//zz//7+/v72HvTmGg78//7/9//2y1ocaY2NdEEyoP///v/++/71FffxIB7///n5/+tzUbr3/f/7///odj+9//v68/7+GfXtHin99///+j+N+/T//+v27P/z/8NRqfz+9P7+HPXpGSD0/v7kOZr+/u/++f7///H//f3xQ7f+/vn9GPbsHhjz/ux5jP748f/7//v5/P/2/v/v3zzd/v79F/XsEh3/+txH///////////+/v///////5h2+Pn+Iuf0IBj//W+q//////////7+/v7+///+/uI7//3+Gu3zIhr//i33//////////7+/v7+///+/v5H4/7+GfLvGSD4/kr6//////////7+/v7+///+/v6on/z+H/LrHhz4/2Xz//////////7+/v7+///+/vXeeP3+IPDrLBL//1D///////////7+/v7+///+/v7CgP7+GO/uJhb//kv///////////7+/v7+///+/v6yiv7+Fe/wEiT6+mfy//////////7+/v7+///+/v3Mgfr+Gu/vGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9//////////7+/v7+///+/v7Ifv7+G/PtGh3+/Fn9///z9v////78+P7+///+/P7Ifv7+G/PtGh3+/Fn9+/7////38vj+/f7+/v3+/v7Ifv7+G/PtGh3+/Fn9/+//7fn///7+/fv+//7+/v7Ifv7+G/PtGh3+/Fn9//b//P///+7+/ff7///8/f7Ifv7+G/PtGh3+/Fn99f/////y//7+/v74///7/v7Ifv7+G/PtGh3+/Fn9+//y8v3///nm/v74/v/7/v7Ifv7+G/PtGh3+/Fn9///+/v//kneP3v77/v/7/v7Ifv7+G/PtGh3+/Fn9+vv/+fb5QTk2rfn+///6/v7Ifv/+G/PtIRj++lz7+f38//DYLypRiv///P/8+P+8fv//HvXvFRv//1r+//3+//z/fztKw//7/v////jPhP/4FO3tHB347U3/8v//9P/e9maq//H//+3w+f3PafX/MurrISf//mT///f///f/xW1e/f7/+vv////Ohf//DE9VGBb760WGjoSLlY6PamMzhZSXfYqUioRvhPr/HU2/HRn//7TKu+DMtr4wjYqaboG+xsPDz9q72P/zE0P/JBX++vf+8fX9//vVs8Kzvuz///r+7fzp////IEL/GBX/9P/5//z///n/+v3////6//L///////X/Fkb7Hxn/+/////////////////////////39//n/HUD8FC3t//3y/v7+/v7+/v7+/v7+/v7+/v/6/v/vHjr/GQ8mHBclHh4eHh4eHh4eHh4eHh4eHh4aDxwsGVP1ISUTFxwfHBwcHBwcHBwcHBwcHBwcHBYjIhEWKAgZ"}};
+const TPL_BASE = 923, TPL_MIN = { toilet: 0.65, basin: 0.65, bath: 0.6 }, WHITE_MIN = 0.25;
+function tplOf(t, k) {
+  const raw = atob(t.d), w = Math.max(3, Math.round(t.w * k)), h = Math.max(3, Math.round(t.h * k)), a = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++)
+    a[y * w + x] = raw.charCodeAt(Math.min(t.h - 1, Math.floor(y / k)) * t.w + Math.min(t.w - 1, Math.floor(x / k)));
+  return { w, h, a };
+}
+const rot90 = t => { const a = new Float32Array(t.a.length); for (let y = 0; y < t.h; y++) for (let x = 0; x < t.w; x++) a[x * t.h + (t.h - 1 - y)] = t.a[y * t.w + x]; return { w: t.h, h: t.w, a }; };
+function hsvAt(d, i) {
+  const r = d[i * 4] / 255, g = d[i * 4 + 1] / 255, b = d[i * 4 + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), c = mx - mn;
+  const hue = !c ? 0 : mx === r ? (60 * ((g - b) / c) + 360) % 360 : mx === g ? 60 * ((b - r) / c + 2) : 60 * ((r - g) / c + 4);
+  return [hue, mx ? c / mx : 0, mx];
+}
+function detectBathFixtures(img) {
+  const W = img.width, H = img.height, d = img.data, n = W * H, L = luminance(img);
+  let blue = new Uint8Array(n); const white = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    const [h, s, v] = hsvAt(d, i);
+    if (h >= 180 && h <= 230 && s >= 0.03 && s <= 0.2 && v >= 0.85) blue[i] = 1;
+    if (s < 0.04 && v > 0.93) white[i] = 1;
+  }
+  blue = morph(morph(blue, W, H, 2, false), W, H, 2, true);
+  // 욕실 바닥(하늘색 타일) 덩어리마다 주변 12px까지가 찾을 영역
+  const zones = [], seen = new Uint8Array(n);
+  for (let s0 = 0; s0 < n; s0++) {
+    if (!blue[s0] || seen[s0]) continue;
+    const st = [s0]; seen[s0] = 1; let cnt = 0, x0 = W, y0 = H, x1 = 0, y1 = 0;
+    while (st.length) {
+      const i = st.pop(), x = i % W, y = (i / W) | 0; cnt++;
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      for (const j of [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, y > 0 ? i - W : -1, y < H - 1 ? i + W : -1]) if (j >= 0 && blue[j] && !seen[j]) { seen[j] = 1; st.push(j); }
+    }
+    if (cnt >= 800) zones.push([Math.max(0, x0 - 12), Math.max(0, y0 - 12), Math.min(W, x1 + 13), Math.min(H, y1 + 13)]);
+  }
+  if (!zones.length) return [];
+  const W1 = W + 1, S = new Float64Array(W1 * (H + 1)), S2 = new Float64Array(W1 * (H + 1)), SW = new Float64Array(W1 * (H + 1));
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const v = L[y * W + x], i = (y + 1) * W1 + x + 1, up = y * W1 + x + 1, lf = (y + 1) * W1 + x, ul = y * W1 + x;
+    S[i] = v + S[up] + S[lf] - S[ul]; S2[i] = v * v + S2[up] + S2[lf] - S2[ul]; SW[i] = white[y * W + x] + SW[up] + SW[lf] - SW[ul];
+  }
+  const box = (A, x, y, w, h) => A[(y + h) * W1 + x + w] - A[y * W1 + x + w] - A[(y + h) * W1 + x] + A[y * W1 + x];
+  const k = Math.max(W, H) / TPL_BASE, cands = [];
+  for (const [type, raw] of Object.entries(TPL)) {
+    let t = tplOf(raw, k);
+    for (let r = 0; r < 4; r++, t = rot90(t)) {
+      const m = t.w * t.h; let mean = 0; for (const v of t.a) mean += v; mean /= m;
+      const tz = t.a.map(v => v - mean); let tss = 0; for (const v of tz) tss += v * v;
+      for (const [zx0, zy0, zx1, zy1] of zones) for (let y = zy0; y + t.h <= zy1; y++) for (let x = zx0; x + t.w <= zx1; x++) {
+        const s1 = box(S, x, y, t.w, t.h), vr = box(S2, x, y, t.w, t.h) - s1 * s1 / m; if (vr < 1) continue;
+        let num = 0;
+        for (let ty = 0, ti = 0; ty < t.h; ty++) { const row = (y + ty) * W + x; for (let tx = 0; tx < t.w; tx++, ti++) num += tz[ti] * L[row + tx]; }
+        const sc = num / Math.sqrt(vr * tss);
+        if (sc >= TPL_MIN[type] && box(SW, x, y, t.w, t.h) / m >= WHITE_MIN) cands.push({ sc, type, x, y, w: t.w, h: t.h });
+      }
+    }
+  }
+  // 점수 높은 순으로, 이미 고른 것과 겹치면 버린다
+  cands.sort((a, b) => b.sc - a.sc);
+  const kept = [];
+  for (const c of cands) if (!kept.some(o => c.x < o.x + o.w && o.x < c.x + c.w && c.y < o.y + o.h && o.y < c.y + c.h)) kept.push(c);
+  return kept.map(c => ({ type: c.type, x0: Math.floor(c.x / CELL), y0: Math.floor(c.y / CELL), x1: Math.ceil((c.x + c.w) / CELL), y1: Math.ceil((c.y + c.h) / CELL) }));
+}
+
+// 카운터는 벽에 붙어 있다: 좁은 쪽으로 가까이(G칸 이내) 벽이 있으면 벽까지 넓힌다
+// (개수대·가스레인지 아이콘 줄이 카운터 가장자리에 걸쳐 있어 색으로는 안 잡히는 부분)
+function snapToWall([x, y, w, h], wall, gw, gh) {
+  const vert = w < h, len = vert ? h : w, G = Math.max(8, Math.round((vert ? w : h) * 1.5));
+  const isWall = k => {               // 사각형에서 k칸 떨어진 줄의 절반 이상이 벽인가 (k<0 = 왼쪽/위, k>0 = 오른쪽/아래)
+    let n = 0;
+    for (let i = 0; i < len; i++) {
+      const cx = vert ? (k < 0 ? x + k : x + w - 1 + k) : x + i, cy = vert ? y + i : (k < 0 ? y + k : y + h - 1 + k);
+      if (cx >= 0 && cy >= 0 && cx < gw && cy < gh) n += wall[cy * gw + cx];
+    }
+    return n * 2 > len;
+  };
+  for (let k = 1; k <= G; k++) {
+    if (isWall(-k)) return vert ? [x - k + 1, y, w + k - 1, h] : [x, y - k + 1, w, h + k - 1];
+    if (isWall(k)) return vert ? [x, y, w + k - 1, h] : [x, y, w, h + k - 1];
+  }
+  return [x, y, w, h];
+}
+// 테두리에서 닿지 않는 빈 칸(사방이 막힌 구멍)을 채운다
+function fillHoles(mask, w, h) {
+  const out = new Uint8Array(mask.length), stack = [];
+  const push = i => { if (!mask[i] && !out[i]) { out[i] = 1; stack.push(i); } };
+  for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
+  while (stack.length) {
+    const i = stack.pop(), x = i % w, y = (i / w) | 0;
+    if (x > 0) push(i - 1); if (x < w - 1) push(i + 1); if (y > 0) push(i - w); if (y < h - 1) push(i + w);
+  }
+  for (let i = 0; i < mask.length; i++) if (!out[i]) mask[i] = 1;
+  return mask;
+}
+// 집 바깥 칸: 같은 가로줄의 양옆, 또는 같은 세로줄의 위아래에 벽이 있으면 집 안으로 본다.
+// 문·창문 틈이 있어도 새지 않는다. 전체 벽의 2% 미만인 덩어리(남은 글자·기호)는 판정에서 뺀다.
+// ponytail: ㄷ자처럼 안쪽이 깊게 파인 집은 파인 곳도 집 안으로 잡힌다 → 지우개로 벽 밖 영역을 고치거나 치수 맞추기 사용
+function outsideOf(mask, w, h) {
+  const comp = new Int32Array(mask.length).fill(-1), sizes = [], stack = [];
+  for (let s = 0; s < mask.length; s++) {
+    if (!mask[s] || comp[s] >= 0) continue;
+    const id = sizes.length; let n = 0; comp[s] = id; stack.push(s);
+    while (stack.length) {
+      const i = stack.pop(), x = i % w, y = (i / w) | 0; n++;
+      for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1])
+        if (j >= 0 && mask[j] && comp[j] < 0) { comp[j] = id; stack.push(j); }
+    }
+    sizes.push(n);
+  }
+  const total = sizes.reduce((a, b) => a + b, 0), keep = sizes.map(n => n >= total * 0.02);
+  const rMin = new Int32Array(h).fill(w), rMax = new Int32Array(h).fill(-1), cMin = new Int32Array(w).fill(h), cMax = new Int32Array(w).fill(-1);
+  for (let i = 0; i < mask.length; i++) if (mask[i] && keep[comp[i]]) {
+    const x = i % w, y = (i / w) | 0;
+    rMin[y] = Math.min(rMin[y], x); rMax[y] = Math.max(rMax[y], x); cMin[x] = Math.min(cMin[x], y); cMax[x] = Math.max(cMax[x], y);
+  }
+  const outside = new Uint8Array(mask.length); let inside = 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, inRow = x >= rMin[y] && x <= rMax[y], inCol = y >= cMin[x] && y <= cMax[x];
+    if (inRow || inCol) inside++; else outside[i] = 1;
+  }
+  return { outside, inside };
+}
+// 막힌 칸의 누적합 → 직사각형 안에 막힌 칸이 있는지 O(1)
+function summed(blocked, w, h) {
+  const W1 = w + 1, S = new Int32Array(W1 * (h + 1));
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++)
+    S[(y + 1) * W1 + x + 1] = blocked[y * w + x] + S[y * W1 + x + 1] + S[(y + 1) * W1 + x] - S[y * W1 + x];
+  return (x0, y0, x1, y1) => S[(y1 + 1) * W1 + x1 + 1] - S[y0 * W1 + x1 + 1] - S[(y1 + 1) * W1 + x0] + S[y0 * W1 + x0];
+}
+// 벽 칸을 큰 직사각형으로 묶기 (3D 상자 수 줄이기)
+function rects(mask, w, h) {
+  const used = new Uint8Array(mask.length), out = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; if (!mask[i] || used[i]) continue;
+    let rw = 1; while (x + rw < w && mask[i + rw] && !used[i + rw]) rw++;
+    let rh = 1;
+    grow: while (y + rh < h) { for (let k = 0; k < rw; k++) { const j = (y + rh) * w + x + k; if (!mask[j] || used[j]) break grow; } rh++; }
+    for (let yy = y; yy < y + rh; yy++) used.fill(1, yy * w + x, yy * w + x + rw);
+    out.push([x, y, rw, rh]);
+  }
+  return out;
+}
+const rle = a => { const o = []; let cur = 0, n = 0; for (const v of a) { if (v === cur) n++; else { o.push(n); cur = v; n = 1; } } o.push(n); return o.join(','); };
+const unrle = (s, len) => { const a = new Uint8Array(len); let p = 0, v = 0; for (const n of s.split(',').map(Number)) { if (v) a.fill(1, p, p + n); p += n; v ^= 1; } return a; };
+
+(function selfTest() {
+  const m = new Uint8Array([0, 0, 1, 1, 1, 0, 1, 0, 0]);
+  console.assert(unrle(rle(m), m.length).join() === m.join(), 'RLE 왕복');
+  const L = new Uint8Array(100); L.fill(20, 0, 50); L.fill(220, 50);
+  const t = otsu(L); console.assert(t >= 20 && t < 220, 'Otsu 임계값', t);
+  // 1px 선은 지우고 7px 두께 벽은 남긴다
+  const w = 30, h = 30, a = new Uint8Array(w * h);
+  for (let x = 0; x < w; x++) a[5 * w + x] = 1;
+  for (let y = 15; y < 22; y++) for (let x = 0; x < w; x++) a[y * w + x] = 1;
+  const o = morph(morph(a, w, h, 2, false), w, h, 2, true);
+  console.assert(!o[5 * w + 10] && o[18 * w + 10], '열림 연산: 얇은 선 제거, 두꺼운 벽 유지');
+  // 20x20 격자에 3~16 사각 벽 → 내부(벽 포함) 14x14
+  const g = new Uint8Array(400);
+  for (let i = 3; i <= 16; i++) { g[3 * 20 + i] = g[16 * 20 + i] = g[i * 20 + 3] = g[i * 20 + 16] = 1; }
+  console.assert(outsideOf(g, 20, 20).inside === 196, '내부 칸 수', outsideOf(g, 20, 20).inside);
+  const gap = g.slice(); for (let i = 6; i <= 12; i++) gap[3 * 20 + i] = 0;   // 위쪽 벽에 창문 틈
+  console.assert(outsideOf(gap, 20, 20).inside === 196, '틈이 있어도 내부 칸 수 유지', outsideOf(gap, 20, 20).inside);
+  const sum = summed(g, 20, 20);
+  console.assert(sum(5, 5, 14, 14) === 0 && sum(2, 2, 4, 4) > 0, '누적합 직사각형 검사');
+  console.assert(fillHoles(g.slice(), 20, 20).reduce((s, v) => s + v, 0) === 196, '구멍 메우기: 사각 벽 안이 채워짐');
+  console.assert(rects(g, 20, 20).reduce((s, r) => s + r[2] * r[3], 0) === g.reduce((s, v) => s + v, 0), '직사각형 묶기가 벽 칸을 정확히 덮음');
+})();
+
+// ================= 3D =================
+const view = document.getElementById('view3d');
+const msg = document.getElementById('msg3d');
+const WALL_T = 0.1, WALL_H = 2.3;
+const FURN_TYPES = { bed: '침대', sofa: '소파', fridge: '냉장고', wardrobe: '옷장', desk: '책상', table: '식탁', washer: '세탁기', box: '기타' };
+// 설비: 가로·깊이는 도면에서 드래그한 크기, 높이는 표준값(도면에는 높이가 없다)
+const FIX_TYPES = { toilet: ['변기', 0.75], basin: ['세면대', 0.85], bath: ['욕조', 0.55], sink: ['싱크대', 0.85], counter: ['주방 카운터', 0.85], storage: ['수납장', 2.0] };
+
+// ---------- 가구·설비 모양 (원점 = 바닥 가운데, 뒤쪽 = -z) ----------
+function part(g, w, h, d, x, y, z, color, round) {
+  const geo = round ? new THREE.CylinderGeometry(0.5, 0.5, 1, 24) : new THREE.BoxGeometry(1, 1, 1);
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.75 }));
+  m.scale.set(w, h, d); m.position.set(x, y + h / 2, z); g.add(m); return m;
+}
+function model(type, w, d, h) {
+  const g = new THREE.Group(), b = -d / 2, f = d / 2;
+  switch (type) {
+    case 'bed': {
+      const hb = Math.min(0.08, d * 0.05);
+      part(g, w, h * 0.3, d - hb, 0, 0, hb / 2, '#C9A27E');
+      part(g, w - 0.04, h * 0.22, d - hb - 0.04, 0, h * 0.3, hb / 2, '#F4EFE6');
+      part(g, w * 0.36, Math.min(0.1, h * 0.1), 0.35, -w * 0.2, h * 0.52, b + hb + 0.25, '#FFFFFF');
+      part(g, w * 0.36, Math.min(0.1, h * 0.1), 0.35, w * 0.2, h * 0.52, b + hb + 0.25, '#FFFFFF');
+      part(g, w, h, hb, 0, 0, b + hb / 2, '#A98462');
+      break;
+    }
+    case 'sofa': {
+      const arm = Math.min(0.2, w * 0.1), back = Math.min(0.25, d * 0.3);
+      part(g, w - arm * 2, h * 0.45, d - back, 0, 0, back / 2, '#8DAE9C');
+      part(g, w, h, back, 0, 0, b + back / 2, '#6F9180');
+      part(g, arm, h * 0.7, d, -w / 2 + arm / 2, 0, 0, '#6F9180');
+      part(g, arm, h * 0.7, d, w / 2 - arm / 2, 0, 0, '#6F9180');
+      break;
+    }
+    case 'fridge':
+      // 손잡이까지 입력한 깊이 안에 들어가게: 몸체 = 깊이 - 4cm
+      part(g, w, h, d - 0.04, 0, 0, -0.02, '#DDE2E6');
+      part(g, w * 0.98, 0.012, 0.01, 0, h * 0.62, f - 0.04, '#8A9299');
+      part(g, 0.03, h * 0.2, 0.04, w * 0.35, h * 0.68, f - 0.02, '#8A9299');
+      part(g, 0.03, h * 0.25, 0.04, w * 0.35, h * 0.3, f - 0.02, '#8A9299');
+      break;
+    case 'wardrobe': {
+      part(g, w, h, d, 0, 0, 0, '#E3D3BC');
+      const n = Math.max(1, Math.round(w / 0.5));
+      for (let i = 1; i < n; i++) part(g, 0.01, h * 0.96, 0.01, -w / 2 + (w / n) * i, h * 0.02, f, '#9C8466');
+      break;
+    }
+    case 'desk': case 'table': {
+      const t = 0.04, leg = 0.05;
+      part(g, w, t, d, 0, h - t, 0, type === 'desk' ? '#D7C2A3' : '#B88A63');
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) part(g, leg, h - t, leg, sx * (w / 2 - leg), 0, sz * (d / 2 - leg), '#8C6A4C');
+      break;
+    }
+    case 'washer': {
+      part(g, w, h, d - 0.03, 0, 0, -0.015, '#F2F4F5');
+      const r = Math.min(w, h) * 0.32, door = part(g, r * 2, 0.03, r * 2, 0, h * 0.42 - r, f - 0.015, '#9FB3C2', true);
+      door.rotation.x = Math.PI / 2; door.position.y = h * 0.42;
+      break;
+    }
+    case 'toilet': {
+      const tank = Math.min(0.22, d * 0.3);
+      part(g, w * 0.9, h, tank, 0, 0, b + tank / 2, '#FAFAFA');
+      const bw = Math.min(w * 0.85, 0.42), bd = d - tank;
+      part(g, bw, 0.4, bd, 0, 0, b + tank + bd / 2, '#FFFFFF', true);
+      break;
+    }
+    case 'basin':
+      part(g, Math.min(w, d) * 0.3, 0.7, Math.min(w, d) * 0.3, 0, 0, 0, '#F0F0F0', true);
+      part(g, w, h - 0.7, d, 0, 0.7, 0, '#FFFFFF');
+      part(g, w * 0.7, 0.02, d * 0.6, 0, h - 0.015, 0.02, '#BFD6E2');
+      break;
+    case 'bath': {
+      const t = 0.07;
+      part(g, w, 0.08, d, 0, 0, 0, '#FFFFFF');
+      part(g, w, h, t, 0, 0, b + t / 2, '#FFFFFF'); part(g, w, h, t, 0, 0, f - t / 2, '#FFFFFF');
+      part(g, t, h, d, -w / 2 + t / 2, 0, 0, '#FFFFFF'); part(g, t, h, d, w / 2 - t / 2, 0, 0, '#FFFFFF');
+      part(g, w - t * 2, 0.02, d - t * 2, 0, h * 0.6, 0, '#BFD6E2');
+      break;
+    }
+    case 'sink': case 'counter':
+      part(g, w, h - 0.04, d, 0, 0, 0, '#B8A48C');
+      part(g, w, 0.04, d, 0, h - 0.04, 0, '#7D7D7D');
+      if (type === 'sink') part(g, Math.min(0.6, w * 0.5), 0.02, d * 0.6, 0, h - 0.015, 0, '#BFD6E2');
+      break;
+    case 'storage':
+      part(g, w, h, d, 0, 0, 0, '#E6E6E6');
+      part(g, 0.01, h * 0.96, 0.01, 0, h * 0.02, f, '#9A9A9A');
+      break;
+    default:
+      part(g, w, h, d, 0, 0, 0, '#D9CBB8');
+  }
+  return g;
+}
+
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+catch (e) { msg.textContent = '이 브라우저에서는 3D 보기를 쓸 수 없어요 (WebGL 미지원).'; throw e; }
+msg.remove();
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+view.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#252220');   // --paper
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = !matchMedia('(prefers-reduced-motion: reduce)').matches;   // 손 뗀 뒤 관성도 움직임이다
+controls.maxPolarAngle = Math.PI / 2 - 0.05;
+// 휠로 페이지를 내리다 3D 위를 지나가도 확대되지 않게: 3D 화면을 한 번 누른 뒤에만 휠 확대, 밖으로 나가면 다시 끔
+controls.enableZoom = false;
+view.addEventListener('pointerdown', () => { controls.enableZoom = true; });
+view.addEventListener('pointerleave', () => { controls.enableZoom = false; });
+scene.add(new THREE.HemisphereLight(0xffffff, 0xd9c6b0, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 1.4); sun.position.set(5, 10, 6); scene.add(sun);
+
+let house = new THREE.Group(); scene.add(house);
+let furniture = [], selected = null, topView = false, W = 1, D = 1, builtKey = '';
+let focus = { x: 0, z: 0, w: 1, d: 1 };   // 카메라가 맞출 집 영역
+let grid = null;   // 평면도 모드일 때 { gw, gh, cellM, free(x0,y0,x1,y1) }
+const wallMat = new THREE.MeshStandardMaterial({ color: '#8E8378', transparent: true, opacity: 0.45, depthWrite: false });
+const planWallMat = new THREE.MeshStandardMaterial({ color: '#B8875F', transparent: true, opacity: 0.55, depthWrite: false });
+const edgeMat = new THREE.LineBasicMaterial({ color: '#A39A90' });
+const SHARED = [wallMat, planWallMat, edgeMat];
+
+function wall(x1, z1, x2, z2) {
+  const len = Math.hypot(x2 - x1, z2 - z1); if (len < 0.05) return;
+  const horiz = z1 === z2;
+  const geo = new THREE.BoxGeometry(horiz ? len : WALL_T, WALL_H, horiz ? WALL_T : len);
+  const m = new THREE.Mesh(geo, wallMat); m.position.set((x1 + x2) / 2, WALL_H / 2, (z1 + z2) / 2);
+  m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat));
+  house.add(m);
+}
+function floor(x0, x1, z0, z1, color, text) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z1 - z0), new THREE.MeshStandardMaterial({ color }));
+  m.rotation.x = -Math.PI / 2; m.position.set((x0 + x1) / 2, 0, (z0 + z1) / 2); house.add(m);
+  const c = document.createElement('canvas'); c.width = 256; c.height = 96;
+  const g = c.getContext('2d'); g.font = '44px "Gowun Dodum", sans-serif'; g.fillStyle = '#A39A90'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, 128, 48);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false }));
+  s.scale.set(2.0, 0.75, 1); s.position.set((x0 + x1) / 2, 0.3, (z0 + z1) / 2); house.add(s);
+}
+
+const footprint = m => { const { w, d, rot } = m.userData; return rot % 2 ? [d, w] : [w, d]; };
+// 다른 가구와 겹치나 (바닥 직사각형 기준)
+function hitsFurniture(m, x, z) {
+  const [fw, fd] = footprint(m);
+  return furniture.some(o => {
+    if (o === m) return false;
+    const [ow, od] = footprint(o);
+    return Math.abs(o.position.x - x) < (fw + ow) / 2 - 1e-6 && Math.abs(o.position.z - z) < (fd + od) / 2 - 1e-6;
+  });
+}
+// 가구가 (x, z)에 놓일 수 있나: 벽·집 바깥·다른 가구와 겹치지 않아야 한다
+function fits(m, x, z) { return !hitsFurniture(m, x, z) && fitsRoom(m, x, z); }
+function fitsRoom(m, x, z) {
+  const [fw, fd] = footprint(m);
+  if (!grid) return Math.abs(x) <= W / 2 - WALL_T / 2 - fw / 2 + 1e-9 && Math.abs(z) <= D / 2 - WALL_T / 2 - fd / 2 + 1e-9;
+  const c = grid.cellM;
+  const x0 = Math.floor((x - fw / 2 + W / 2) / c), x1 = Math.ceil((x + fw / 2 + W / 2) / c) - 1;
+  const y0 = Math.floor((z - fd / 2 + D / 2) / c), y1 = Math.ceil((z + fd / 2 + D / 2) / c) - 1;
+  return x0 >= 0 && y0 >= 0 && x1 < grid.gw && y1 < grid.gh && grid.free(x0, y0, x1, y1) === 0;
+}
+// 드래그 목표 위치 → 실제로 갈 수 있는 위치. 평면도 모드는 목표 쪽으로 한 칸씩 걸어가며
+// 막히면 한 축으로 미끄러지고, 둘 다 막히면 거기서 멈춘다. 지금 자리도 안 맞으면 null
+function constrain(m, x, z) {
+  if (!grid) {
+    const [fw, fd] = footprint(m);
+    const lim = (v, half, size) => { const mx = size / 2 - WALL_T / 2 - half; return mx < 0 ? 0 : Math.min(mx, Math.max(-mx, v)); };
+    const p = { x: lim(x, fw / 2, W), z: lim(z, fd / 2, D) };
+    if (!hitsFurniture(m, p.x, p.z)) return p;
+  }
+  if (fits(m, x, z)) return { x, z };
+  let px = m.position.x, pz = m.position.z;
+  if (!fits(m, px, pz)) return null;
+  const n = Math.max(1, Math.ceil(Math.hypot(x - px, z - pz) / (grid ? grid.cellM : 0.05))), sx = (x - px) / n, sz = (z - pz) / n;
+  for (let i = 0; i < n; i++) {
+    if (fits(m, px + sx, pz + sz)) { px += sx; pz += sz; }
+    else if (fits(m, px + sx, pz)) px += sx;
+    else if (fits(m, px, pz + sz)) pz += sz;
+    else break;
+  }
+  return { x: px, z: pz };
+}
+// 가장 가까운 빈자리 (평면도 모드에서 처음 배치·회전할 때)
+function nearestFree(m, tx, tz) {
+  let best = null, bd = Infinity;
+  const c = grid ? grid.cellM * 2 : 0.1, gw = Math.ceil(W / c), gh = Math.ceil(D / c);
+  for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
+    const x = (gx + 0.5) * c - W / 2, z = (gy + 0.5) * c - D / 2, d = (x - tx) ** 2 + (z - tz) ** 2;
+    if (d < bd && fits(m, x, z)) { bd = d; best = { x, z }; }
+  }
+  return best;
+}
+
+function setCamera() {
+  const { x, z, w, d } = focus, s = Math.max(w, d);
+  if (topView) { camera.position.set(x, s * 1.5, z + 0.001); controls.enableRotate = false; }
+  else { camera.position.set(x + w * 0.55, s * 0.9, z + d * 1.0); controls.enableRotate = true; }
+  controls.minDistance = 1; controls.maxDistance = s * 4;   // 너무 들어가거나 빠져서 화면이 비지 않게
+  controls.target.set(x, 0, z); controls.update();
+}
+
+const selName = document.getElementById('selName');
+const glow = (m, hex) => m.traverse(o => o.material?.emissive?.setHex(hex));
+const esc3 = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+function select(m) {
+  for (const f of furniture) glow(f, 0x000000);
+  selected = m;
+  if (m) glow(m, 0x4a2e14);
+  selName.innerHTML = m ? `선택: <b>${esc3(m.userData.name)}</b> · 끌어서 옮기고 <kbd>R</kbd>로 회전`
+    : state.furniture.length ? '가구를 눌러 선택하고 끌어서 옮겨요. <kbd>R</kbd> 회전' : '위 \'가구 추가\'에서 가구를 만들면 여기에 나타나요.';
+}
+
+function resetHouse() {
+  house.traverse(o => { o.geometry?.dispose(); if (o.material && !SHARED.includes(o.material)) { o.material.map?.dispose(); o.material.dispose(); } });
+  scene.remove(house); house = new THREE.Group(); scene.add(house);
+  furniture = []; select(null); grid = null;
+}
+let cur = null;    // 지금 3D로 보고 있는 매물
+// 우리 가구를 놓는다. 매물에 저장된 자리가 맞으면 그대로, 아니면 집 가운데에서 가장 가까운 빈자리
+function addFurniture() {
+  const lay = cur.layout || {};
+  for (const f of state.furniture) {
+    const w = f.w / 100, d = f.d / 100, h = f.h / 100, m = model(f.type, w, d, h), k = lay[f.id];
+    m.userData = { fid: f.id, name: f.name, w, d, h, rot: k ? k.rot : 0 };
+    m.rotation.y = m.userData.rot * Math.PI / 2;
+    const p = (k && fits(m, k.x, k.z) ? k : nearestFree(m, focus.x, focus.z)) ?? { x: focus.x, z: focus.z };
+    m.position.set(p.x, 0, p.z);
+    house.add(m); furniture.push(m);
+  }
+}
+function remember(m) {
+  (cur.layout ??= {})[m.userData.fid] = { x: m.position.x, z: m.position.z, rot: m.userData.rot };
+  save();
+}
+
+// 평면도 없음: 면적·방 개수로 만든 대략 구조
+// 대략 구조의 벽·바닥 목록 (편집용 3D와 전시용 모형이 같이 쓴다)
+function boxLayout(l) {
+  const n = Math.max(1, Math.round(l.rooms)), W = Math.sqrt(l.area * 1.3), D = l.area / W, cw = W / n, walls = [], floors = [];
+  for (let i = 0; i < n; i++) {                      // 뒤쪽 절반 = 방들, 앞쪽 절반 = 거실
+    const x0 = -W / 2 + i * cw, x1 = x0 + cw, xc = (x0 + x1) / 2;
+    floors.push([x0, x1, -D / 2, 0, '#3A3430', `방 ${i + 1}`]);
+    if (cw > 1.4) walls.push([x0, 0, xc - 0.45, 0], [xc + 0.45, 0, x1, 0]); else walls.push([x0, 0, x1, 0]);   // 0.9m 문
+    if (i > 0) walls.push([x0, -D / 2, x0, 0]);
+  }
+  floors.push([-W / 2, W / 2, 0, D / 2, '#302B28', '거실·주방']);
+  walls.push([-W / 2, -D / 2, W / 2, -D / 2], [-W / 2, D / 2, W / 2, D / 2], [-W / 2, -D / 2, -W / 2, D / 2], [W / 2, -D / 2, W / 2, D / 2]);
+  return { W, D, walls, floors };
+}
+function buildBox(l) {
+  const L = boxLayout(l);
+  W = L.W; D = L.D; focus = { x: 0, z: 0, w: W, d: D };
+  for (const f of L.floors) floor(...f);
+  for (const w of L.walls) wall(...w);
+  addFurniture();
+}
+
+// 평면도 있음: 인식된 벽 칸을 세운다
+function planGeometry(l) {
+  const p = l.plan, mask = unrle(p.mask, p.gw * p.gh);
+  const { outside, inside } = outsideOf(mask, p.gw, p.gh);
+  const cellM = p.scaleM || Math.sqrt(l.area / Math.max(inside, 1));
+  const blocked = new Uint8Array(mask.length);
+  let minX = p.gw, maxX = -1, minY = p.gh, maxY = -1;
+  for (let i = 0; i < mask.length; i++) {
+    blocked[i] = mask[i] || outside[i];
+    if (!outside[i]) { const x = i % p.gw, y = (i / p.gw) | 0; minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
+  }
+  if (maxX < 0) { minX = minY = 0; maxX = p.gw - 1; maxY = p.gh - 1; }
+  for (const fx of p.fixtures || []) for (let y = fx.y0; y < fx.y1; y++) blocked.fill(1, y * p.gw + fx.x0, y * p.gw + fx.x1);
+  return { mask, outside, cellM, free: summed(blocked, p.gw, p.gh), box: [minX, minY, maxX + 1, maxY + 1].map(v => v * cellM) };
+}
+function buildPlan(l) {
+  const p = l.plan, g = planGeometry(l);
+  grid = { gw: p.gw, gh: p.gh, cellM: g.cellM, free: g.free };
+  W = p.gw * g.cellM; D = p.gh * g.cellM;
+  const [bx0, bz0, bx1, bz1] = g.box;
+  focus = { x: (bx0 + bx1) / 2 - W / 2, z: (bz0 + bz1) / 2 - D / 2, w: bx1 - bx0, d: bz1 - bz0 };
+  // 바닥 그림: 2D 는 도면 이미지, 3D 렌더는 사진 속 가구가 깔리지 않게 집 안쪽만 단색. 둘 다 1m 격자를 집 범위 안에만 그린다
+  const cv = document.createElement('canvas'); cv.width = p.gw * CELL; cv.height = p.gh * CELL;
+  const cx = cv.getContext('2d'), tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const drawGrid = () => {
+    const step = CELL / g.cellM, [x0, y0, x1, y1] = g.box.map(v => v / g.cellM * CELL);
+    cx.strokeStyle = 'rgba(70,58,50,.5)'; cx.lineWidth = 1.5; cx.beginPath();
+    for (let x = x0; x <= x1 + 0.5; x += step) { cx.moveTo(x, y0); cx.lineTo(x, y1); }
+    for (let y = y0; y <= y1 + 0.5; y += step) { cx.moveTo(x0, y); cx.lineTo(x1, y); }
+    cx.stroke(); tex.needsUpdate = true;
+  };
+  if (p.mono) {
+    cx.fillStyle = '#D8C9B6';
+    for (let i = 0; i < g.mask.length; i++) if (!g.outside[i]) cx.fillRect((i % p.gw) * CELL, ((i / p.gw) | 0) * CELL, CELL, CELL);
+    cx.globalCompositeOperation = 'source-atop'; drawGrid();   // 칠한 집 안쪽에만 선
+  } else { const im = new Image(); im.onload = () => { cx.drawImage(im, 0, 0, cv.width, cv.height); drawGrid(); }; im.src = p.img; }
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshBasicMaterial({ map: tex, alphaTest: p.mono ? 0.5 : 0 }));   // transparent 면 반투명 벽보다 나중에 그려져 벽을 덮는다 → 잘라내기
+  fl.rotation.x = -Math.PI / 2; house.add(fl);
+  const rs = rects(g.mask, p.gw, p.gh);
+  if (rs.length) {
+    const walls = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), planWallMat, rs.length), mt = new THREE.Matrix4();
+    rs.forEach(([x, y, w, h], i) => {
+      mt.makeScale(w * g.cellM, WALL_H, h * g.cellM)
+        .setPosition((x + w / 2) * g.cellM - W / 2, WALL_H / 2, (y + h / 2) * g.cellM - D / 2);
+      walls.setMatrixAt(i, mt);
+    });
+    house.add(walls);
+  }
+  for (const fx of p.fixtures || []) house.add(fixtureModel(fx, g));
+  addFurniture();
+  document.getElementById('planInfo').textContent =
+    `인식된 집 크기 약 ${focus.w.toFixed(1)}m × ${focus.d.toFixed(1)}m · 바닥 격자 한 칸 = 1m · ${p.scaleM ? '직접 맞춘 축척' : `전용 ${l.area}㎡ 기준 자동 축척`}`;
+}
+
+// 설비 하나 → 3D. 벽이 가장 많이 붙은 쪽을 뒤(변기 물탱크·싱크대 뒷면)로 돌린다
+function fixtureModel(fx, g) {
+  const p = cur.plan, c = g.cellM, wallNear = (x0, y0, x1, y1) => {
+    let n = 0;
+    for (let y = Math.max(0, y0); y < Math.min(p.gh, y1); y++) for (let x = Math.max(0, x0); x < Math.min(p.gw, x1); x++) n += g.mask[y * p.gw + x];
+    return n;
+  };
+  const t = 4, side = [                                   // rot 0 = 뒤가 위쪽, 1 = 왼쪽, 2 = 아래쪽, 3 = 오른쪽
+    wallNear(fx.x0, fx.y0 - t, fx.x1, fx.y0), wallNear(fx.x0 - t, fx.y0, fx.x0, fx.y1),
+    wallNear(fx.x0, fx.y1, fx.x1, fx.y1 + t), wallNear(fx.x1, fx.y0, fx.x1 + t, fx.y1)];
+  const rot = side.indexOf(Math.max(...side)), rw = (fx.x1 - fx.x0) * c, rd = (fx.y1 - fx.y0) * c;
+  const m = rot % 2 ? model(fx.type, rd, rw, FIX_TYPES[fx.type][1]) : model(fx.type, rw, rd, FIX_TYPES[fx.type][1]);
+  m.rotation.y = rot * Math.PI / 2;
+  m.position.set((fx.x0 + fx.x1) / 2 * c - W / 2, 0, (fx.y0 + fx.y1) / 2 * c - D / 2);
+  return m;
+}
+
+// 드래그: OrbitControls보다 먼저 받으려고 부모에서 capture 단계로 듣는다
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+let drag = null;
+function aim(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+}
+view.addEventListener('pointerdown', e => {
+  aim(e);
+  const h = ray.intersectObjects(furniture, true)[0];
+  if (!h) return;
+  e.stopPropagation();
+  let m = h.object; while (!furniture.includes(m)) m = m.parent;
+  select(m);
+  ray.ray.intersectPlane(ground, hit);
+  drag = { m, dx: m.position.x - hit.x, dz: m.position.z - hit.z, moved: false, pid: e.pointerId };
+  view.setPointerCapture(e.pointerId);
+}, true);
+view.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.pid) return;
+  aim(e);
+  if (!ray.ray.intersectPlane(ground, hit)) return;
+  const p = constrain(drag.m, hit.x + drag.dx, hit.z + drag.dz);
+  if (p) { drag.m.position.x = p.x; drag.m.position.z = p.z; drag.moved = true; }
+});
+const endDrag = () => { if (drag?.moved) remember(drag.m); drag = null; };
+view.addEventListener('pointerup', endDrag);
+view.addEventListener('pointercancel', endDrag);
+
+function rotate() {
+  if (!selected) return;
+  const u = selected.userData, before = u.rot;
+  u.rot = (u.rot + 1) % 4;
+  const p = constrain(selected, selected.position.x, selected.position.z) ?? nearestFree(selected, selected.position.x, selected.position.z);
+  if (!p) { u.rot = before; selName.textContent = '공간이 좁아 회전할 수 없어요'; return; }
+  selected.rotation.y = u.rot * Math.PI / 2;
+  selected.position.x = p.x; selected.position.z = p.z;
+  remember(selected);
+}
+document.getElementById('rotBtn').addEventListener('click', rotate);
+addEventListener('keydown', e => {
+  if ((e.key === 'r' || e.key === 'R') && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) rotate();
+});
+const topBtn = document.getElementById('topBtn');
+topBtn.addEventListener('click', () => { topView = !topView; topBtn.textContent = topView ? '비스듬히 보기' : '위에서 보기'; setCamera(); });
+
+const fitView = () => {
+  const host = renderer.domElement.parentElement, w = host.clientWidth, h = host.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+  renderer.render(scene, camera);
+};
+const viewRO = new ResizeObserver(fitView); viewRO.observe(view);
+let viewVisible = true, sheetHost = null;   // 다른 메뉴 화면에 있거나 스크롤로 벗어나면 그리지 않는다 (배터리·발열)
+if ('IntersectionObserver' in window) new IntersectionObserver(es => { viewVisible = es[0].isIntersecting; }).observe(view);
+(function tick() { controls.update(); if (viewVisible || sheetHost) renderer.render(scene, camera); requestAnimationFrame(tick); })();
+// 휴대폰 시트의 3D 탭: 같은 렌더러·장면(평면도 바닥·설비·가구 포함)을 시트 칸으로 옮겼다가 닫으면 되돌린다
+window.mount3D = host => {
+  if (host === sheetHost) return;
+  if (sheetHost) viewRO.unobserve(sheetHost);
+  sheetHost = host || null;
+  (sheetHost || view).appendChild(renderer.domElement);
+  if (sheetHost) { viewRO.observe(sheetHost); setCamera(); }
+  fitView();
+};
+
+// ================= 평면도 편집기 (2D) =================
+const $ = s => document.querySelector(s);
+const cv = $('#planCanvas'), ctx = cv.getContext('2d');
+const overlay = document.createElement('canvas'), octx = overlay.getContext('2d');
+const imgCache = new Map();    // dataURL → { el: HTMLImageElement, pixels: ImageData }
+let ed = null;                 // { l, mask, meas: [] }
+
+function loadImage(src) {
+  if (imgCache.has(src)) return Promise.resolve(imgCache.get(src));
+  return new Promise((ok, fail) => {
+    const el = new Image();
+    el.onload = () => {
+      const c = document.createElement('canvas'); c.width = el.width; c.height = el.height;
+      const g = c.getContext('2d'); g.drawImage(el, 0, 0);
+      const v = { el, pixels: g.getImageData(0, 0, el.width, el.height) }; imgCache.set(src, v); ok(v);
+    };
+    el.onerror = () => fail(new Error('이미지를 읽을 수 없어요'));
+    el.src = src;
+  });
+}
+function drawEditor() {
+  if (!ed) return;
+  const p = ed.l.plan, im = imgCache.get(p.img); if (!im) return;
+  cv.width = im.el.width; cv.height = im.el.height;
+  ctx.drawImage(im.el, 0, 0);
+  overlay.width = p.gw; overlay.height = p.gh;
+  const od = octx.createImageData(p.gw, p.gh);
+  for (let i = 0; i < ed.mask.length; i++) if (ed.mask[i]) od.data.set([194, 65, 58, 150], i * 4);
+  octx.putImageData(od, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(overlay, 0, 0, p.gw * CELL, p.gh * CELL);
+  ctx.lineWidth = 2; ctx.font = '14px "IBM Plex Sans KR", sans-serif';
+  for (const fx of [...(p.fixtures || []), ...(ed.box ? [ed.box] : [])]) {
+    const x = fx.x0 * CELL, y = fx.y0 * CELL, w = (fx.x1 - fx.x0) * CELL, h = (fx.y1 - fx.y0) * CELL;
+    ctx.fillStyle = 'rgba(47,111,98,0.25)'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = '#2F6F62'; ctx.strokeRect(x, y, w, h);
+    ctx.fillStyle = '#1F4D44'; ctx.fillText(FIX_TYPES[fx.type][0], x + 3, y + 15);
+  }
+  if (ed.meas.length) {
+    ctx.strokeStyle = '#2F6F62'; ctx.fillStyle = '#2F6F62'; ctx.lineWidth = 3;
+    ctx.beginPath(); ed.meas.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+    for (const [x, y] of ed.meas) { ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill(); }
+  }
+}
+function setSlider(id, v) { const el = $('#' + id); el.value = v; el.nextElementSibling.value = v; }
+async function syncEditor(l) {
+  const has = !!l?.plan;
+  $('#planEditor').hidden = !has; $('#planDel').hidden = !has;
+  $('#note3d').textContent = has
+    ? '올린 평면도에서 벽·주방 카운터·변기·세면대·욕조를 자동 인식해 도면 위치 그대로 세운 구조예요. 틀린 곳은 아래에서 고칠 수 있어요.'
+    : '실제 도면이 아닌 면적 기준 대략 구조예요. 평면도를 올리면 그 구조대로 바뀌어요. 가구는 \'가구 추가\'에 넣은 치수 그대로예요.';
+  if (!has) { ed = null; return; }
+  const sameListing = ed && ed.l === l;
+  ed = { l, plan: l.plan, mask: unrle(l.plan.mask, l.plan.gw * l.plan.gh), meas: sameListing ? ed.meas : [] };
+  $('#scaleReset').hidden = !l.plan.scaleM;
+  setSlider('thr', l.plan.thr); setSlider('thin', l.plan.thin);
+  renderFixtures();
+  await loadImage(l.plan.img);
+  drawEditor();
+}
+// 편집 결과를 매물에 반영 → 3D 다시 만들기 → 저장
+function commit(changes) {
+  Object.assign(ed.l.plan, changes, { v: (ed.l.plan.v || 0) + 1 });
+  window.show3D(ed.l);
+  $('#planMsg').textContent = save() ? '' : '브라우저 저장 공간이 부족해 평면도가 저장되지 않았어요. 다른 매물의 평면도를 지워 주세요.';
+}
+
+$('#planFile').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = '';
+  const l = state.listings.find(x => x.id === state.selectedId);
+  if (!file || !l) return;
+  $('#planMsg').textContent = '평면도를 인식하는 중…';
+  try {
+    const url = URL.createObjectURL(file);
+    const el = await new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => fail(new Error('이미지 파일만 올릴 수 있어요')); i.src = url; });
+    URL.revokeObjectURL(url);
+    const k = Math.min(1, WORK / Math.max(el.width, el.height));
+    const c = document.createElement('canvas'); c.width = Math.round(el.width * k); c.height = Math.round(el.height * k);
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(el, 0, 0, c.width, c.height);
+    const img = c.toDataURL('image/jpeg', 0.85);
+    const { pixels } = await loadImage(img);    // 저장되는 JPEG 기준으로 인식해야 재인식과 결과가 같다
+    const render3d = isRender(pixels), mono = render3d ? MONO : 0, thin = 1;
+    const thr = render3d ? 45 : Math.min(MAX_THR, otsu(luminance(g.getImageData(0, 0, c.width, c.height))));
+    const d = detect(pixels, thr, thin, mono);
+    const fixtures = render3d ? [] : [
+      ...detectCounters(pixels).map(r => snapToWall(r, d.mask, d.gw, d.gh)).map(r => ({ type: 'counter', x0: r[0], y0: r[1], x1: r[0] + r[2], y1: r[1] + r[3] })),
+      ...detectBathFixtures(pixels),
+    ].map((f, i) => ({ id: 'auto' + i, ...f }));
+    l.plan = { img, thr, thin, mono, gw: d.gw, gh: d.gh, mask: rle(d.mask), scaleM: null, v: (l.plan?.v || 0) + 1, fixtures };
+    $('#planMsg').textContent = render3d ? '3D 이미지라 벽만 인식했어요(주방·욕실 설비는 아래 \'설비 놓기\'로 직접). 같은 매물의 2D 평면도를 올리면 더 정확해요.' : '';
+    render();
+    if (!save()) $('#planMsg').textContent = '브라우저 저장 공간이 부족해 평면도가 저장되지 않았어요. 다른 매물의 평면도를 지워 주세요.';
+  } catch (err) { $('#planMsg').textContent = err.message; }
+});
+$('#planDel').addEventListener('click', () => {
+  const l = state.listings.find(x => x.id === state.selectedId);
+  if (l?.plan && confirmTap($('#planDel'), '한 번 더 누르면 평면도 삭제')) { delete l.plan; render(); }
+});
+
+let redetectTimer;
+for (const id of ['thr', 'thin']) $('#' + id).addEventListener('input', e => {
+  e.target.nextElementSibling.value = e.target.value;
+  clearTimeout(redetectTimer);
+  redetectTimer = setTimeout(async () => {
+    if (!ed) return;
+    const thr = +$('#thr').value, thin = +$('#thin').value;
+    const { pixels } = await loadImage(ed.l.plan.img);
+    const d = detect(pixels, thr, thin, ed.l.plan.mono);
+    ed.mask = d.mask; drawEditor();
+    commit({ thr, thin, mask: rle(d.mask) });
+  }, 150);
+});
+$('#brush').addEventListener('input', e => { e.target.nextElementSibling.value = e.target.value; });
+
+const tool = () => document.querySelector('input[name=tool]:checked').value;
+document.querySelectorAll('input[name=tool]').forEach(r => r.addEventListener('change', () => {
+  $('#fixTypeBox').hidden = $('#fixHint').hidden = tool() !== 'fixture';
+  if (!ed) return;
+  ed.meas = []; ed.box = null; $('#measureRow').hidden = true; drawEditor();
+}));
+function canvasPoint(e) {
+  const r = cv.getBoundingClientRect();
+  return [(e.clientX - r.left) / r.width * cv.width, (e.clientY - r.top) / r.height * cv.height];
+}
+let painting = false;
+function paint(e) {
+  const [px, py] = canvasPoint(e), p = ed.l.plan, br = +$('#brush').value, v = tool() === 'draw' ? 1 : 0;
+  const cx = px / CELL, cy = py / CELL;
+  for (let y = Math.max(0, Math.floor(cy - br)); y <= Math.min(p.gh - 1, Math.ceil(cy + br)); y++)
+    for (let x = Math.max(0, Math.floor(cx - br)); x <= Math.min(p.gw - 1, Math.ceil(cx + br)); x++)
+      if ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= br * br) ed.mask[y * p.gw + x] = v;
+  drawEditor();
+}
+cv.addEventListener('pointerdown', e => {
+  if (!ed) return;
+  if (tool() === 'measure') {
+    if (ed.meas.length === 2) ed.meas = [];
+    ed.meas.push(canvasPoint(e));
+    $('#measureRow').hidden = ed.meas.length < 2;
+    if (ed.meas.length === 2) $('#measureLen').focus();
+    drawEditor(); return;
+  }
+  if (tool() === 'fixture') {
+    const [px, py] = canvasPoint(e), x = Math.floor(px / CELL), y = Math.floor(py / CELL);
+    ed.box = { type: $('#fixType').value, sx: x, sy: y, x0: x, y0: y, x1: x + 1, y1: y + 1 };
+    cv.setPointerCapture(e.pointerId); drawEditor(); return;
+  }
+  painting = e.pointerId; cv.setPointerCapture(e.pointerId); paint(e);
+});
+cv.addEventListener('pointermove', e => {
+  if (ed?.box) {
+    const p = ed.l.plan, [px, py] = canvasPoint(e);
+    const x = Math.max(0, Math.min(p.gw - 1, Math.floor(px / CELL))), y = Math.max(0, Math.min(p.gh - 1, Math.floor(py / CELL))), b = ed.box;
+    b.x0 = Math.min(b.sx, x); b.x1 = Math.max(b.sx, x) + 1; b.y0 = Math.min(b.sy, y); b.y1 = Math.max(b.sy, y) + 1;
+    drawEditor(); return;
+  }
+  if (painting !== false && e.pointerId === painting) paint(e);
+});
+const endPaint = () => {
+  if (ed?.box) {
+    const { sx, sy, ...b } = ed.box; ed.box = null;
+    if (b.x1 - b.x0 >= 3 && b.y1 - b.y0 >= 3) { b.id = uid(); commit({ fixtures: [...(ed.l.plan.fixtures || []), b] }); renderFixtures(); }
+    else $('#planMsg').textContent = '설비 영역이 너무 작아요. 아이콘을 덮도록 크게 드래그해 주세요.';
+    drawEditor(); return;
+  }
+  if (painting === false) return; painting = false; commit({ mask: rle(ed.mask) });
+};
+cv.addEventListener('pointerup', endPaint);
+cv.addEventListener('pointercancel', endPaint);
+
+$('#measureApply').addEventListener('click', () => {
+  const len = +$('#measureLen').value;
+  if (!ed || ed.meas.length < 2 || !(len > 0)) { $('#planMsg').textContent = '두 점을 찍고 0보다 큰 길이를 입력해 주세요.'; return; }
+  const [[x1, y1], [x2, y2]] = ed.meas, cells = Math.hypot(x2 - x1, y2 - y1) / CELL;
+  if (cells < 1) { $('#planMsg').textContent = '두 점이 너무 가까워요. 길게 찍어 주세요.'; return; }
+  ed.meas = []; $('#measureRow').hidden = true; $('#planMsg').textContent = '';
+  commit({ scaleM: len / cells }); $('#scaleReset').hidden = false; drawEditor();
+});
+$('#scaleReset').addEventListener('click', () => { if (ed) { commit({ scaleM: null }); $('#scaleReset').hidden = true; } });
+
+function renderFixtures() {
+  const p = ed?.l.plan, list = $('#fixList'); if (!p) return;
+  const c = grid?.cellM || 0;
+  list.innerHTML = (p.fixtures || []).map(fx => `<li><span>${FIX_TYPES[fx.type][0]}${fx.id.startsWith('auto') ? ' (자동)' : ''} · ${((fx.x1 - fx.x0) * c).toFixed(2)} × ${((fx.y1 - fx.y0) * c).toFixed(2)}m</span>
+    <button type="button" class="small danger" data-fix="${fx.id}">삭제</button></li>`).join('')
+    || '<li class="empty">지정된 설비가 없어요. \'설비 지정\'으로 도면 아이콘 위를 드래그해 보세요.</li>';
+}
+$('#fixList').addEventListener('click', e => {
+  const id = e.target.closest('[data-fix]')?.dataset.fix; if (!id || !ed) return;
+  commit({ fixtures: ed.l.plan.fixtures.filter(f => f.id !== id) }); renderFixtures(); drawEditor();
+});
+
+// ================= 우리 가구 =================
+function renderFurnList() {
+  $('#furnList').innerHTML = state.furniture.map(f => `<li><span><b>${esc3(f.name)}</b> · ${FURN_TYPES[f.type]} · ${f.w}×${f.d}×${f.h}cm</span>
+    <button type="button" class="small danger" data-furn="${f.id}">삭제</button></li>`).join('')
+    || '<li class="empty">아직 만든 가구가 없어요.</li>';
+}
+$('#furnForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(e.target));
+  state.furniture.push({ id: uid(), type: f.type, name: f.name.trim() || FURN_TYPES[f.type], w: +f.w, d: +f.d, h: +f.h });
+  e.target.reset(); renderFurnList(); render();
+});
+$('#furnList').addEventListener('click', e => {
+  const id = e.target.closest('[data-furn]')?.dataset.furn; if (!id) return;
+  state.furniture = state.furniture.filter(f => f.id !== id);
+  for (const l of state.listings) if (l.layout) delete l.layout[id];
+  renderFurnList(); render();
+});
+renderFurnList();
+
+// ================= 진입점 =================
+window.__three = { get furniture() { return furniture; }, get dims() { return { W, D }; }, get grid() { return grid; }, get house() { return house; }, camera, controls, rotate, select, fits, detect, isRender, detectCounters, detectBathFixtures, otsu, luminance };
+window.show3D = l => {
+  const key = l ? `${l.id}|${l.area}|${l.rooms}|${l.plan?.v ?? '-'}|${state.furniture.map(f => f.id).join(',')}` : '';
+  if (key !== builtKey) {
+    builtKey = key; cur = l; resetHouse();
+    if (l?.plan) buildPlan(l); else if (l) buildBox(l);
+    if (l) setCamera();
+    renderer.render(scene, camera);   // 공유 링크(다른 도메인 틀)에서는 클릭 전까지 애니메이션 반복이 멈춰 있어 바로 한 번 그린다
+  }
+  if (!ed || ed.l !== l || ed.plan !== l?.plan) syncEditor(l); else renderFixtures();
+};
+window.show3D(state.listings.find(l => l.id === state.selectedId)); // state: 위 일반 스크립트의 전역 let
+
+// ================= 전시용 흰 모형 (히어로 배경 · TYPE 3D 보기). 편집 불가, 천천히 회전 =================
+const showMat = new THREE.MeshStandardMaterial({ color: '#2A2624', roughness: 0.9 });
+const showEdge = new THREE.LineBasicMaterial({ color: '#B8875F', transparent: true, opacity: 0.9 });   // 브론즈 선
+const showFloor = new THREE.MeshStandardMaterial({ color: '#211E1C', roughness: 1 });
+function maquette(l) {
+  const g = new THREE.Group(), H = 1.1, T = 0.12;
+  const box = (w, d, x, z) => {
+    const geo = new THREE.BoxGeometry(w, H, d), m = new THREE.Mesh(geo, showMat);
+    m.position.set(x, H / 2, z); m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), showEdge)); g.add(m);
+  };
+  let Wm, Dm;
+  if (l.plan) {
+    const p = l.plan, pg = planGeometry(l), c = pg.cellM, [bx0, bz0, bx1, bz1] = pg.box, ox = (bx0 + bx1) / 2, oz = (bz0 + bz1) / 2;
+    Wm = bx1 - bx0; Dm = bz1 - bz0;
+    for (const [x, y, w, h] of rects(pg.mask, p.gw, p.gh)) box(w * c, h * c, (x + w / 2) * c - ox, (y + h / 2) * c - oz);
+  } else {
+    const L = boxLayout(l); Wm = L.W; Dm = L.D;
+    for (const [x1, z1, x2, z2] of L.walls) {
+      const horiz = z1 === z2, len = Math.hypot(x2 - x1, z2 - z1);
+      if (len >= 0.05) box(horiz ? len : T, horiz ? T : len, (x1 + x2) / 2, (z1 + z2) / 2);
+    }
+  }
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(Wm + 0.6, Dm + 0.6), showFloor);
+  fl.rotation.x = -Math.PI / 2; fl.position.y = -0.01; g.add(fl);
+  return { g, size: Math.max(Wm, Dm, 1) };
+}
+function showcase(host, { dist, height }) {
+  if (!host) return null;
+  let r;
+  try { r = new THREE.WebGLRenderer({ antialias: true, alpha: true }); } catch (e) { return null; }
+  r.setPixelRatio(Math.min(devicePixelRatio, 1.5)); host.appendChild(r.domElement);
+  const sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 0.1, 300);
+  sc.add(new THREE.HemisphereLight(0xffffff, 0xd9cbb5, 2.0));
+  const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(6, 12, 4); sc.add(dl);
+  let model = null, size = 8, ang = 0.7, seen = true, key = '';
+  const draw = () => { const d = size * dist / Math.min(1, cam.aspect); cam.position.set(Math.cos(ang) * d, size * height, Math.sin(ang) * d); cam.lookAt(0, 0, 0); r.render(sc, cam); };
+  const fit = () => { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; r.setSize(w, h); cam.aspect = w / h; cam.updateProjectionMatrix(); draw(); };
+  new ResizeObserver(fit).observe(host);
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { seen = es[0].isIntersecting; }).observe(host);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches || /^#shot=/.test(location.hash);
+  let last = 0, lastDraw = 0;
+  if (!still) (function loop(t) {
+    const dt = last ? Math.min(t - last, 100) : 0; last = t;           // 화면 밖에서 돌아와도 각도가 튀지 않게 100ms 상한
+    if (seen && host.clientWidth) { ang += dt * 2 * Math.PI / 60000; if (t - lastDraw >= 33) { lastDraw = t; draw(); } }   // 60초에 한 바퀴, 30fps
+    requestAnimationFrame(loop);
+  })(performance.now());
+  return {
+    set(l) {
+      const k = l ? `${l.id}|${l.area}|${l.rooms}|${l.plan?.v ?? '-'}` : '';
+      if (k === key) return;
+      key = k;
+      if (model) { sc.remove(model); model.traverse(o => o.geometry?.dispose()); }
+      model = null;
+      if (l) { const m = maquette(l); model = m.g; size = m.size; sc.add(model); }
+      fit(); draw();
+    },
+  };
+}
+const heroShow = showcase(document.getElementById('heroCanvas'), { dist: 2.1, height: 2.0 });
+const typeShow = showcase(document.getElementById('type3d'), { dist: 1.1, height: 0.95 });
+window.updateShowcase = (hero, sel) => { heroShow?.set(hero); typeShow?.set(sel); };
+
+// 평면도 매물에 퀸 침대(1.5×2.0m)가 놓일 자리가 있나: 인식한 벽·설비·집 바깥을 피해 어디든 (결과는 평면도 버전별로 기억)
+const bedCache = new Map();
+window.bedFitsPlan = l => {
+  const k = `${l.id}|${l.area}|${l.plan.v}`;
+  if (bedCache.has(k)) return bedCache.get(k);
+  const p = l.plan, pg = planGeometry(l), c = pg.cellM;
+  let ok = false;
+  for (const [bw, bd] of [[1.5, 2.0], [2.0, 1.5]]) {
+    const nw = Math.ceil(bw / c), nd = Math.ceil(bd / c);
+    for (let y = 0; !ok && y + nd <= p.gh; y += 2) for (let x = 0; !ok && x + nw <= p.gw; x += 2) if (pg.free(x, y, x + nw - 1, y + nd - 1) === 0) ok = true;
+  }
+  bedCache.set(k, ok);
+  return ok;
+};
+render();   // 모듈이 준비됐으니 침대 판정·전시 모형까지 채워 다시 그린다
+</script>
+</body>
+</html>

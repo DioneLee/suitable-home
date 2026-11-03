@@ -1835,7 +1835,7 @@ function buildPlan(l) {
     for (let i = 0; i < g.mask.length; i++) if (!g.outside[i]) cx.fillRect((i % p.gw) * CELL, ((i / p.gw) | 0) * CELL, CELL, CELL);
     cx.globalCompositeOperation = 'source-atop'; drawGrid();   // 칠한 집 안쪽에만 선
   } else { const im = new Image(); im.onload = () => { cx.drawImage(im, 0, 0, cv.width, cv.height); drawGrid(); }; im.src = p.img; }
-  const fl = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshBasicMaterial({ map: tex, transparent: !!p.mono }));
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshBasicMaterial({ map: tex, alphaTest: p.mono ? 0.5 : 0 }));   // transparent 면 반투명 벽보다 나중에 그려져 벽을 덮는다 → 잘라내기
   fl.rotation.x = -Math.PI / 2; house.add(fl);
   const rs = rects(g.mask, p.gw, p.gh);
   if (rs.length) {

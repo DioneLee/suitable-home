@@ -1,0 +1,16 @@
+{
+  "settings": { "myCash": 5000, "rate": 3, "work": "여의도", "budget": 95, "budgetFail": false, "commuteMax": null, "commuteWarn": true, "commuteFail": false },
+  "people": [
+    { "id": "p1", "name": "남편", "w": { "price": 5, "area": 5, "commute": 5, "station": 5 } },
+    { "id": "p2", "name": "아내", "w": { "price": 5, "area": 5, "commute": 5, "station": 5 } }
+  ],
+  "listings": [
+    { "id": "s1", "name": "망원동 100-1 방3", "region": "동작구 사당동", "deposit": 5000, "rent": 60, "fee": 10, "area": 50, "rooms": 3, "basement": false, "loanOk": true, "usage": "주거용", "station": "사당역", "walk": 5, "commute": 30 },
+    { "id": "s2", "name": "봉천동 투룸", "region": "관악구 봉천동", "deposit": 5000, "rent": 70, "fee": 10, "area": 60, "rooms": 2, "basement": false, "loanOk": true, "usage": "주거용", "station": "서울대입구역", "walk": 5, "commute": 30 },
+    { "id": "s3", "name": "신림동 원룸", "region": "관악구 신림동", "deposit": 5000, "rent": 90, "fee": null, "area": 40, "rooms": 1, "basement": false, "loanOk": true, "usage": "주거용", "station": "신림역", "walk": 10, "commute": 75 },
+    { "id": "b", "name": "후보 B", "region": "구로구 구로동", "deposit": 8000, "rent": 70, "fee": 15, "area": 42, "rooms": 1, "basement": false, "loanOk": true, "usage": "업무용", "station": "구로디지털단지역", "walk": 3, "commute": 25 },
+    { "id": "cur", "name": "지금 집 (한강오피스텔 301호)", "region": "마포구 공덕동", "deposit": 3000, "rent": 95, "fee": 15, "area": 38.51, "rooms": 1, "basement": false, "loanOk": true, "usage": "업무용", "station": "공덕역", "walk": 5, "commute": 67, "current": true }
+  ],
+  "selectedId": "s1",
+  "furniture": []
+}

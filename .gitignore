@@ -1,0 +1,5 @@
+# 작업과 무관한 로그
+*.log
+# 디자인 반복 중간 스크린샷 (최종 before/after 만 올린다)
+screenshots/process/
+__pycache__/

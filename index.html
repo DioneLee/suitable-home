@@ -665,7 +665,7 @@ function confirmTap(btn, label = '한 번 더 누르면 삭제') {
 }
 // 같은 밀리초에 두 번 눌러도 겹치지 않는 ID (file://에서는 crypto.randomUUID를 못 쓴다)
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-const DEFAULT = { settings: { myCash: 5000, rate: 3, work: '여의도' }, people: [{ id: 'p1', name: '남편', w: { ...W5 } }, { id: 'p2', name: '아내', w: { ...W5 } }], listings: SAMPLE, selectedId: 'a', furniture: [], geo: {} };
+const DEFAULT = { settings: { myCash: 5000, rate: 3, work: '여의도' }, people: [{ id: 'p1', name: '남편', w: { ...W5 } }, { id: 'p2', name: '아내', w: { ...W5 } }], listings: SAMPLE, selectedId: 'a', furniture: [], geo: {}, routes: {} };
 // 예시 매물·여의도 좌표는 미리 넣어 첫 방문에 위치 검색 요청이 나가지 않게 한다
 const GEO_PRESET = { '마포구 망원동': [37.55602, 126.90098], '망원역': [37.55565, 126.91063], '구로구 구로동': [37.49458, 126.88455],
   '구로디지털단지역': [37.48367, 126.9028], '동작구 상도동': [37.49882, 126.9441], '상도역': [37.50385, 126.949], '여의도': [37.52567, 126.92522] };
@@ -673,7 +673,7 @@ const GEO_PRESET = { '마포구 망원동': [37.55602, 126.90098], '망원역': 
 function load() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.listings)) {
     s.furniture ??= [];
-    s.geo ??= {};
+    s.geo ??= {}; s.routes ??= {};
     s.settings.work ??= '직장';
     if (!s.people) {   // 예전 형식(남편·아내 고정) → 사람 목록
       s.people = [{ id: 'p1', name: '남편', w: s.weights?.husband ?? { ...W5 } }, { id: 'p2', name: '아내', w: s.weights?.wife ?? { ...W5 } }];
@@ -995,13 +995,29 @@ function drawLocMap(l, home, stn, work) {
   locLayer?.remove(); locLayer = L.layerGroup().addTo(locMap);
   const tip = (m, t, d = 'top') => m.bindTooltip(t, { permanent: true, direction: d, offset: d === 'top' ? [0, -8] : d === 'bottom' ? [0, 10] : [10, 0] });
   const pts = [home];
-  if (stn) { L.polyline([home, stn], { color: css('--ink'), weight: 1.5 }).addTo(locLayer);
+  const wr = stn && state.routes[routeKey(home, stn)];
+  if (stn && wr === undefined) walkRoute(home, stn);
+  if (stn) { L.polyline(wr ? wr.p : [home, stn], { color: css('--ink'), weight: wr ? 3.5 : 1.5, opacity: wr ? .85 : .5 }).addTo(locLayer);
     tip(L.circleMarker(stn, { radius: 6, color: css('--sage'), fillColor: css('--sage'), fillOpacity: 1 }).addTo(locLayer), `${esc(l.station)} · 도보 ${fmtMin(l.walk)}`, 'right'); pts.push(stn); }
   if (work) { L.polyline([home, work], { color: css('--ink'), weight: 1.5, dashArray: '6 5' }).addTo(locLayer);
-    tip(L.circleMarker(work, { radius: 6, color: css('--ink'), fillColor: css('--ink'), fillOpacity: 1 }).addTo(locLayer), `${esc(state.settings.work)} · 통근 ${fmtMin(l.commute)}`); pts.push(work); }
+    tip(L.circleMarker(work, { radius: 6, color: css('--ink'), fillColor: css('--ink'), fillOpacity: 1 }).addTo(locLayer), `${esc(state.settings.work)} · 통근 ${fmtMin(l.commute)} · 직선`); pts.push(work); }
   tip(L.circleMarker(home, { radius: 10, color: css('--accent'), fillColor: css('--accent'), fillOpacity: 1 }).addTo(locLayer), typeCode(l), 'bottom');
   const fit = () => { locMap.invalidateSize(); pts.length > 1 ? locMap.fitBounds(pts, { padding: [48, 48], maxZoom: 16 }) : locMap.setView(home, 15); };
   box.offsetWidth ? fit() : (locMap._fitLater = fit);   // 숨겨진 화면이면 보일 때 맞춤
+}
+const routeBusy = new Set();
+const routeKey = (a, b) => `${a}|${b}`;
+async function walkRoute(a, b) {   // OpenStreetMap FOSSGIS 도보 경로(키 불필요)
+  const k = routeKey(a, b);
+  if (k in state.routes || routeBusy.has(k)) return; routeBusy.add(k);
+  try {
+    const r = await fetch(`https://routing.openstreetmap.de/routed-foot/route/v1/foot/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`);
+    if (!r.ok) throw r.status;
+    const t = (await r.json()).routes?.[0];
+    state.routes[k] = t ? { d: Math.round(t.distance), p: t.geometry.coordinates.map(([x, y]) => [+y.toFixed(5), +x.toFixed(5)]) } : null; save();
+    if (lastLocEv) renderLocation(lastLocEv);
+  } catch (e) {}   // 실패하면 직선 그대로, 다음 렌더에 다시 시도
+  routeBusy.delete(k);
 }
 const km = (a, b) => a && b ? `직선 ${(L.latLng(a).distanceTo(b) / 1000).toFixed(1)}km` : '';
 function renderLocation(ev) {
@@ -1017,7 +1033,8 @@ function renderLocation(ev) {
   for (const q of qs) if (q && !(q in GEO_PRESET) && !(q in state.geo)) geoQueue.add(q);
   if (geoQueue.size && typeof L !== 'undefined') geocodeQueue();
   $('#locMap').hidden = !mapOk; $('#locSvg').toggleAttribute('hidden', mapOk);
-  const kmS = mapOk ? km(g[0], g[1]) : '', kmW = mapOk ? km(g[0], g[2]) : '';
+  const wr = mapOk && g[1] && state.routes[routeKey(g[0], g[1])];
+  const kmS = wr ? `걷는 길 ${(wr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[1]) : '', kmW = mapOk ? km(g[0], g[2]) : '';
   const facts = () => {
     const walkRank = rankOf(ev.all, l, 'walk'), comRank = rankOf(ev.all, l, 'commute'), many = ev.all.length > 1;
     $('#locFacts').innerHTML = `
@@ -1026,7 +1043,7 @@ function renderLocation(ev) {
     <div><dt>직장</dt><dd>${esc(work)} 편도 ${fmtMin(l.commute)}<small>${many ? `${ev.all.length}곳 중 ${ord(comRank)} 가까워요 · ` : ''}하루 왕복 ${fmtMin(l.commute * 2)}${kmW ? ` · ${kmW}` : ''}</small></dd></div>`;
   };
   if (mapOk) {
-    $('#locLead').textContent = '실제 지도 위에 집·역·직장을 찍었어요. 시간은 입력한 도보·통근 시간이에요.';
+    $('#locLead').textContent = '역까지는 실제로 걷는 길을, 직장까지는 직선을 그렸어요. 대중교통 경로는 아직 지원하지 않고, 시간은 입력한 도보·통근 시간이에요.';
     drawLocMap(l, g[0], g[1], g[2]); facts(); return;
   }
   const far = Math.max(l.commute, l.walk), step = far <= 60 ? 10 : far <= 180 ? 30 : 60;

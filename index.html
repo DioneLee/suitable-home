@@ -570,6 +570,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
               <button type="button" class="danger" id="planDel" hidden>평면도 지우기</button>
               <span class="selname" id="planMsg" role="status"></span>
             </div>
+            <p class="hint">2D 평면도가 가장 정확해요. 위에서 본 3D 이미지도 되지만, 비스듬히 본(사선) 이미지는 구조를 알 수 없어요.</p>
           </div>
           <div>
             <p class="hint" style="margin-top:22px">끌면 회전, 3D 화면을 한 번 누른 뒤 휠(휴대폰은 두 손가락)로 확대해요. 가구는 눌러서 끌고 <kbd>R</kbd>로 돌려요.</p>
@@ -1256,6 +1257,17 @@ const WORK = 900;   // 평면도 긴 변을 이 크기(px)로 줄여서 처리·
 const CELL = 3;     // 벽 격자 1칸 = 3px
 const MAX_THR = 80; // 실제 평면도의 벽은 거의 검정. 이보다 밝은 원목 바닥·주방 카운터는 기본값에서 제외
 
+// 네이버 3D 렌더(위에서 본 모습): 벽면 음영(무채 중간 회색)+검정 비율이 2D 도면보다 높다.
+// 측정(301호 등 12장): 2D ≤ 0.079, 3D ≥ 0.122 → 기준 0.10
+const RENDER_RATIO = 0.10, MONO = 15;   // MONO: 3D 에서 벽으로 볼 최대 채도(max-min). 짙은 갈색 가구·문 제외
+function isRender(img) {
+  const d = img.data, n = img.width * img.height; let c = 0;
+  for (let i = 0; i < n; i++) {
+    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2], mx = Math.max(r, g, b);
+    if ((mx - Math.min(r, g, b) < 12 && r > 150 && r < 235) || mx < 50) c++;
+  }
+  return c / n >= RENDER_RATIO;
+}
 function luminance(img) {
   const n = img.width * img.height, L = new Uint8Array(n), d = img.data;
   for (let i = 0; i < n; i++) { const p = i * 4; L[i] = d[p + 3] < 128 ? 255 : (d[p] * 299 + d[p + 1] * 587 + d[p + 2] * 114) / 1000; }
@@ -1309,10 +1321,10 @@ function removeSmall(mask, w, h, min) {
   return mask;
 }
 // 픽셀 → 벽 격자
-function detect(img, thr, thin) {
-  const w = img.width, h = img.height, L = luminance(img);
+function detect(img, thr, thin, mono) {   // mono: 채도(max-min)가 이 값 이하인 픽셀만 벽 (3D 렌더용)
+  const w = img.width, h = img.height, L = luminance(img), d = img.data;
   let px = new Uint8Array(w * h);
-  for (let i = 0; i < px.length; i++) px[i] = L[i] <= thr ? 1 : 0;
+  for (let i = 0; i < px.length; i++) px[i] = L[i] <= thr && (!mono || Math.max(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]) - Math.min(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]) <= mono) ? 1 : 0;
   px = morph(morph(px, w, h, thin, false), w, h, thin, true);   // 열림: 얇은 선 제거
   const gw = Math.floor(w / CELL), gh = Math.floor(h / CELL), mask = new Uint8Array(gw * gh);
   for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
@@ -1980,15 +1992,16 @@ $('#planFile').addEventListener('change', async e => {
     const c = document.createElement('canvas'); c.width = Math.round(el.width * k); c.height = Math.round(el.height * k);
     const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(el, 0, 0, c.width, c.height);
     const img = c.toDataURL('image/jpeg', 0.85);
-    const thr = Math.min(MAX_THR, otsu(luminance(g.getImageData(0, 0, c.width, c.height)))), thin = 1;
     const { pixels } = await loadImage(img);    // 저장되는 JPEG 기준으로 인식해야 재인식과 결과가 같다
-    const d = detect(pixels, thr, thin);
-    const fixtures = [
+    const render3d = isRender(pixels), mono = render3d ? MONO : 0, thin = 1;
+    const thr = render3d ? 45 : Math.min(MAX_THR, otsu(luminance(g.getImageData(0, 0, c.width, c.height))));
+    const d = detect(pixels, thr, thin, mono);
+    const fixtures = render3d ? [] : [
       ...detectCounters(pixels).map(r => snapToWall(r, d.mask, d.gw, d.gh)).map(r => ({ type: 'counter', x0: r[0], y0: r[1], x1: r[0] + r[2], y1: r[1] + r[3] })),
       ...detectBathFixtures(pixels),
     ].map((f, i) => ({ id: 'auto' + i, ...f }));
-    l.plan = { img, thr, thin, gw: d.gw, gh: d.gh, mask: rle(d.mask), scaleM: null, v: 1, fixtures };
-    $('#planMsg').textContent = '';
+    l.plan = { img, thr, thin, mono, gw: d.gw, gh: d.gh, mask: rle(d.mask), scaleM: null, v: (l.plan?.v || 0) + 1, fixtures };
+    $('#planMsg').textContent = render3d ? '3D 이미지라 벽만 인식했어요(주방·욕실 설비는 아래 \'설비 놓기\'로 직접). 같은 매물의 2D 평면도를 올리면 더 정확해요.' : '';
     render();
     if (!save()) $('#planMsg').textContent = '브라우저 저장 공간이 부족해 평면도가 저장되지 않았어요. 다른 매물의 평면도를 지워 주세요.';
   } catch (err) { $('#planMsg').textContent = err.message; }
@@ -2006,7 +2019,7 @@ for (const id of ['thr', 'thin']) $('#' + id).addEventListener('input', e => {
     if (!ed) return;
     const thr = +$('#thr').value, thin = +$('#thin').value;
     const { pixels } = await loadImage(ed.l.plan.img);
-    const d = detect(pixels, thr, thin);
+    const d = detect(pixels, thr, thin, ed.l.plan.mono);
     ed.mask = d.mask; drawEditor();
     commit({ thr, thin, mask: rle(d.mask) });
   }, 150);
@@ -2112,7 +2125,7 @@ $('#furnList').addEventListener('click', e => {
 renderFurnList();
 
 // ================= 진입점 =================
-window.__three = { get furniture() { return furniture; }, get dims() { return { W, D }; }, get grid() { return grid; }, get house() { return house; }, camera, controls, rotate, select, fits, detect, detectCounters, detectBathFixtures, otsu, luminance };
+window.__three = { get furniture() { return furniture; }, get dims() { return { W, D }; }, get grid() { return grid; }, get house() { return house; }, camera, controls, rotate, select, fits, detect, isRender, detectCounters, detectBathFixtures, otsu, luminance };
 window.show3D = l => {
   const key = l ? `${l.id}|${l.area}|${l.rooms}|${l.plan?.v ?? '-'}|${state.furniture.map(f => f.id).join(',')}` : '';
   if (key !== builtKey) {

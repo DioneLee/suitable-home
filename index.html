@@ -166,7 +166,7 @@ a.stat:active .go i { transform: translateX(4px); }
 .type-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); margin-top: var(--s4); align-items: start; }
 @media (max-width: 960px) { .type-grid { grid-template-columns: minmax(0, 1fr); } }
 .type-panel { border: 1px solid var(--line); border-radius: var(--r2); background: var(--paper); overflow: hidden; transition: border-color .2s; }
-@media (min-width: 961px) { .type-panel { position: sticky; top: 72px; } }   /* 두 단일 때: 목록을 내려도 평면·3D 가 보이게 */
+@media (min-width: 961px) { .type-panel { position: sticky; top: calc(var(--nav-h, 57px) + 16px); } }   /* 메뉴바 실제 높이 + 16px: 탭·가구 배치 버튼이 메뉴바에 가리지 않게 */   /* 두 단일 때: 목록을 내려도 평면·3D 가 보이게 */
 .type-panel.changed { border-color: var(--accent); }
 /* ---- 휴대폰 바텀시트 (768px 미만) ---- */
 .sheet { position: fixed; inset: 0; z-index: 60; }
@@ -1059,6 +1059,8 @@ function renderTypes(ev) {
   $('#type2d').innerHTML = sel.plan ? `<img src="${sel.plan.img}" alt="${esc(sel.name)} 평면도">` : schematic(sel, true);
 }
 // ---------- 휴대폰 바텀시트: 카드를 누르면 그 매물을 바로 보여준다. 내용은 render 의 selectedId 하나만 읽는다 ----------
+// 상단 메뉴바 실제 높이 → --nav-h (확대·글꼴로 높이가 바뀌어도 고정 패널이 메뉴바 아래에 붙게)
+const navBar = $('.nav'); if (navBar && 'ResizeObserver' in window) new ResizeObserver(() => document.documentElement.style.setProperty('--nav-h', navBar.offsetHeight + 'px')).observe(navBar);
 const mobileQ = matchMedia('(max-width: 767.98px)');
 const sheet = { open: false, tab: '2d', y: 0, from: null, after: null };
 function renderSheet(ev) {

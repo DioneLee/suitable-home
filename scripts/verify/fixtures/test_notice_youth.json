@@ -1,0 +1,116 @@
+{
+ "app": "suitable-home-notice",
+ "version": 1,
+ "notice": {
+  "id": "test-youth-sadang-2026-11",
+  "kind": "임대",
+  "name": "(테스트) 사당역 청년안심주택 최초모집",
+  "short": "(테스트) 사당 청년안심주택",
+  "addr": "서울특별시 동작구 사당동 000",
+  "city": "서울",
+  "region": "동작구",
+  "station": "사당역",
+  "noticeDate": "2026-11-03",
+  "url": "https://soco.seoul.go.kr",
+  "summary": "테스트용 가짜 공고 · 청년 전용 (신혼 공급 없음)",
+  "cite": {},
+  "schedule": [
+   {
+    "key": "apply",
+    "label": "청약 신청",
+    "from": "2026-11-11",
+    "to": "2026-11-15"
+   }
+  ],
+  "ratios": [
+   30,
+   40,
+   50
+  ],
+  "contractPct": 10,
+  "parking": 12,
+  "incomeBase": [
+   381.3363,
+   586.627,
+   816.8429,
+   880.2202,
+   932.6985
+  ],
+  "incomeExtra": 57.9278,
+  "rules": {
+   "youth": {
+    "special": {
+     "age": [
+      19,
+      39
+     ],
+     "single": true,
+     "homeless": "본인",
+     "incomeMax": 120,
+     "incomeRanks": [
+      100,
+      110,
+      120
+     ],
+     "asset": 25100,
+     "car": 4542
+    },
+    "general": {
+     "age": [
+      19,
+      39
+     ],
+     "single": true,
+     "homeless": "본인",
+     "car": 4542
+    }
+   }
+  },
+  "types": [
+   {
+    "id": "21",
+    "tier": "youth",
+    "area": 21.9,
+    "rooms": 1,
+    "fee": 7,
+    "units": {
+     "special": 8,
+     "general": 30
+    },
+    "prices": {
+     "special": [
+      [
+       6000,
+       55
+      ],
+      [
+       8000,
+       48
+      ],
+      [
+       10000,
+       40
+      ]
+     ],
+     "general": [
+      [
+       7000,
+       65
+      ],
+      [
+       9500,
+       56
+      ],
+      [
+       12000,
+       47
+      ]
+     ]
+    }
+   }
+  ],
+  "notes": [
+   "테스트 데이터입니다. 신혼부부 공급이 없는 공고예요."
+  ]
+ }
+}

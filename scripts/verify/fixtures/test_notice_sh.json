@@ -1,0 +1,181 @@
+{
+ "app": "suitable-home-notice",
+ "version": 1,
+ "notice": {
+  "id": "test-sh-mapo-2026-11",
+  "kind": "임대",
+  "name": "(테스트) SH 마포 공덕 행복주택 입주자 모집",
+  "short": "(테스트) SH 공덕 행복주택",
+  "addr": "서울특별시 마포구 공덕동 000",
+  "city": "서울",
+  "region": "마포구",
+  "station": "공덕역",
+  "noticeDate": "2026-11-04",
+  "url": "https://www.i-sh.co.kr",
+  "summary": "테스트용 가짜 공고 · SH 행복주택 · 신혼·청년 공급",
+  "cite": {
+   "date": "p1"
+  },
+  "schedule": [
+   {
+    "key": "apply",
+    "label": "청약 접수",
+    "from": "2026-11-20",
+    "to": "2026-11-24"
+   },
+   {
+    "key": "result",
+    "label": "서류심사 대상자 발표",
+    "from": "2026-12-10",
+    "to": "2026-12-10"
+   },
+   {
+    "key": "movein",
+    "label": "입주",
+    "from": "2027-03-01",
+    "to": "2027-04-30"
+   }
+  ],
+  "ratios": [
+   30,
+   50
+  ],
+  "contractPct": 5,
+  "parking": 5,
+  "incomeBase": [
+   381.3363,
+   586.627,
+   816.8429,
+   880.2202,
+   932.6985
+  ],
+  "incomeExtra": 57.9278,
+  "rules": {
+   "newlywed": {
+    "special": {
+     "age": [
+      19,
+      39
+     ],
+     "marriageDays": 2555,
+     "preMarried": true,
+     "homeless": "세대",
+     "incomeMax": 100,
+     "incomeRanks": [
+      100
+     ],
+     "asset": 34500,
+     "car": 4542
+    },
+    "general": {
+     "age": [
+      19,
+      39
+     ],
+     "marriageDays": 2555,
+     "preMarried": true,
+     "homeless": "세대",
+     "car": 4542
+    }
+   },
+   "youth": {
+    "special": {
+     "age": [
+      19,
+      39
+     ],
+     "single": true,
+     "homeless": "본인",
+     "incomeMax": 120,
+     "incomeRanks": [
+      100,
+      110,
+      120
+     ],
+     "asset": 25100,
+     "car": 4542
+    },
+    "general": {
+     "age": [
+      19,
+      39
+     ],
+     "single": true,
+     "homeless": "본인",
+     "car": 4542
+    }
+   }
+  },
+  "types": [
+   {
+    "id": "36",
+    "tier": "youth",
+    "area": 36,
+    "rooms": 1,
+    "fee": 6,
+    "units": {
+     "special": 10,
+     "general": 20
+    },
+    "prices": {
+     "special": [
+      [
+       5000,
+       30
+      ],
+      [
+       8000,
+       20
+      ]
+     ],
+     "general": [
+      [
+       6000,
+       35
+      ],
+      [
+       9000,
+       24
+      ]
+     ]
+    }
+   },
+   {
+    "id": "49",
+    "tier": "newlywed",
+    "area": 49.5,
+    "rooms": 2,
+    "fee": 9,
+    "units": {
+     "special": 30,
+     "general": 40
+    },
+    "prices": {
+     "special": [
+      [
+       9000,
+       45
+      ],
+      [
+       14000,
+       30
+      ]
+     ],
+     "general": [
+      [
+       10500,
+       52
+      ],
+      [
+       16000,
+       35
+      ]
+     ]
+    }
+   }
+  ],
+  "notes": [
+   "테스트 데이터입니다. 실제 공고가 아니에요."
+  ]
+ }
+}

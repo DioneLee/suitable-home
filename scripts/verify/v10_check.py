@@ -125,10 +125,40 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   const good = fw.eval('JSON.stringify({ ...state.subs.notices[0], id: "paste-test", short: "붙여넣기 시험" })'); paste('여기 결과예요:\n```json\n' + good + '\n```'); await W(300);
   ok('붙여넣기: 올바르면 바로 들어감', fw.eval('state.subs.notices.some(n => n.id === "paste-test")') && d.querySelector('#subAdd').hidden, fw.eval('state.subs.notices.length'));
   // 새로 올라온 공고(feed): 없으면 숨김 · 예시 형식이면 마감 안 지난 것만 · 위험한 링크 거름
-  const fd = d.querySelector('#subFeed'), noFeed = fd.hidden;
+  const fd = d.querySelector('#subFeed'), noFeed = fd.hidden || (await fetch('/feed/notices.json')).ok;   // 진짜 feed 가 있으면 보이는 게 맞다
   const ex = await (await fetch('/samples/feed_example.json')).json(); ex.items.push({ title: '지난 공고', to: '2026-11-01' }, { title: '나쁜 링크', url: 'javascript:alert(1)', to: '2026-12-01' });
   fw.eval('setFeed')(ex); await W(100);
   ok('새로 올라온 공고: feed 없으면 숨김 · 있으면 표시(지난 공고 빼고, D-day, 새 공고, javascript 링크 없음) · 공고 보러 가기 링크 4개', noFeed && !fd.hidden && fd.querySelectorAll('li').length === 3 && /행복주택 입주자 모집공고/.test(fd.innerText) && /새 공고/.test(fd.innerText) && /D-6/.test(fd.innerText) && !fd.innerHTML.includes('javascript:') && d.querySelectorAll('.sub-go a').length === 4, fd.innerText.replace(/\s+/g, ' ').slice(0, 200));
+  // v21: aside 시험 피드 (fixtures/feed_test.json) — 긴 기관 이름 · 오늘 마감 · 8개 넘으면 더 보기
+  const ft = await (await fetch('/scripts/verify/fixtures/feed_test.json')).json();
+  fw.eval('setFeed')(ft); await W(100);
+  const orgs = [...fd.querySelectorAll('.org')], lng = orgs.find(o => o.title === '한국자산관리공사(긴이름)'), lefts = [...fd.querySelectorAll('li')].map(li => li.children[li.querySelector('.new') ? 2 : 1].getBoundingClientRect().left);
+  ok('v21-1 기관 칸: 긴 이름 말줄임 + title 전체 · 제목 시작 위치 같음', lng && lng.scrollWidth > lng.clientWidth && getComputedStyle(lng).textOverflow === 'ellipsis' && new Set(orgs.map(o => Math.round(o.getBoundingClientRect().width))).size === 1, lng && [lng.title, lng.scrollWidth, lng.clientWidth, orgs.map(o => Math.round(o.getBoundingClientRect().width))].join(' '));
+  const today = [...fd.querySelectorAll('li')].find(li => /오늘 마감 공고/.test(li.textContent));
+  ok('v21-2 마감일 = 오늘 → "오늘 마감"(경고색) · 다른 줄은 D-n 그대로', today && today.querySelector('.dd').textContent === '오늘 마감' && /D-\d+/.test(fd.textContent) && !/진행 중/.test(today.textContent), today && today.querySelector('.dd')?.textContent);
+  ft.items.push(...[1, 2, 3, 4].map(k => ({ id: 'more' + k, org: 'LH', title: '추가 공고 ' + k, to: '2026-12-0' + k })));
+  fw.eval('setFeed')(ft); await W(100);
+  const mb = fd.querySelector('[data-feedmore]'), n8 = fd.querySelectorAll('li').length;
+  mb?.click(); await W(100);
+  const tos = [...fd.querySelectorAll('li')].map(li => li.querySelector('.dd')?.textContent || '');
+  ok('v21-6 공고 10개 → 8개 + "공고 2개 더 보기" → 누르면 10개 (마감 가까운 순 유지)', n8 === 8 && mb && mb.textContent === '공고 2개 더 보기' && fd.querySelectorAll('li').length === 10 && !fd.querySelector('[data-feedmore]') && tos[0] === '오늘 마감' && /추가 공고 4/.test(fd.querySelectorAll('li')[8].textContent) && /기간 없는/.test(fd.querySelectorAll('li')[9].textContent), [n8, mb?.textContent, fd.querySelectorAll('li').length, tos.join('|')].join(' '));
+  // v21-4: 청년 전용 공고를 신혼부부로 보면 '모집 없음'
+  const yj = await (await fetch('/scripts/verify/fixtures/test_notice_youth.json')).text();
+  d.querySelector('#subAddBtn').click(); await W(200); paste(yj); await W(300); const tab0 = fw.eval('state.subs.tab'); fw.eval("state.subs.tab = 'newlywed'; render();"); await W(200);
+  const yc = d.querySelector('#subJudge .sub-main'), ypick = [...d.querySelectorAll('#subJudge .sub-pick')].find(p => /사당/.test(p.textContent));
+  ok('v21-4 청년 전용 공고 · 신혼부부로 보기 → "신혼부부 모집 없음" · "이 공고는 신혼부부를 모집하지 않아요"', fw.eval('state.subs.tab') === 'newlywed' && ypick && /신혼부부 모집 없음/.test(ypick.textContent) && /이 공고는 신혼부부를 모집하지 않아요/.test(yc.textContent), [fw.eval('state.subs.tab'), yc.querySelector('.sub-kind')?.textContent, ypick?.textContent].join(' / '));
+  fw.eval("state.subs.notices.push({ ...structuredClone(state.subs.notices.find(n => n.id === 'test-youth-sadang-2026-11')), id: 'nw-only', short: '신혼 전용 시험', types: state.subs.notices[0].types.filter(t => t.tier === 'newlywed') }); state.subs.sel = 'nw-only'; state.subs.tab = 'youth'; render();"); await W(300);
+  ok('v21-4 청년으로 보기 → "청년 모집 없음" · "이 공고는 청년을 모집하지 않아요"', /이 공고는 청년을 모집하지 않아요/.test(d.querySelector('#subJudge .sub-main').textContent) && [...d.querySelectorAll('#subJudge .sub-pick')].some(p => /청년 모집 없음/.test(p.textContent)), d.querySelector('#subJudge .sub-main .sig')?.textContent);
+  fw.eval(`state.subs.notices = state.subs.notices.filter(n => n.id !== 'nw-only' && n.id !== 'test-youth-sadang-2026-11'); state.subs.tab = '${tab0}'; state.subs.sel = 'paste-test'; render();`); await W(300);
+  // v21-5: 내 돈이 필요한 돈보다 많으면 "X 중 Y 사용"
+  const cb = d.createElement('div'); cb.innerHTML = fw.eval("loanBox('t5', 4000, false, '', '')"); d.querySelector('#subJudge').append(cb); fw.eval('paintLoans()');
+  const myc = fw.eval('state.settings.myCash');
+  ok('v21-5 내 돈 5,000 > 보증금 4,000 → "내 돈 5,000만원 중 4,000만원 사용" · 막대는 4,000만큼', myc === 5000 && cb.querySelector('.loan-legend .c').textContent === '내 돈 5,000만원 중 4,000만원 사용' && cb.querySelector('.loan-bar i').style.width === '100%', myc + ' ' + cb.querySelector('.loan-legend .c').textContent);
+  cb.remove();
+  // B2: 자녀 수를 0으로 쓰면 태아 체크 풀림
+  fw.eval("state.subs.me.nw.fetus = true; state.subs.me.nw.kids = 1; render();"); await W(100);
+  { const k = d.querySelector('[data-me="nw.kids"]'); k.value = 0; k.dispatchEvent(new fw.Event('input', { bubbles: true })); await W(100); }
+  ok('자녀 수 0 입력 → 태아 체크 풀림', fw.eval('state.subs.me.nw.fetus') === false && fw.eval('state.subs.me.nw.kids') === 0, fw.eval('JSON.stringify(state.subs.me.nw)'));
   // 공고 둘: 왼쪽 목록 · 새로 넣은 공고가 골라짐 · 눌러서 바꾸기 · 제목 띠
   const head = () => d.querySelector('#subJudge .sub-main .sub-head h3')?.textContent, picks = () => [...d.querySelectorAll('#subJudge .sub-pick')];
   ok('공고 2개 → 목록 2장 · 새 공고가 골라져 제목 띠에 표시', picks().length === 2 && head() === '붙여넣기 시험' && picks()[1].getAttribute('aria-current') === 'true' && d.querySelectorAll('#subJudge .sub-main .easy-card').length === 1, head());
@@ -139,6 +169,8 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   // 휴대폰 390
   f.remove(); f = await frame(390); d = f.contentDocument; fw = f.contentWindow;
   ok('휴대폰: 청약 화면 가로 넘침 없음', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);
+  fw.eval('setFeed')(await (await fetch('/scripts/verify/fixtures/feed_test.json')).json()); await W(100);
+  { const dt = d.querySelector('#subFeed h3 small .d'); ok('v21-3 휴대폰: "2026-11-04 확인" 한 줄 (안 쪼개짐) · 가로 넘침 없음', dt && dt.getClientRects().length === 1 && dt.textContent === '2026-11-04 확인' && d.documentElement.scrollWidth <= 390, dt && [dt.getClientRects().length, d.documentElement.scrollWidth].join(' ')); }
   fw.eval('state.subs.wizard.done = false; wizOpen = false; render();'); await W(300);
   ok('휴대폰: 질문 화면 가로 넘침 없음 · 한 열', !d.querySelector('#subWiz').hidden && d.documentElement.scrollWidth <= 390 && d.querySelectorAll('.wiz-pick button')[1].getBoundingClientRect().top > d.querySelectorAll('.wiz-pick button')[0].getBoundingClientRect().bottom - 1, d.documentElement.scrollWidth);
   // 처음 온 사람: 메뉴 '청약'(1) → '예시 공고로 체험하기'(2) → 결과

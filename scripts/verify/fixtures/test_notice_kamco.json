@@ -1,0 +1,111 @@
+{
+ "app": "suitable-home-notice",
+ "version": 1,
+ "notice": {
+  "id": "test-kamco-yeongdeungpo-2026-11",
+  "kind": "임대",
+  "name": "(테스트) 나라키움 영등포 복합청사 행복주택 예비입주자",
+  "short": "(테스트) 캠코 나라키움 영등포",
+  "addr": "서울특별시 영등포구 당산동 000",
+  "city": "서울",
+  "region": "영등포구",
+  "station": "영등포구청역",
+  "noticeDate": "2026-10-28",
+  "url": "https://www.myhome.go.kr",
+  "summary": "테스트용 가짜 공고 · 한국자산관리공사 · 일반공급만, 접수 일부 지남",
+  "cite": {},
+  "schedule": [
+   {
+    "key": "notice",
+    "label": "공고",
+    "from": "2026-10-28",
+    "to": "2026-10-28"
+   },
+   {
+    "key": "apply",
+    "label": "접수",
+    "from": "2026-11-09",
+    "to": "2026-11-13"
+   }
+  ],
+  "ratios": [
+   40
+  ],
+  "contractPct": 10,
+  "parking": 0,
+  "incomeBase": [
+   381.3363,
+   586.627,
+   816.8429,
+   880.2202,
+   932.6985
+  ],
+  "incomeExtra": 57.9278,
+  "rules": {
+   "newlywed": {
+    "general": {
+     "age": [
+      19,
+      39
+     ],
+     "marriageDays": 2555,
+     "preMarried": true,
+     "homeless": "세대",
+     "car": 4542
+    }
+   },
+   "youth": {
+    "general": {
+     "age": [
+      19,
+      39
+     ],
+     "single": true,
+     "homeless": "본인",
+     "car": 4542
+    }
+   }
+  },
+  "types": [
+   {
+    "id": "21",
+    "tier": "youth",
+    "area": 21,
+    "rooms": 1,
+    "fee": 4,
+    "units": {
+     "general": 5
+    },
+    "prices": {
+     "general": [
+      [
+       4000,
+       25
+      ]
+     ]
+    }
+   },
+   {
+    "id": "44",
+    "tier": "newlywed",
+    "area": 44,
+    "rooms": 2,
+    "fee": 6,
+    "units": {
+     "general": 3
+    },
+    "prices": {
+     "general": [
+      [
+       7000,
+       38
+      ]
+     ]
+    }
+   }
+  ],
+  "notes": [
+   "테스트 데이터입니다. 특별공급 없이 일반공급만 있어요."
+  ]
+ }
+}

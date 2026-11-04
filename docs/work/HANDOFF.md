@@ -19,7 +19,13 @@
 - v12 수정 (2026-11-04): 새 가구는 도면 분석 공간 하나 안(침대·옷장·책상은 침실, 나머지 거실 먼저, 현관 둘레 0.8m 비움) · 칸 이름 중복 막기 · 청약 소득 "초과 · 기준 ○만" · 혼인신고일/예비신혼이면 청년 기혼 자동 · 주택형 6조합을 넣기 전에 고르고 상한 안 조합 '추천'
   - 백업 `index_v12_backup.html` · 실매물 검사 `python local-data/probe.py local-data/_t5.js 390` (git 제외)
 - v14 쉬운 청약 화면 (2026-11-04): 예시 공고 체험(예시 가족, 저장 안 함) · 공고 추가 3단계(복사용 문장 + 붙여넣기 검사) · 질문 7단계 · 신호등 결과 카드 · 고급 설정에 JSON. 판정 계산 그대로
-  - 백업 `index_v14_backup.html` · 검사 `v10_check.py` 61항목(v20) · 스크린샷 `screenshots/after_subs_easy_*` (결과 = seed_v10, 예시 가족 = seed_v8 + 예시 버튼, 질문 = wizard)
+  - 백업 `index_v14_backup.html` · 검사 `v10_check.py` 69항목(v21) · 스크린샷 `screenshots/after_subs_easy_*` (결과 = seed_v10, 예시 가족 = seed_v8 + 예시 버튼, 질문 = wizard)
+
+- 공고 피드 자동화 (2026-11-04): `feed/notices.json` = 사이트 '새로 올라온 공고'
+  - 수집: jev-harness `npm run watch` (작업 스케줄러 `jev-housing-watch`, 매시간 :16) — SH 게시판·청년안심주택·마이홈포털 API·LH 분양임대공고문 API 합쳐서 씀
+    - 위치 `C:\Users\LEE\.aside\u\0\sessions\2026-09-22_XLpnL10juHpcnhZn\artifacts\jev-harness` (`src/feed.js`, `src/sources/*.js`, 인증키는 그 폴더 `.env` 의 `DATA_GO_KR_KEY` — 절대 저장소·로그에 쓰지 않기)
+  - 올리기: `scripts/push-feed.ps1` (작업 스케줄러 `suitable-home-feed-push`, 매일 08:30) — notices.json 만 경로 지정 커밋 후 push, 실패 시 pull/force 없이 로그만
+    - 로그 `local-data\push-feed.log` (git 제외). 끄려면 작업 스케줄러에서 해당 작업 사용 안 함
 
 ## 다음에 할 것 / 남은 것
 

@@ -1510,7 +1510,7 @@ const moveBadge = l => l.moveIn === '가능' ? '<span class="badge pass">전입�
 const SUP_SHORT = { newlywed: { special: '신혼특공', general: '신혼일반' }, youth: { special: '청년특공', general: '청년일반' } };
 function subBadge(l) {
   const si = l.si, c = si.cur, nm = SUP_SHORT[si.t.tier][l.sub.supply];
-  const b = si.no ? '<span class="badge fail">청약 자격 없음</span>' : c.st === 'ok' ? `<span class="badge pass">청약 가능 · ${nm}${c.rankI ? ` · 소득 ${c.rankI}순위` : ''}</span>` : `<span class="badge unk">청약 확인 필요 · ${nm}</span>`;
+  const b = si.no ? '<span class="badge fail">청약 자격 없음</span>' : c.st === 'no' ? `<span class="badge fail">선택한 조합은 ${nm} 자격 불가</span>` : c.st === 'ok' ? `<span class="badge pass">청약 가능 · ${nm}${c.rankI ? ` · 소득 ${c.rankI}순위` : ''}</span>` : `<span class="badge unk">청약 확인 필요 · ${nm}</span>`;
   return b + (si.short ? `<span class="badge warn">계약금 ${fmtMan(si.contract)} > 내 돈</span>` : '');
 }
 const loanBadge = l => l.loanOk ? '<span class="badge pass">대출 가능</span>' : '<span class="badge fail">대출 불가</span>';
@@ -2165,7 +2165,7 @@ function renderSubs(ev) {
       const l = state.listings.find(m => m.sub?.notice === n.id && m.sub?.type === x.id), opts = optionsOf(n, x, me, state.settings), rp = pickOption(n, x, me, state.settings), rec = rp && opts.find(o => o.supply === rp.supply && o.i === rp.i), key = `${n.id}|${x.id}`;
       const pre = subPre[key], at = l ? l.sub : pre, pick = (at && opts.find(o => o.supply === at.supply && o.i === at.i)) || rec, manual = l ? l.sub.auto === false : pick !== rec, spSt = elig(n, me, tier, 'special')?.st, spNo = spSt === 'no';
       const fitAny = opts.some(o => (!spNo || o.supply === 'general') && capsOk(o, state.settings)), dm = state.settings.depMax === undefined ? 13000 : state.settings.depMax;
-      const head = `<div class="sub-type"><div class="sub-type-head"><p><b>${esc(x.id)}형</b> · 전용 ${x.area}㎡ · 특공 ${x.units.special ?? '—'} · 일반 ${x.units.general ?? '—'}세대<br>${pick ? `${SUPPLY_KO[pick.supply]} ${pick.ratio}% · ${fmtWon(pick.deposit)} / ${pick.rent} → <b>${pick.monthly.toFixed(1)}만</b> / 월${manual ? ' (직접 고름)' : fitAny ? ' (추천)' : ' (자동)'}` : '—'}</p>
+      const head = `<div class="sub-type"><div class="sub-type-head"><p><b>${esc(x.id)}형</b> · 전용 ${x.area}㎡ · 특공 ${x.units.special ?? '—'} · 일반 ${x.units.general ?? '—'}세대<br>${pick ? `${SUPPLY_KO[pick.supply]} ${pick.ratio}% · ${fmtWon(pick.deposit)} / ${pick.rent} → <b>${pick.monthly.toFixed(1)}만</b> / 월${manual ? ' (직접 고름)' : fitAny ? ' (추천)' : ' (자동)'}${pick.supply === 'special' && spNo ? ' <span class="badge fail">선택한 조합은 특공 자격 불가</span>' : ''}` : '—'}</p>
         ${l ? `<button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button>` : `<button type="button" class="small primary" data-tadd="${key}">매물로 비교에 넣기</button>`}</div>`;
       const note = o => o === rec && capsOk(o, state.settings) ? '<span class="badge pass">추천</span>' : o.supply === 'special' && spNo ? '특공 자격 불가' : o.supply === 'special' && spSt === 'unk' ? '특공 확인 필요' : !capsOk(o, state.settings) ? '상한 초과' : '';
       return head + `<div class="tbl"><table class="rank"><thead><tr><th></th><th>공급</th><th class="n">보증금 비율</th><th class="n">보증금 / 월세</th><th class="n">관리비</th><th class="n">실제 월 부담</th></tr></thead><tbody>`

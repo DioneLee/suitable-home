@@ -164,10 +164,19 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   fw.eval('state.settings.budget = 140; state.settings.depMax = 25000; render();'); await W(300);
   ok('예산 안이면 초록 "신청할 수 있어요"', d.querySelector('#subJudge .sig').innerText === '신청할 수 있어요' && d.querySelector('#subJudge .sig').classList.contains('ok'), d.querySelector('#subJudge .sig').innerText);
   const wa = d.querySelector('[data-workaddr]'), kk = d.querySelector('[data-kakao]');
-  const kOff = kk.getAttribute('aria-disabled') === 'true' && !kk.href;
+  const kOff = kk.disabled;
   wa.value = '서울 영등포구 여의대로 108'; wa.dispatchEvent(new fw.Event('input', { bubbles: true })); wa.dispatchEvent(new fw.Event('change', { bubbles: true })); await W(300);
-  const k2 = d.querySelector('[data-kakao]').href;
-  ok('회사 주소 → 카카오맵 길찾기 (출발 단지 주소 · 도착 회사) · 기억', kOff && k2.startsWith('https://map.kakao.com/?sName=') && decodeURIComponent(k2).includes('sName=' + fw.eval('state.subs.notices[0].addr')) && decodeURIComponent(k2).includes('eName=서울 영등포구 여의대로 108') && fw.eval('state.subs.workAddr') === '서울 영등포구 여의대로 108', decodeURIComponent(k2));
+  // 위치 검색·새 탭은 가짜로: 단지 주소는 찾고, 회사 주소는 '번지'를 빼야 찾히는 경우
+  const asked = [], opened = { href: '' }; const realFetch = fw.fetch, realOpen = fw.open;
+  fw.fetch = async u => { const q = new URL(u).searchParams.get('q'); asked.push(q); return { ok: true, json: async () => q === '서울 영등포구 여의대로' ? [{ lat: '37.52', lon: '126.92' }] : q.includes('효창원로') ? [{ lat: '37.54', lon: '126.96' }] : [] }; };
+  fw.open = () => ({ set opener(v) {}, location: opened });
+  d.querySelector('[data-kakao]').click(); await W(2500);
+  const k2 = decodeURIComponent(opened.href);
+  ok('회사 주소 → 좌표 찾아 카카오맵 대중교통 길찾기 (번지 빼고 재검색) · 기억', kOff && k2.startsWith('https://map.kakao.com/link/by/traffic/') && k2.includes(fw.eval('state.subs.notices[0].addr').replace(/,/g, ' ') + ',37.54,126.96/서울 영등포구 여의대로 108,37.52,126.92') && asked.includes('서울 영등포구 여의대로') && fw.eval('state.subs.workAddr') === '서울 영등포구 여의대로 108', k2 + ' | ' + asked.join(' / '));
+  fw.eval("state.subs.workAddr = '없는 주소 999'; delete state.geo['없는 주소 999']; render();"); await W(200); opened.href = '';
+  d.querySelector('[data-kakao]').click(); await W(3000);
+  ok('좌표를 못 찾으면 구글지도 대중교통 길찾기 + 안내', opened.href.startsWith('https://www.google.com/maps/dir/?api=1&origin=') && opened.href.includes('travelmode=transit') && /구글지도/.test(d.querySelector('[data-kakaomsg]').textContent), opened.href);
+  fw.fetch = realFetch; fw.open = realOpen;
   const cl = d.querySelector('[data-ncommute]').closest('label');
   ok('통근 칸: 라벨 · 예: 50 · 분', /이 단지에서 직장까지 편도 몇 분인가요\?/.test(cl.innerText) && /비교 매물로 넣을 때만 필요해요/.test(cl.innerText) && cl.querySelector('input').placeholder === '예: 50' && cl.querySelector('.with-unit span').textContent === '분', cl.innerText.replace(/\s+/g, ' '));
   // 대출 계산기 (청약 = 빌릴 비율 80% 기본, 매매 = 지역 LTV)

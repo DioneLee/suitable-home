@@ -126,7 +126,9 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .sub-judge li::before { content: attr(data-mark); display: inline-block; width: 18px; font-weight: 700; }
 .sub-judge li.ok::before { color: var(--pass); } .sub-judge li.no { color: var(--fail); } .sub-judge li.unk { color: var(--muted); }
 .sub-fs { border: 0; padding: 0; margin: var(--s3) 0 0; } .sub-fs legend { font-weight: 600; margin-bottom: 8px; }
-.sub-types td, .sub-types th { white-space: nowrap; }
+.sub-type { margin-top: var(--s3); padding-top: var(--s2); border-top: 1px solid var(--line); }
+.sub-type-head { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); align-items: center; justify-content: space-between; }
+.sub-type-head p { margin: 0; }
 .sub-card input[type="radio"] { width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; accent-color: var(--accent); }
 .facts-mini { display: grid; gap: 6px; padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; }
 .type-panel > .facts-mini { border-top: 0; border-bottom: 1px solid var(--line); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px var(--s3); }   /* 두 줄로 접어 고정 패널이 화면 높이를 넘지 않게 */
@@ -1103,7 +1105,8 @@ function elig(n, me, tier, supply) {
     if (T.pre) add('예비신혼부부', !!r.preMarried);
     else if (isYmd(T.married)) { const dd = daysBetween(T.married, on); add(`혼인 ${dd.toLocaleString()}일째 (${r.marriageDays.toLocaleString()}일 이내)`, dd >= 0 && dd <= r.marriageDays); }
     else add('혼인신고일 미입력 (예비신혼이면 체크)', null);
-  } else add(T.single === true ? '미혼' : T.single === false ? '기혼 (청년은 미혼만)' : '미혼 여부 미입력', T.single);
+  } else { const wed = me.nw?.pre ? '예비신혼 체크됨' : isYmd(me.nw?.married) ? '혼인신고일 입력됨' : '';   // 신혼부부 탭 입력이 있으면 기혼으로 본다
+    add(wed ? `기혼 (${wed}) → 청년은 미혼만` : T.single === true ? '미혼' : T.single === false ? '기혼 (청년은 미혼만)' : '미혼 여부 미입력', wed ? false : T.single); }
   const who = r.homeless === '본인' ? '본인' : '세대';
   add(T.homeless === true ? `${who} 무주택` : T.homeless === false ? `${who}에 집이 있음` : `${who} 무주택 여부 미입력`, T.homeless);
   let rankI = null;
@@ -1114,8 +1117,9 @@ function elig(n, me, tier, supply) {
     else if (T.house === 'none') { hh = 3; sum = T.parents == null ? null : (p.income || 0) + T.parents; }   // 무소득: 본인 + 부모(3인 기준)
     else { hh = Math.max(1, Math.round(+T.hh) || 1); sum = T.hhIncome; }   // 세대원 있음: 세대 전원
     if (sum == null) add('소득 미입력', null);
-    else { const pct = sum / incomeBase(n, hh) * 100; rankI = r.incomeRanks.findIndex(x => pct <= x + 1e-9) + 1 || null;
-      add(`소득 월 ${(+sum).toLocaleString()}만 · ${hh}인 기준 ${pct.toFixed(1)}% (${r.incomeMax}% 이하)${rankI ? ` · 소득 ${rankI}순위` : ''}`, pct <= r.incomeMax + 1e-9); }
+    else { const base = incomeBase(n, hh), pct = sum / base * 100, lim = base * r.incomeMax / 100, ok = pct <= r.incomeMax + 1e-9; rankI = r.incomeRanks.findIndex(x => pct <= x + 1e-9) + 1 || null;
+      const k = Math.abs(sum - lim) < 1 ? 100 : 10, dn = v => Math.floor(v * k + 1e-9) / k, up = v => Math.ceil(v * k - 1e-9) / k;   // 기준은 내림, 초과 % 는 올림 → 숫자가 판정과 같은 쪽
+      add(`소득 월 ${(+sum).toLocaleString()}만 · ${hh}인 기준 ${(ok ? dn(pct) : up(pct)).toFixed(k === 100 ? 2 : 1)}% (${r.incomeMax}% ${ok ? '이하' : '초과'} · 기준 ${dn(lim)}만)${rankI ? ` · 소득 ${rankI}순위` : ''}`, ok); }
   }
   if (r.asset != null) { const a = T.asset, w = tier === 'youth' ? '본인' : '세대'; add(a == null ? `${w} 자산 미입력` : `${w} 자산 ${fmtMan(a)} (${fmtMan(r.asset)} 이하)`, a == null ? null : a <= r.asset); }
   if (r.car != null) add(!me.hasCar ? '자동차 없음' : me.car == null ? '자동차가액 미입력' : `자동차 ${fmtMan(me.car)} (${fmtMan(r.car)} 이내)`, !me.hasCar ? true : me.car == null ? null : me.car <= r.car);
@@ -1128,10 +1132,13 @@ function optionsOf(n, t, me, s) {
   const fee = Math.round((t.fee + (me.hasCar ? n.parking || 0 : 0)) * 10) / 10;
   return ['special', 'general'].flatMap(sup => (t.prices[sup] || []).map(([deposit, rent], i) => ({ supply: sup, i, ratio: n.ratios[i], deposit, rent, fee, monthly: monthlyCost({ deal: '월세', deposit, rent, fee }, s) })));
 }
-// 자동 선택: 특별공급이 '가능'이면 특공 가격, 아니면 일반 가격 → 그중 실제 월 부담이 가장 낮은 비율(같으면 보증금 낮은 쪽)
+// 조합이 비교에서 탈락·예산 초과가 안 되나 (한눈에 비교와 같은 규칙: 보증금 상한 · 월세 95 · 실제 월 부담 상한)
+function capsOk(o, s) { return !overBudget(o.monthly, s) && !reasons({ deal: '월세', deposit: o.deposit, rent: o.rent, area: 99, loanOk: true }, s).length; }
+// 자동 선택 = 추천: 특공이 '가능'이면 특공·일반, 아니면 일반 중 상한 안에 드는 조합 → 실제 월 부담이 가장 낮은 것(같으면 보증금 낮은 쪽).
+// 상한 안에 드는 게 없으면 예전 규칙(특공 가능이면 특공 가격, 아니면 일반 가격 중 가장 싼 것)
 function pickOption(n, t, me, s) {
-  const sup = elig(n, me, t.tier, 'special')?.st === 'ok' ? 'special' : 'general';
-  return optionsOf(n, t, me, s).filter(o => o.supply === sup).sort((a, b) => a.monthly - b.monthly || a.deposit - b.deposit)[0];
+  const sp = elig(n, me, t.tier, 'special')?.st === 'ok', os = optionsOf(n, t, me, s).filter(o => sp || o.supply === 'general'), fit = os.filter(o => capsOk(o, s));
+  return (fit.length ? fit : os.filter(o => o.supply === (sp ? 'special' : 'general'))).sort((a, b) => a.monthly - b.monthly || a.deposit - b.deposit)[0];
 }
 // 불러온 공고 JSON 검사: 형식이 아니면 null, 글자는 길이 제한, 숫자·날짜는 형식 확인 (화면에서는 다시 escape)
 function normNotice(x) {
@@ -1315,9 +1322,15 @@ function ensureTypeLetters(listings) {
   mt.nw.married = '2019-11-04'; console.assert(elig(NT, mt, 'newlywed', 'special').st === 'no', '혼인 2,556일 불가');
   mt = ME(); mt.b.income = null; console.assert(elig(NT, mt, 'newlywed', 'special').st === 'unk', '소득 빈칸 → 확인 필요');
   mt = ME(); mt.hasCar = true; mt.car = 4542; console.assert(elig(NT, mt, 'newlywed', 'general').st === 'ok', '자동차 4,542 가능'); mt.car = 4543; console.assert(elig(NT, mt, 'newlywed', 'general').st === 'no', '자동차 4,543 불가');
-  mt = ME(); console.assert(elig(NT, mt, 'youth', 'special').st === 'ok', '청년특공: 미혼·단독 350만(91.8%) · 자산 9,000');
+  mt = ME(); mt.a.income = 404; console.assert(elig(NT, mt, 'newlywed', 'special').checks.some(c => c.t.includes('120.01% (120% 초과 · 기준 703.95만)')), '경계 초과 문구', elig(NT, mt, 'newlywed', 'special').checks);
+  mt.a.income = 500; console.assert(elig(NT, mt, 'newlywed', 'special').checks.some(c => c.t.includes('% (120% 초과 · 기준 703.9만)')), '초과 문구');
+  mt.a.income = 403.95; console.assert(elig(NT, mt, 'newlywed', 'special').checks.some(c => c.t.includes('(120% 이하 · 기준 703.95만)')), '경계 이하 문구');
+  mt = ME(); console.assert(elig(NT, mt, 'youth', 'general').st === 'no', '혼인신고일 있으면 청년 기혼 → 불가'); mt.nw.married = ''; mt.nw.pre = true; console.assert(elig(NT, mt, 'youth', 'general').st === 'no', '예비신혼도 청년 불가');
+  mt = ME(); mt.nw.married = ''; console.assert(elig(NT, mt, 'youth', 'special').st === 'ok', '청년특공: 미혼·단독 350만(91.8%) · 자산 9,000');
   mt.yt.asset = 25101; console.assert(elig(NT, mt, 'youth', 'special').st === 'no', '청년 본인 자산 25,101 불가'); mt.yt.asset = 25100; console.assert(elig(NT, mt, 'youth', 'special').st === 'ok', '25,100 가능');
   mt.yt.single = false; console.assert(elig(NT, mt, 'youth', 'general').st === 'no', '기혼이면 청년 불가');
+  mt = ME(); const o2 = pickOption(NT, NT.types[0], mt, { myCash: 3000, rate: 3, depMax: 16000, budget: 140 });
+  console.assert(o2.supply === 'special' && o2.ratio === 40 && Math.abs(o2.monthly - 135.3) < 1e-6, '상한 안: 특공 40% 135.3만 추천 (30%는 월세 102 > 95, 50%는 보증금 2억 > 1억 6천)', o2);
   mt = ME(); const o1 = pickOption(NT, NT.types[0], mt, { myCash: 3000, rate: 3 });
   console.assert(o1.supply === 'special' && o1.ratio === 50 && Math.abs(o1.monthly - (73 + 14.8 + 17000 * 0.03 / 12)) < 1e-6, '자동 선택: 특공 50% 130.3만', o1);
   mt.a.income = 500; console.assert(pickOption(NT, NT.types[0], mt, { myCash: 3000, rate: 3 }).supply === 'general', '특공 불가면 일반 가격');
@@ -2117,12 +2130,13 @@ function icsOf(n) {
     ...n.schedule.flatMap(x => ['BEGIN:VEVENT', `UID:${n.id}-${x.key}@suitable-home`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d(x.from)}`, `DTEND;VALUE=DATE:${next(x.to)}`, `SUMMARY:${e(`${n.short} ${x.label}`)}`, `DESCRIPTION:${e(n.url)}`, 'END:VEVENT']),
     'END:VCALENDAR'].join('\r\n') + '\r\n';
 }
-let subEdit = null, noticesKey = '';
+let subEdit = null, noticesKey = '', subPre = {};   // subPre: 넣기 전에 고른 조합 'notice|type' → { supply, i } (저장 안 함)
 const TIER_KO = { newlywed: '신혼부부', youth: '청년' }, SUPPLY_KO = { special: '특별공급', general: '일반공급' };
 const ST_TXT = { ok: ['pass', '가능'], no: ['fail', '불가'], unk: ['unk', '확인 필요'] }, MARK = { true: ['ok', '✔'], false: ['no', '✘'], null: ['unk', '?'] };
 const RANK_R = ['', '해당 구', '서울', '그 밖'];
 function renderSubs(ev) {
   const S = state.subs, me = S.me, t = todayYmd(), u = upcoming();
+  { const ys = document.querySelector('[data-me="yt.single"]'), wed = me.nw.pre || isYmd(me.nw.married); ys.disabled = wed; ys.title = wed ? '신혼부부 탭에 혼인신고일·예비신혼이 있어 기혼으로 판정해요' : ''; }
   $('#subSched').innerHTML = u.map(({ n, e }) => { const d = ddayOf(e, t); return `<li><span class="dd ${d.soon ? 'soon' : ''}">${d.txt}</span><span>${span2(e)}</span><span><b>${esc(e.label)}</b> · ${esc(n.short)}</span></li>`; }).join('')
     || '<li class="hint">공고를 넣으면 접수·발표·계약 일정이 여기에 나와요.</li>';
   const key = JSON.stringify([S.notices, subEdit]);   // 공고 카드는 바뀔 때만 다시 그린다 (입력 중인 칸이 지워지지 않게)
@@ -2148,18 +2162,19 @@ function renderSubs(ev) {
         <ul>${e.checks.map(k => { const [cl, mk] = MARK[k.st]; return `<li class="${cl}" data-mark="${mk}">${esc(k.t)}</li>`; }).join('')}</ul>
         <p class="hint" style="margin-top:8px">${sup === 'special' ? '선정: 소득 순위 → 지역 순위 → 추첨' : '선정: 타입별 전원 무작위 추첨'} · 근거 ${esc(n.cite.rules || '공고문')}</p></div>`; };
     const rows = types.map(x => {
-      const l = state.listings.find(m => m.sub?.notice === n.id && m.sub?.type === x.id), opts = optionsOf(n, x, me, state.settings), pick = l ? opts.find(o => o.supply === l.sub.supply && o.i === l.sub.i) : pickOption(n, x, me, state.settings);
-      const head = `<tr><td><b>${esc(x.id)}형</b></td><td>전용 ${x.area}㎡</td><td>특공 ${x.units.special ?? '—'} · 일반 ${x.units.general ?? '—'}세대</td>
-        <td>${pick ? `${SUPPLY_KO[pick.supply]} ${pick.ratio}% · ${fmtWon(pick.deposit)} / ${pick.rent} → <b>${pick.monthly.toFixed(1)}만</b> / 월${l && l.sub.auto === false ? ' (직접 고름)' : ' (자동)'}` : '—'}</td>
-        <td>${l ? `<button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button>` : `<button type="button" class="small primary" data-tadd="${n.id}|${x.id}">매물로 비교에 넣기</button>`}</td></tr>`;
-      if (!l) return head;
-      return head + `<tr><td colspan="5"><div class="tbl"><table class="rank"><thead><tr><th></th><th>공급</th><th class="n">보증금 비율</th><th class="n">보증금 / 월세</th><th class="n">관리비</th><th class="n">실제 월 부담</th></tr></thead><tbody>`
-        + opts.map(o => `<tr><td><input type="radio" name="opt-${l.id}" data-opt="${l.id}|${o.supply}|${o.i}" ${o.supply === l.sub.supply && o.i === l.sub.i ? 'checked' : ''} aria-label="${SUPPLY_KO[o.supply]} ${o.ratio}%"></td><td>${SUPPLY_KO[o.supply]}</td><td class="n">${o.ratio}%</td><td class="n">${fmtWon(o.deposit)} / ${o.rent}</td><td class="n">${o.fee}</td><td class="n">${o.monthly.toFixed(1)}만</td></tr>`).join('')
-        + `</tbody></table></div><p class="hint">${l.sub.auto === false ? `<button type="button" class="small ghost" data-oauto="${l.id}">자동 선택으로 돌리기</button> ` : ''}자동: 특별공급이 '가능'이면 특공 가격, 아니면 일반 가격 중 실제 월 부담이 가장 낮은 비율 · 계약금 ${n.contractPct}% = ${fmtMan(l.deposit * n.contractPct / 100)}${l.deposit * n.contractPct / 100 > state.settings.myCash ? ' (내 돈보다 많아요)' : ''} · 보증금 대출은 은행 확인 필요</p></td></tr>`;
+      const l = state.listings.find(m => m.sub?.notice === n.id && m.sub?.type === x.id), opts = optionsOf(n, x, me, state.settings), rp = pickOption(n, x, me, state.settings), rec = rp && opts.find(o => o.supply === rp.supply && o.i === rp.i), key = `${n.id}|${x.id}`;
+      const pre = subPre[key], at = l ? l.sub : pre, pick = (at && opts.find(o => o.supply === at.supply && o.i === at.i)) || rec, manual = l ? l.sub.auto === false : pick !== rec, spSt = elig(n, me, tier, 'special')?.st, spNo = spSt === 'no';
+      const fitAny = opts.some(o => (!spNo || o.supply === 'general') && capsOk(o, state.settings)), dm = state.settings.depMax === undefined ? 13000 : state.settings.depMax;
+      const head = `<div class="sub-type"><div class="sub-type-head"><p><b>${esc(x.id)}형</b> · 전용 ${x.area}㎡ · 특공 ${x.units.special ?? '—'} · 일반 ${x.units.general ?? '—'}세대<br>${pick ? `${SUPPLY_KO[pick.supply]} ${pick.ratio}% · ${fmtWon(pick.deposit)} / ${pick.rent} → <b>${pick.monthly.toFixed(1)}만</b> / 월${manual ? ' (직접 고름)' : fitAny ? ' (추천)' : ' (자동)'}` : '—'}</p>
+        ${l ? `<button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button>` : `<button type="button" class="small primary" data-tadd="${key}">매물로 비교에 넣기</button>`}</div>`;
+      const note = o => o === rec && capsOk(o, state.settings) ? '<span class="badge pass">추천</span>' : o.supply === 'special' && spNo ? '특공 자격 불가' : o.supply === 'special' && spSt === 'unk' ? '특공 확인 필요' : !capsOk(o, state.settings) ? '상한 초과' : '';
+      return head + `<div class="tbl"><table class="rank"><thead><tr><th></th><th>공급</th><th class="n">보증금 비율</th><th class="n">보증금 / 월세</th><th class="n">관리비</th><th class="n">실제 월 부담</th></tr></thead><tbody>`
+        + opts.map(o => `<tr><td><input type="radio" name="opt-${l ? l.id : `${n.id}-${x.id}`}" ${l ? `data-opt="${l.id}|${o.supply}|${o.i}"` : `data-pre="${key}|${o.supply}|${o.i}"`} ${o === pick ? 'checked' : ''} aria-label="${SUPPLY_KO[o.supply]} ${o.ratio}%"></td><td>${SUPPLY_KO[o.supply]}${note(o) ? `<span class="cond">${note(o)}</span>` : ''}</td><td class="n">${o.ratio}%</td><td class="n">${fmtWon(o.deposit)} / ${o.rent}</td><td class="n">${o.fee}</td><td class="n">${o.monthly.toFixed(1)}만</td></tr>`).join('')
+        + `</tbody></table></div><p class="hint">${manual ? `<button type="button" class="small ghost" data-oauto="${l ? l.id : ''}" data-okey="${key}">추천으로 돌리기</button> ` : ''}추천: 보증금 상한 ${dm == null ? '없음' : fmtMan(dm)} · 월세 95만 · 실제 월 부담 상한 ${state.settings.budget == null ? '없음' : `${state.settings.budget}만`} 안에서 실제 월 부담이 가장 낮은 조합 (특공은 '가능'일 때만)${fitAny ? '' : ' · <b>상한 안에 드는 조합이 없어</b> 특공 가능이면 특공, 아니면 일반 가격 중 가장 싼 것'}${l ? ` · 계약금 ${n.contractPct}% = ${fmtMan(l.deposit * n.contractPct / 100)}${l.deposit * n.contractPct / 100 > state.settings.myCash ? ' (내 돈보다 많아요)' : ''}` : ''} · 보증금 대출은 은행 확인 필요</p></div>`;
     }).join('');
     return `<div class="sub-card"><h4>${esc(n.short)} · ${TIER_KO[tier]}</h4><div class="sub-judge">${card('special')}${card('general')}</div>
       <p class="hint" style="margin-top:8px">예비 판정이에요. 최종 자격은 사업주체 심사로 정해져요. 1인 1건만 신청할 수 있고 부부가 각자 내면 모두 무효예요.</p>
-      <div class="tbl" style="margin-top:12px"><table class="rank sub-types"><tbody>${rows}</tbody></table></div></div>`;
+      ${rows}</div>`;
   }).join('') || `<p class="hint" style="margin-top:16px">${S.notices.length ? `넣은 공고에 ${TIER_KO[tier]} 주택형이 없어요.` : '공고를 넣으면 여기에 판정이 나와요.'}</p>`;
   const added = state.listings.filter(l => l.sub), both = new Set(added.map(l => state.subs.notices.find(n => n.id === l.sub.notice)?.types.find(x => x.id === l.sub.type)?.tier)).size > 1;
   if (both) $('#subJudge').insertAdjacentHTML('afterbegin', '<p class="badge warn" style="margin-top:12px">신혼부부와 청년 주택형을 모두 비교에 넣었어요. 실제 신청은 한 사람이 한 건만 할 수 있어요.</p>');
@@ -2196,6 +2211,8 @@ $('#subSample').addEventListener('click', async () => {
 $('#subsSec').addEventListener('change', e => {
   const c = e.target.closest('[data-ncommute]');
   if (c) { const n = state.subs.notices.find(x => x.id === c.dataset.ncommute); if (n) { n.commute = c.value === '' ? null : Math.max(0, Math.round(+c.value)); noticesKey = ''; render(); } return; }
+  const pr = e.target.closest('[data-pre]');
+  if (pr) { const [nid, tid, sup, i] = pr.dataset.pre.split('|'); subPre[`${nid}|${tid}`] = { supply: sup, i: +i }; render(); return; }
   const o = e.target.closest('[data-opt]');
   if (o) { const [id, sup, i] = o.dataset.opt.split('|'), l = state.listings.find(x => x.id === id); if (l) { Object.assign(l.sub, { auto: false, supply: sup, i: +i }); render(); } }
 });
@@ -2214,14 +2231,15 @@ $('#subsSec').addEventListener('click', e => {
   if (ds.tadd) {
     const [nid, tid] = ds.tadd.split('|'), n = S.notices.find(x => x.id === nid), t = n?.types.find(x => x.id === tid); if (!t) return;
     if (n.commute == null) { $('#subMsg').textContent = `먼저 "${n.short}" 카드에 이 단지 통근 시간(분)을 넣어 주세요.`; document.querySelector(`[data-ncommute="${nid}"]`)?.focus(); return; }
-    const o = pickOption(n, t, S.me, state.settings);
+    const rec = pickOption(n, t, S.me, state.settings), pre = subPre[ds.tadd], o = (pre && optionsOf(n, t, S.me, state.settings).find(x => x.supply === pre.supply && x.i === pre.i)) || rec, auto = o.supply === rec.supply && o.i === rec.i;
+    delete subPre[ds.tadd];
     state.listings.push({ id: uid(), name: `${n.short} ${t.id}형`, region: n.region, addr: n.addr.replace(/^\S+\s+/, '').replace(n.region, '').trim(), station: n.station, deal: '월세',
       deposit: o.deposit, rent: o.rent, fee: o.fee, area: t.area, rooms: t.rooms, basement: false, loanOk: true, usage: '주거용', walk: n.walk, commute: n.commute, current: false, facing: null,
-      moveIn: '가능', floorNo: '', route: '', url: safeUrl(n.url) ? n.url : '', urlSaved: todayYmd(), loanYears: 30, repay: 'amort', sub: { notice: n.id, type: t.id, supply: o.supply, i: o.i, auto: true } });
+      moveIn: '가능', floorNo: '', route: '', url: safeUrl(n.url) ? n.url : '', urlSaved: todayYmd(), loanYears: 30, repay: 'amort', sub: { notice: n.id, type: t.id, supply: o.supply, i: o.i, auto } });
     $('#subMsg').textContent = `${n.short} ${t.id}형을 매물로 넣었어요. 한눈에 비교에서 다른 집과 같이 볼 수 있어요.`; render(); return;
   }
   if (ds.tdel) { state.listings = state.listings.filter(l => l.id !== ds.tdel); render(); return; }
-  if (ds.oauto) { const l = state.listings.find(x => x.id === ds.oauto); if (l) { l.sub.auto = true; render(); } }
+  if ('oauto' in ds) { delete subPre[ds.okey]; const l = state.listings.find(x => x.id === ds.oauto); if (l) l.sub.auto = true; render(); }
 });
 // 데이터 옮기기: 내보낸 파일 = { app, version, exportedAt, data(state 그대로, 큰 평면도는 다시 압축) }
 const shrinkImg = src => new Promise(ok => {   // 300KB 넘는 평면도만 긴 변 900px·JPEG 0.75로
@@ -2772,21 +2790,35 @@ function constrain(m, x, z) {
 }
 // 가장 가까운 빈자리 (평면도 모드에서 처음 배치·회전할 때)
 // 사방 여유(벽·설비·집 밖·다른 가구까지)가 가장 큰 자리 = 가장 넓은 빈 바닥. 같으면 집 가운데에 가까운 쪽
-function boxFree(m, fw, fd, x, z) {
+function boxFree(m, fw, fd, x, z, room) {   // room: 그 공간 밖 칸의 누적합 (있으면 공간 밖으로 나가지 않게)
   if (!grid) { if (Math.abs(x) > W / 2 - WALL_T / 2 - fw / 2 + 1e-9 || Math.abs(z) > D / 2 - WALL_T / 2 - fd / 2 + 1e-9) return false; }
   else { const c = grid.cellM, x0 = Math.floor((x - fw / 2 + W / 2) / c), x1 = Math.ceil((x + fw / 2 + W / 2) / c) - 1, y0 = Math.floor((z - fd / 2 + D / 2) / c), y1 = Math.ceil((z + fd / 2 + D / 2) / c) - 1;
-    if (!(x0 >= 0 && y0 >= 0 && x1 < grid.gw && y1 < grid.gh && grid.free(x0, y0, x1, y1) === 0)) return false; }
+    if (!(x0 >= 0 && y0 >= 0 && x1 < grid.gw && y1 < grid.gh && grid.free(x0, y0, x1, y1) === 0 && (!room || room(x0, y0, x1, y1) === 0))) return false; }
   return !furniture.some(o => { if (o === m) return false; const [ow, od] = footprint(o); return Math.abs(o.position.x - x) < (fw + ow) / 2 - 1e-6 && Math.abs(o.position.z - z) < (fd + od) / 2 - 1e-6; });
 }
-function roomiest(m) {
+// A(도면 분석)가 있으면 공간 하나 안에서만: 거실·침실 → 없으면 현관·서비스 아닌 공간 → 없으면 공간 무시 (벽 없이 맞닿은 두 방에 걸치지 않게)
+function roomiest(m, A) {
+  if (A && grid) {
+    // 현관 칸 자체는 빼고, 현관이 거실 안에 있으면 현관 둘레 0.8m 만 비운다 (문 앞을 막지 않게)
+    const ex = A.entry % A.gw, ey = (A.entry / A.gw) | 0, rr = Math.ceil(0.8 / A.c), door = i => A.entry >= 0 && Math.abs(i % A.gw - ex) <= rr && Math.abs(((i / A.gw) | 0) - ey) <= rr;
+    const ok = sp => !sp.name.startsWith('현관'), room = sp => summed(Uint8Array.from(A.spaceOf, (k, i) => k !== sp.k || door(i) ? 1 : 0), A.gw, A.gh);
+    const first = ['bed', 'wardrobe', 'desk'].includes(m.userData.type) ? 'sleep' : 'live', second = first === 'sleep' ? 'live' : 'sleep';   // 침대·옷장·책상은 침실, 나머지는 거실 먼저
+    for (const pool of [A.spaces.filter(sp => ok(sp) && sp.zone === first), A.spaces.filter(sp => ok(sp) && sp.zone === second), A.spaces.filter(sp => ok(sp) && sp.zone !== 'svc')]) {
+      let best = null; for (const sp of pool) { const p = roomiestIn(m, room(sp)); if (p && (!best || p.r > best.r)) best = p; }
+      if (best) return best;
+    }
+  }
+  return roomiestIn(m, null);
+}
+function roomiestIn(m, room) {
   const [fw, fd] = footprint(m), c = grid ? grid.cellM * 2 : 0.1, gw = Math.ceil(W / c), gh = Math.ceil(D / c);
   let best = null, br = -1, bd = Infinity;
   for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
-    const x = (gx + 0.5) * c - W / 2, z = (gy + 0.5) * c - D / 2; if (!fits(m, x, z)) continue;
+    const x = (gx + 0.5) * c - W / 2, z = (gy + 0.5) * c - D / 2; if (!fits(m, x, z) || (room && !boxFree(m, fw, fd, x, z, room))) continue;
     let lo = 0, hi = 40;   // 여유 r = 0.05m × k, 이분 탐색 (최대 2m)
-    while (lo < hi) { const k = (lo + hi + 1) >> 1; if (boxFree(m, fw + k * 0.1, fd + k * 0.1, x, z)) lo = k; else hi = k - 1; }
+    while (lo < hi) { const k = (lo + hi + 1) >> 1; if (boxFree(m, fw + k * 0.1, fd + k * 0.1, x, z, room)) lo = k; else hi = k - 1; }
     const d = (x - focus.x) ** 2 + (z - focus.z) ** 2;
-    if (lo > br || (lo === br && d < bd)) { br = lo; bd = d; best = { x, z }; }
+    if (lo > br || (lo === br && d < bd)) { br = lo; bd = d; best = { x, z, r: lo }; }
   }
   return best;
 }
@@ -2830,12 +2862,20 @@ function addFurniture() {
   const lay = cur.layout || {};
   for (const f of state.furniture) {
     const w = f.w / 100, d = f.d / 100, h = f.h / 100, m = model(f.type, w, d, h), k = lay[f.id];
-    m.userData = { fid: f.id, name: f.name, w, d, h, rot: k ? k.rot : 0 };
+    m.userData = { fid: f.id, type: f.type, name: f.name, w, d, h, rot: k ? k.rot : 0 };
     m.rotation.y = m.userData.rot * Math.PI / 2;
     const p = (k && fits(m, k.x, k.z) ? k : roomiest(m)) ?? { x: focus.x, z: focus.z };
-    m.position.set(p.x, 0, p.z);
+    m.position.set(p.x, 0, p.z); m.userData.auto = !(k && fits(m, k.x, k.z)); m.userData.lay0 = k;
     house.add(m); furniture.push(m);
   }
+  // 평면도: 분석(공간 나누기, 이미지 읽기라 비동기)이 끝나면 자리 없던 가구만 거실·침실 한 칸 안으로 다시 놓는다
+  const l = cur, h = house, auto = furniture.filter(m => m.userData.auto);
+  if (l?.plan && auto.length) analyze(l).then(A => {
+    if (house !== h || cur?.id !== l.id) return;   // 그 사이 다른 집을 지었으면 그만
+    const todo = auto.filter(m => cur.layout?.[m.userData.fid] === m.userData.lay0); for (const m of todo) m.position.set(1e6, 0, 1e6);   // 그 사이 끌어 옮긴 가구는 그대로
+    for (const m of todo) { const p = roomiest(m, A) ?? { x: focus.x, z: focus.z }; m.position.set(p.x, 0, p.z); }
+    renderer.render(scene, camera);
+  }).catch(e => console.warn('가구 다시 놓기 실패', e));
 }
 function remember(m) {
   (cur.layout ??= {})[m.userData.fid] = { x: m.position.x, z: m.position.z, rot: m.userData.rot };
@@ -3378,6 +3418,7 @@ async function analyze(l) {
     if (k === 3) for (const sp of arr) if (sp.idx.includes(entry)) sp.name = '현관';
     named.forEach((sp, j) => sp.name = (k >= 0 ? KIND_NAME[k] : '기타') + (named.length > 1 ? ' ' + (j + 1) : ''));
   }
+  for (const sp of live) sp.auto = sp.name;   // 자동 이름 (입력칸에 그대로 두면 사용자 이름으로 저장하지 않는다)
   // 사용자가 바꾼 이름·구역: 칸 가운데 위치로 짝짓는다 (1m 안, 가까운 순) → 다시 인식해도 유지
   const near = 1 / c;
   for (const e of p.spaceNames || []) {
@@ -3385,6 +3426,8 @@ async function analyze(l) {
     for (const sp of live) { if (sp.custom) continue; const d = (sp.cx - e.cx) ** 2 + (sp.cy - e.cy) ** 2; if (d < bd) { bd = d; best = sp; } }
     if (best) { best.custom = e; if (e.name) best.name = e.name; if (e.zone) best.zone = e.zone; }
   }
+  { const taken = new Set(), uniq = nm => { if (!taken.has(nm)) return nm; const b = nm.replace(/ \d+$/, ''); let j = 2; while (taken.has(`${b} ${j}`)) j++; return `${b} ${j}`; };
+    for (const sp of [...live.filter(sp => sp.custom?.name), ...live.filter(sp => !sp.custom?.name)]) taken.add(sp.name = uniq(sp.name)); }
   const spaceOf = new Int32Array(n).fill(-1); live.forEach((sp, k) => { sp.k = k; for (const i of sp.idx) spaceOf[i] = k; });
   const entrySp = entry >= 0 ? live.find(sp => comp[entry] === sp.id || sp.idx.includes(entry)) : null;
   if (entrySp && !entrySp.name.startsWith('현관') && entrySp.kind !== 3) entrySp.isEntry = true;
@@ -3531,7 +3574,7 @@ $('#anaArea').addEventListener('change', async e => {
   const list = cur.plan.spaceNames ||= [];
   let ent = sp.custom && list.includes(sp.custom) ? sp.custom : null;
   if (!ent) { ent = { cx: +sp.cx.toFixed(1), cy: +sp.cy.toFixed(1) }; list.push(ent); }
-  if (t.classList.contains('spn')) ent.name = t.value.trim() || undefined; else ent.zone = t.value;
+  if (t.classList.contains('spn')) ent.name = t.value.trim() && t.value.trim() !== sp.auto ? t.value.trim() : undefined; else ent.zone = t.value;
   save(); await refreshAnalysis();
   $(`#anaArea tr[data-sp="${sp.k}"] ${t.classList.contains('spn') ? '.spn' : '.spz'}`)?.focus();
 });

@@ -75,6 +75,8 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   // 청년 탭
   d.querySelector('[data-subtab="youth"]').click(); await W(300);
   ok('청년 탭: 입력·판정 전환', !d.querySelector('[data-tier-panel="youth"]').hidden && d.querySelector('[data-tier-panel="newlywed"]').hidden && /청년 특별공급/.test(d.querySelector('#subJudge').innerText), '');
+  ok('혼인신고일 있음 → 청년 미혼 칸 잠김·기혼 불가', d.querySelector('[data-me="yt.single"]').disabled && fw.eval("elig(state.subs.notices[0], state.subs.me, 'youth', 'general')").st === 'no', '');
+  fw.eval("state.subs.me.nw.married = ''; render();"); await W(300);
   set('yt.single', '1'); set('yt.homeless', '1'); set('yt.asset', 9000); await W(300);
   e = fw.eval("elig(state.subs.notices[0], state.subs.me, 'youth', 'special')");
   ok('청년특공 가능 (단독 350만 = 1인 91.8%)', e.st === 'ok' && e.rankI === 1, JSON.stringify([e.st, e.rankI]));

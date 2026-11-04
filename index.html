@@ -2898,7 +2898,7 @@ let anaOn = false, anaCache = { key: '', A: null };
 async function analyze(l) {
   const p = l.plan, pg = planGeometry(l), c = pg.cellM, gw = p.gw, gh = p.gh, n = gw * gh, mask = pg.mask, out = pg.outside;
   const key = `${l.id}|${l.area}|${p.v}|${p.scaleM}|${p.entry?.x},${p.entry?.y}|${JSON.stringify(p.spaceNames || [])}`;
-  if (anaCache.key === key) return anaCache.A;
+  if (anaCache.key === key) { anaCache.A.l = l; return anaCache.A; }   // 방향처럼 키에 없는 값은 지금 객체에서 읽게
   const free = i => !mask[i] && !out[i], fix = new Uint8Array(n);
   for (const fx of p.fixtures || []) for (let y = fx.y0; y < fx.y1; y++) fix.fill(1, y * gw + fx.x0, y * gw + fx.x1);
   const zoning = !p.mono, kind = new Int8Array(n).fill(-1);
@@ -3212,11 +3212,17 @@ $('#anaCanvas').addEventListener('click', async e => {
     for (let yy = Math.max(0, y - 15); yy < Math.min(A.gh, y + 16); yy++) for (let xx = Math.max(0, x - 15); xx < Math.min(A.gw, x + 16); xx++) { const i = yy * A.gw + xx; if (A.mask[i] || A.out[i]) continue; const d = (xx - x) ** 2 + (yy - y) ** 2; if (d < bd) { bd = d; best = { x: xx, y: yy }; } }
     if (!best) { $('#anaMsg').textContent = '집 안쪽 바닥을 눌러 주세요.'; return; }
     l.plan.entry = best; $('#anaMsg').textContent = '현관 위치를 저장했어요.';
-  } else {   // 누른 곳에서 네 방향으로 가며 처음 바깥이 나오는 쪽 = 그 벽이 바라보는 쪽
-    const steps = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }, hit = {};
-    for (const [side, [dx, dy]] of Object.entries(steps)) { let k = 0, xx = x, yy = y; while (xx >= 0 && yy >= 0 && xx < A.gw && yy < A.gh && !A.out[yy * A.gw + xx] && k < 40) { xx += dx; yy += dy; k++; } hit[side] = xx < 0 || yy < 0 || xx >= A.gw || yy >= A.gh || A.out[yy * A.gw + xx] ? k : Infinity; }
-    const side = Object.entries(hit).sort((a, b) => a[1] - b[1])[0];
-    if (!Number.isFinite(side[1]) || side[1] > 12) { $('#anaMsg').textContent = '바깥벽 가까이를 눌러 주세요.'; return; }
+  } else {   // 누른 곳에서 바깥이 가장 가까운 쪽 = 그 벽이 바라보는 쪽
+    // 거리 = min(네 방향으로 걸어 집 바깥(A.out)을 만나는 칸 수, 집 테두리 상자 가장자리까지) — 치수선이 바깥을 막아도 상자로 고른다
+    // 그 변 길이에 대한 비율로 비교해 화면 크기(휴대폰 손가락)와 도면 비율에 상관없이 바깥 1/4 안이면 받는다
+    const steps = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }, edge = { top: y - by0, bottom: by1 - 1 - y, left: x - bx0, right: bx1 - 1 - x };
+    const rel = Object.entries(steps).map(([side, [dx, dy]]) => {
+      let k = 0, xx = x, yy = y; while (xx >= 0 && yy >= 0 && xx < A.gw && yy < A.gh && !A.out[yy * A.gw + xx] && k < 40) { xx += dx; yy += dy; k++; }
+      const walk = xx < 0 || yy < 0 || xx >= A.gw || yy >= A.gh || A.out[yy * A.gw + xx] ? k : Infinity;
+      return [side, Math.min(walk, Math.max(0, edge[side])) / (dx ? bx1 - bx0 : by1 - by0)];
+    });
+    const side = rel.sort((a, b) => a[1] - b[1])[0];
+    if (side[1] > 0.25) { $('#anaMsg').textContent = '바깥벽 가까이를 눌러 주세요.'; return; }
     l.plan.winSide = side[0]; $('#anaMsg').textContent = `창 쪽 벽: 도면 ${SIDE_KO[side[0]]} 벽으로 저장했어요.`;
   }
   save(); document.querySelector('input[name=anaTool][value=""]').checked = true; $('#anaCanvas').classList.remove('picking');
@@ -3275,8 +3281,9 @@ window.__ana = { analyze, get on() { return anaOn; }, sunPos: (h, s) => sunPos(h
 window.__three = { get furniture() { return furniture; }, get dims() { return { W, D }; }, get grid() { return grid; }, get house() { return house; }, camera, controls, rotate, select, fits, detect, isRender, detectCounters, detectBathFixtures, otsu, luminance };
 window.show3D = l => {
   const key = l ? `${l.id}|${l.area}|${l.rooms}|${l.plan?.v ?? '-'}|${state.furniture.map(f => f.id).join(',')}` : '';
+  cur = l;   // 수정하면 같은 매물도 새 객체가 된다(방향 등) — 다시 짓지 않아도 지금 객체를 본다
   if (key !== builtKey) {
-    builtKey = key; cur = l; resetHouse();
+    builtKey = key; resetHouse();
     if (l?.plan) buildPlan(l); else if (l) buildBox(l);
     if (l) { setCamera(); shadowify(); }
     renderer.render(scene, camera);   // 공유 링크(다른 도메인 틀)에서는 클릭 전까지 애니메이션 반복이 멈춰 있어 바로 한 번 그린다

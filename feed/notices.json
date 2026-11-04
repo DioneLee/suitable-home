@@ -1,0 +1,83 @@
+{
+ "updated": "2026-11-04T16:32:49+09:00",
+ "source": "마이홈포털·LH 공고 API · SH·청년안심주택 게시판",
+ "items": [
+  {
+   "id": "youth-6716",
+   "org": "청년안심주택",
+   "title": "[민간임대] 미아사거리역 미아 헤리츠타워 추가모집공고",
+   "region": "서울 성북구",
+   "kind": "청년안심주택(민간)",
+   "posted": "2026-10-29",
+   "from": "2026-11-02",
+   "to": "2026-11-04",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6716"
+  },
+  {
+   "id": "youth-6715",
+   "org": "청년안심주택",
+   "title": "[민간임대] 개봉역 에드가개봉 추가모집공고",
+   "region": "서울 구로구",
+   "kind": "청년안심주택(민간)",
+   "posted": "2026-10-29",
+   "from": "2026-11-02",
+   "to": "2026-11-04",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6715"
+  },
+  {
+   "id": "myhome-21471",
+   "org": "한국자산관리공사",
+   "title": "나라키움영등포복합청사 예비입주자 모집공고(21형)",
+   "region": "서울 영등포구",
+   "kind": "행복주택",
+   "posted": "2026-10-28",
+   "from": "2026-11-09",
+   "to": "2026-11-13",
+   "url": "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId=21471&houseSn=1"
+  },
+  {
+   "id": "youth-6719",
+   "org": "청년안심주택",
+   "title": "[민간임대] 송정역 케이제이타워 최초모집공고",
+   "region": "서울 강서구",
+   "kind": "청년안심주택(민간)",
+   "posted": "2026-11-03",
+   "from": "2026-11-11",
+   "to": "2026-11-15",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6719"
+  },
+  {
+   "id": "youth-6718",
+   "org": "청년안심주택",
+   "title": "[민간임대] 효창공원앞역 해링턴 플레이스 용산 리버뷰 최초모집공고",
+   "region": "서울 용산구",
+   "kind": "청년안심주택(민간)",
+   "posted": "2026-11-03",
+   "from": "2026-11-12",
+   "to": "2026-11-15",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6718"
+  },
+  {
+   "id": "sh-312351",
+   "org": "SH",
+   "title": "[토지지원 사회주택]유니버설디자인하우스_수락 입주자 모집 공고",
+   "region": "서울",
+   "kind": "사회주택",
+   "posted": "2026-11-02",
+   "from": "",
+   "to": "",
+   "url": "https://www.i-sh.co.kr/app/lay2/program/S48T1581C563/www/brd/m_247/view.do?multi_itm_seq=2&seq=312351"
+  },
+  {
+   "id": "sh-312053",
+   "org": "SH",
+   "title": "[청년형] 특화형 매입임대주택(구로구) 입주자 모집 공고(운영기관 : 마을과집 협동조합)",
+   "region": "서울 구로구",
+   "kind": "매입임대",
+   "posted": "2026-11-02",
+   "from": "",
+   "to": "",
+   "url": "https://www.i-sh.co.kr/app/lay2/program/S48T1581C563/www/brd/m_247/view.do?multi_itm_seq=2&seq=312053"
+  }
+ ]
+}

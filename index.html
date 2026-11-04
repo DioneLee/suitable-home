@@ -158,7 +158,21 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .sig { display: flex; align-items: center; gap: 12px; font: 600 24px/1.3 var(--sans); margin: 0 0 var(--s2); }
 .sig::before { content: ''; flex: none; width: 20px; height: 20px; border-radius: 50%; background: currentColor; }
 .sig.ok { color: var(--pass); } .sig.unk { color: var(--warn); } .sig.no { color: var(--fail); }
-.why { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.easy-card .why { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+/* 대출 계산기 */
+.loan { margin-top: var(--s3); padding: var(--s2); border: 1px solid var(--line); border-radius: var(--r2); font-size: 16px; line-height: 1.6; }
+.loan h4 { margin: 0 0 var(--s1); font: 600 18px/1.4 var(--sans); }
+.loan-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--line); margin: var(--s1) 0; }
+.loan-bar i { display: block; height: 100%; transition: width 150ms var(--ease); }
+.loan-bar .c { background: var(--accent); } .loan-bar .b { background: var(--sage); } .loan-bar .x { background: var(--fail); }
+.loan-legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; font-variant-numeric: tabular-nums; }
+.loan-legend li::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 1px; background: currentColor; }
+.loan-legend .c::before { background: var(--accent); } .loan-legend .b::before { background: var(--sage); } .loan-legend .x::before { background: var(--fail); }
+.loan-legend .x { color: var(--fail); font-weight: 600; }
+.loan label { display: grid; gap: 6px; margin-top: var(--s2); font-size: 16px; color: var(--ink); }
+.loan .rng { display: flex; align-items: center; gap: 12px; } .loan .rng input { flex: 1; accent-color: var(--accent); min-height: 44px; } .loan .rng output { min-width: 3.5em; font-weight: 700; text-align: right; }
+.loan select { max-width: 320px; }
+.loan .bad { color: var(--fail); font-weight: 700; margin: var(--s1) 0 0; } .loan .ok { color: var(--pass); font-weight: 600; margin: var(--s1) 0 0; }
 .fit-home { margin-top: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line); }
 .fit-home h4 { margin: 0 0 var(--s1); font: 600 18px/1.4 var(--sans); }
 .fit-home dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px var(--s2); margin: var(--s2) 0; }
@@ -202,6 +216,7 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .facts-mini .gl-amt { display: inline; font-size: 18px; }
 .tcost .tcond { display: block; font-size: 12px; color: var(--muted); margin: 0 0 6px auto; max-width: 220px; }
 .rank .cond { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.rank .cond .badge { margin-top: 4px; } .subs-easy .rank .cond .badge { font-size: 14px; padding: 4px 8px; }
 .badges { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; }
 .vs { display: block; font-size: 13px; color: var(--muted); }
 .check { display: flex; align-items: center; gap: var(--s1); cursor: pointer; }
@@ -1039,6 +1054,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <div class="badges" id="shBadges" style="margin-top:8px"></div>
       <p class="why" id="shWhy"></p>
       <p class="vs" id="shVs"></p>
+      <div id="shLoan"></div>
       <p class="sheet-pos" id="shPos"></p>
     </div>
     <div class="sheet-acts">
@@ -1430,6 +1446,10 @@ function ensureTypeLetters(listings) {
   console.assert(o1.supply === 'special' && o1.ratio === 50 && Math.abs(o1.monthly - (73 + 14.8 + 17000 * 0.03 / 12)) < 1e-6, '자동 선택: 특공 50% 130.3만', o1);
   mt.a.income = 500; console.assert(pickOption(NT, NT.types[0], mt, { myCash: 3000, rate: 3 }).supply === 'general', '특공 불가면 일반 가격');
   mt = ME(); mt.hasCar = true; mt.car = 1000; console.assert(optionsOf(NT, NT.types[0], mt, { myCash: 3000, rate: 3 })[0].fee === 26.8, '자동차 있으면 관리비 + 주차 12');
+  { const R = { ltv: 40, cap: 60000 }, a = loanCalc(20000, 5000, 80), b = loanCalc(70000, 5000, 50, R), c = loanCalc(70000, 5000, 40, R), d = loanCalc(200000, 5000, 40, R);   // v17 대출 계산기 (LOAN_RULES 는 아래에 있어 값으로)
+    console.assert(a.short === 15000 && a.can === 16000 && a.used === 15000 && a.left === 0 && !a.over, '보증금 2억 · 내 돈 5천 · 80% → 부족 1억 5천 모두 채움', a);
+    console.assert(b.over && c.can === 28000 && c.left === 37000 && !c.over, '규제 LTV 40%: 50% 불가 · 40%면 2억 8천, 3억 7천 모자람', b, c);
+    console.assert(d.capped && d.can === 60000, '20억 × 40% = 8억 → 6억 상한', d); }
   console.assert(normNotice({ kind: '분양', noticeDate: '2026-11-03', types: [] }) === null && normNotice({ kind: '임대', noticeDate: 'x', types: [] }) === null, '공고 형식 검사');
   console.assert(fmtWon(13000) === '1억 3,000' && fmtWon(20000) === '2억' && fmtWon(5000) === '5,000' && fmtWon(32500) === '3억 2,500', '억·천 표기');
   console.assert(cond({ deal: '월세', deposit: 13000, rent: 50, fee: 5 }) === '월세 1억 3,000 / 50 · 관리비 5' && cond({ deal: '전세', deposit: 20000, fee: null }) === '전세 2억 · 관리비 미확인', '조건 문구');
@@ -1682,6 +1702,8 @@ function renderSheet(ev) {
   $('#shBadges').innerHTML = badge(l) + costTags(l) + commuteTags(l) + (l.walk == null ? ' ' + walkTag(l) : '');
   $('#shWhy').textContent = l.reasons.length ? `탈락 사유: ${l.reasons.join(', ')}` : ''; $('#shWhy').hidden = !l.reasons.length;
   const vs = vsCur(l, ev.cur); $('#shVs').textContent = vs ? `지금 집보다 ${vs}` : ''; $('#shVs').hidden = !vs;
+  { const buy = l.deal === '매매', region = buy ? (LOAN_RULES[l.loanRegion] ? l.loanRegion : guessRegion(l)) : null;
+    $('#shLoan').innerHTML = loanBox(`l|${l.id}|${l.deposit}|${region}`, l.deposit, buy, region, l.id); paintLoans($('#shLoan')); }
   $('#sheet').dataset.id = l.id;   // 검증용: 시트가 보여주는 매물
 }
 function setSheetTab(which) {
@@ -2233,6 +2255,51 @@ const demoMe = tier => fillDefaults(subMe(), { a: { birth: '1992-05-01', income:
   nw: { married: tier === 'youth' ? '' : '2024-06-01', homeless: true, asset: 20000 }, yt: { single: true, homeless: true, house: 'alone', asset: 9000 } });
 const ro = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00, j = c >= 0 && c < 11172 ? c % 28 : 0; return w + (j && j !== 8 ? '으로' : '로'); };   // 청년으로 · 신혼부부로
 const kakaoDir = (from, to) => `https://map.kakao.com/?sName=${encodeURIComponent(from)}&eName=${encodeURIComponent(to)}`;   // 카카오맵 길찾기 (출발·도착 이름이 채워진 채로 열림)
+// ---------- 대출 계산기: 보여 주기만 (판정·실제 월 부담 계산과 무관) ----------
+// 매매 = LTV(지역별 상한) · 월세·전세·청약 = 보증금 중 빌릴 비율(은행·가족 등 누구에게든)
+const LOAN_RULES = { asOf: '2026년 10월 안내 기준', dep: 80,
+  reg: { name: '규제지역 (서울 등)', ltv: 40, cap: 60000 }, non: { name: '비규제지역', ltv: 70, cap: null },
+  firstReg: { name: '생애최초 · 수도권·규제지역', ltv: 70, cap: 60000 }, firstNon: { name: '생애최초 · 그 밖 지역', ltv: 80, cap: null } };
+const loanPct = {};   // 슬라이더 값 (화면 메모리, 저장 안 함)
+function guessRegion(l) { const t = `${l.region || ''} ${l.addr || ''}`; return /서울/.test(t) || SEOUL_GU.some(g => t.includes(g)) ? 'reg' : 'non'; }
+// need: 필요한 돈(보증금·매매가) · cash: 내 돈 · pct: 빌릴 비율 · rule: 매매면 지역 규칙
+function loanCalc(need, cash, pct, rule) {
+  const short = Math.max(0, need - cash), raw = need * pct / 100, cap = rule?.cap ?? Infinity, can = Math.min(raw, cap);
+  return { need, cash: Math.min(cash, need), short, can, capped: raw > cap, used: Math.min(short, can), left: Math.max(0, short - can), over: rule ? pct > rule.ltv : false };
+}
+// 계산기 껍데기 (값은 paintLoan 이 채운다 → 슬라이더를 끌 때 전체를 다시 그리지 않음)
+function loanBox(key, need, buy, region, lid) {
+  const rule = buy ? LOAN_RULES[region] : null, pct = loanPct[key] ?? (buy ? rule.ltv : LOAN_RULES.dep);
+  return `<div class="loan" data-loan="${esc(key)}" data-need="${need}" data-buy="${buy ? 1 : ''}" data-region="${region || ''}">
+    <h4>돈 계산 <span class="unit">${buy ? '집 살 때 대출(LTV)' : '보증금 · 빌릴 돈'}</span></h4>
+    ${buy ? `<label>지역<select data-loanregion="${esc(lid || '')}">${['reg', 'non', 'firstReg', 'firstNon'].map(k => `<option value="${k}" ${k === region ? 'selected' : ''}>${LOAN_RULES[k].name} · LTV ${LOAN_RULES[k].ltv}%</option>`).join('')}</select></label>` : ''}
+    <div class="loan-bar" aria-hidden="true"><i class="c"></i><i class="b"></i><i class="x"></i></div>
+    <ul class="loan-legend"></ul>
+    <label>${buy ? '대출 비율(LTV)' : '빌릴 비율'} <span class="rng"><input type="range" min="0" max="90" step="5" value="${pct}" data-loanpct aria-label="${buy ? '대출 비율' : '빌릴 비율'}"><output>${pct}%</output></span></label>
+    <p class="loan-msg"></p>
+    <p class="hint">${buy ? `예상이에요. 실제 한도는 소득(DSR)·은행에 따라 달라요 · ${LOAN_RULES.asOf}` : '은행 전세대출은 보통 보증금의 80%까지예요. 가족 등에게 빌리는 돈도 여기서 같이 봐요.'}</p></div>`;
+}
+function paintLoan(box) {
+  const buy = !!box.dataset.buy, rule = buy ? LOAN_RULES[box.dataset.region] : null, pct = +box.querySelector('[data-loanpct]').value, r = loanCalc(+box.dataset.need, state.settings.myCash || 0, pct, rule);
+  loanPct[box.dataset.loan] = pct; box.querySelector('output').textContent = `${pct}%`;
+  const w = v => `${r.need ? v / r.need * 100 : 0}%`, [c, b, x] = box.querySelectorAll('.loan-bar i');
+  c.style.width = w(r.cash); b.style.width = w(r.used); x.style.width = w(r.left);
+  box.querySelector('.loan-legend').innerHTML = `<li class="c">내 돈 ${won(r.cash)}</li><li class="b">${buy ? '대출' : '빌릴 돈'} ${won(r.used)}${r.can > r.used ? ` <span class="unit">(최대 ${won(r.can)}까지 가능)</span>` : ''}</li>`
+    + (r.left > 0 ? `<li class="x">모자란 돈 ${won(r.left)}</li>` : '');
+  const m = box.querySelector('.loan-msg');
+  m.className = 'loan-msg ' + (r.over ? 'bad' : r.left > 0 ? 'bad' : 'ok');
+  m.textContent = r.over ? `${rule.name}은 LTV ${rule.ltv}%까지예요. ${pct}%는 대출이 안 돼요.`
+    : r.short === 0 ? `내 돈으로 ${buy ? '살 수 있어요' : '보증금을 낼 수 있어요'}.`
+    : r.left > 0 ? `${won(r.short)}이 부족한데 ${pct}%로는 ${won(r.left)}이 더 모자라요.${r.capped ? ` (수도권·규제지역은 최대 ${won(rule.cap)})` : ''}`
+    : `부족한 ${won(r.short)}을 ${buy ? '대출로' : '빌려서'} 채울 수 있어요.${r.capped ? ` (최대 ${won(rule.cap)} 상한 안)` : ''}`;
+}
+const paintLoans = root => { for (const b of (root || document).querySelectorAll('.loan')) paintLoan(b); };
+document.addEventListener('input', e => { const b = e.target.closest('.loan'); if (b && e.target.matches('[data-loanpct]')) paintLoan(b); });
+document.addEventListener('change', e => {   // 지역 고르기 (매물에 저장)
+  const sel = e.target.closest('[data-loanregion]'); if (!sel) return; const l = state.listings.find(x => x.id === sel.dataset.loanregion);
+  const box = sel.closest('.loan'); delete loanPct[box.dataset.loan]; box.dataset.region = sel.value; box.querySelector('[data-loanpct]').value = LOAN_RULES[sel.value].ltv;
+  if (l) { l.loanRegion = sel.value; save(); } paintLoan(box);
+});
 const won = v => { const t = fmtWon(Math.round(v * 10) / 10); return /억$/.test(t) ? t + '원' : t + '만원'; };   // 23800 → '2억 3,800만원'
 const gap = v => v < 1 ? (Math.round(v * 100) / 100).toLocaleString() : Math.round(v).toLocaleString();   // 차이 금액: 1만원 미만이면 소수 둘째 자리
 const mdLong = v => { const d = new Date(v + 'T00:00'); return `${d.getMonth() + 1}월 ${d.getDate()}일(${'일월화수목금토'[d.getDay()]})`; };
@@ -2300,7 +2367,7 @@ function renderSubs(ev) {
       const fitAny = opts.some(o => (!spNo || o.supply === 'general') && capsOk(o, state.settings)), dm = state.settings.depMax === undefined ? 13000 : state.settings.depMax;
       const head = `<div class="sub-type"><div class="sub-type-head"><p><b>${esc(x.id)}형</b> · 전용 ${x.area}㎡ · 특공 ${x.units.special ?? '—'} · 일반 ${x.units.general ?? '—'}세대<br>${pick ? `${SUPPLY_KO[pick.supply]} ${pick.ratio}% · ${fmtWon(pick.deposit)} / ${pick.rent} → <b>${pick.monthly.toFixed(1)}만</b> / 월${manual ? ' (직접 고름)' : fitAny ? ' (추천)' : ' (자동)'}${pick.supply === 'special' && spNo ? ' <span class="badge fail">선택한 조합은 특공 자격 불가</span>' : ''}` : '—'}</p>
         ${l ? `<button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button>` : `<button type="button" class="small primary" data-tadd="${key}">매물로 비교에 넣기</button>`}</div>`;
-      const note = o => o === rec && capsOk(o, state.settings) ? '<span class="badge pass">추천</span>' : o.supply === 'special' && spNo ? '특공 자격 불가' : o.supply === 'special' && spSt === 'unk' ? '특공 확인 필요' : !capsOk(o, state.settings) ? '상한 초과' : '';
+      const note = o => o === rec && capsOk(o, state.settings) ? '<span class="badge pass">추천</span>' : o.supply === 'special' && spNo ? '<span class="badge fail">특공 자격 불가</span>' : o.supply === 'special' && spSt === 'unk' ? '<span class="badge warn">특공 확인 필요</span>' : !capsOk(o, state.settings) ? '<span class="badge fail">상한 초과</span>' : '';   // 글자 + 색 (색만으로 구분하지 않게)
       return head + `<div class="tbl"><table class="rank"><thead><tr><th></th><th>공급</th><th class="n">보증금 비율</th><th class="n">보증금 / 월세</th><th class="n">관리비</th><th class="n">실제 월 부담</th></tr></thead><tbody>`
         + opts.map(o => `<tr><td><input type="radio" name="opt-${l ? l.id : `${n.id}-${x.id}`}" ${l ? `data-opt="${l.id}|${o.supply}|${o.i}"` : `data-pre="${key}|${o.supply}|${o.i}"`} ${o === pick ? 'checked' : ''} aria-label="${SUPPLY_KO[o.supply]} ${o.ratio}%"></td><td>${SUPPLY_KO[o.supply]}${note(o) ? `<span class="cond">${note(o)}</span>` : ''}</td><td class="n">${o.ratio}%</td><td class="n">${fmtWon(o.deposit)} / ${o.rent}</td><td class="n">${o.fee}</td><td class="n">${o.monthly.toFixed(1)}만</td></tr>`).join('')
         + `</tbody></table></div><p class="hint">${manual ? `<button type="button" class="small ghost" data-oauto="${l ? l.id : ''}" data-okey="${key}">추천으로 돌리기</button> ` : ''}추천: 보증금 상한 ${dm == null ? '없음' : fmtMan(dm)} · 월세 95만 · 실제 월 부담 상한 ${state.settings.budget == null ? '없음' : `${state.settings.budget}만`} 안에서 실제 월 부담이 가장 낮은 조합 (특공은 '가능'일 때만)${fitAny ? '' : ' · <b>상한 안에 드는 조합이 없어</b> 특공 가능이면 특공, 아니면 일반 가격 중 가장 싼 것'}${l ? ` · 계약금 ${n.contractPct}% = ${fmtMan(l.deposit * n.contractPct / 100)}${l.deposit * n.contractPct / 100 > state.settings.myCash ? ' (내 돈보다 많아요)' : ''}` : ''} · 보증금 대출은 은행 확인 필요</p></div>`;
@@ -2322,6 +2389,7 @@ function renderSubs(ev) {
         <div><b>${esc(x.id)}형</b> 전용 ${x.area}㎡<br>${SUPPLY_KO[o.supply]} ${o.supply === 'special' ? qmH('sp') : qmH('ge')} · 보증금 ${o.ratio}%</div>
         <dl><dt>보증금</dt><dd>${won(o.deposit)}</dd><dt>월세</dt><dd>월 ${won(o.rent)}</dd><dt>실제 한 달 부담</dt><dd>${won(o.monthly)}</dd><dt>계약금</dt><dd>${won(contract)} (보증금의 ${n.contractPct}%)</dd></dl>
         ${over.map(t => `<p class="over">${t}</p>`).join('')}
+        ${loanBox(`sub|${key}|${o.supply}|${o.i}`, o.deposit, false)}
         ${subDemo ? '<p class="hint">예시 가족 결과라 비교 매물로 넣을 수 없어요.</p>' : l ? `<div class="act"><span class="badge pass">비교에 넣었어요</span><button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button></div>`
           : `<div class="commute-find"><label>회사 주소 <span class="unit">한 번 넣으면 기억해요</span><input data-workaddr maxlength="80" placeholder="예: 서울 영등포구 여의대로 108" value="${esc(S.workAddr ?? '')}"></label>
              <a class="btn ghost" data-kakao="${esc(n.addr)}" ${S.workAddr ? `href="${esc(kakaoDir(n.addr, S.workAddr))}"` : 'aria-disabled="true"'} target="_blank" rel="noopener noreferrer">카카오맵에서 통근 시간 보기 ↗</a>
@@ -2340,6 +2408,7 @@ function renderSubs(ev) {
       ${links}</div>`;
   }).join('');
   const added = state.listings.filter(l => l.sub), both = new Set(added.map(l => state.subs.notices.find(n => n.id === l.sub.notice)?.types.find(x => x.id === l.sub.type)?.tier)).size > 1;
+  paintLoans($('#subJudge'));
   if (both && show && !subDemo) $('#subJudge').insertAdjacentHTML('afterbegin', '<p class="badge warn" style="margin-top:12px">신혼부부와 청년 주택형을 모두 비교에 넣었어요. 실제 신청은 한 사람이 한 건만 할 수 있어요.</p>');
 }
 // 단계별 질문: 화면에 한 단계만 · 진행 막대 · 바로 가기 칩. 값은 입력할 때마다 state.subs.me 에 저장

@@ -170,6 +170,22 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   ok('회사 주소 → 카카오맵 길찾기 (출발 단지 주소 · 도착 회사) · 기억', kOff && k2.startsWith('https://map.kakao.com/?sName=') && decodeURIComponent(k2).includes('sName=' + fw.eval('state.subs.notices[0].addr')) && decodeURIComponent(k2).includes('eName=서울 영등포구 여의대로 108') && fw.eval('state.subs.workAddr') === '서울 영등포구 여의대로 108', decodeURIComponent(k2));
   const cl = d.querySelector('[data-ncommute]').closest('label');
   ok('통근 칸: 라벨 · 예: 50 · 분', /이 단지에서 직장까지 편도 몇 분인가요\?/.test(cl.innerText) && /비교 매물로 넣을 때만 필요해요/.test(cl.innerText) && cl.querySelector('input').placeholder === '예: 50' && cl.querySelector('.with-unit span').textContent === '분', cl.innerText.replace(/\s+/g, ' '));
+  // 대출 계산기 (청약 = 빌릴 비율 80% 기본, 매매 = 지역 LTV)
+  const lbx = d.querySelector('#subJudge .fit-home .loan'), lmsg = () => lbx.querySelector('.loan-msg').textContent;
+  const m0 = lmsg(); const rg = lbx.querySelector('[data-loanpct]'); rg.value = 50; rg.dispatchEvent(new fw.Event('input', { bubbles: true }));
+  ok('청약 돈 계산: 보증금 2억 · 내 돈 5천 → 80% 채움 · 50%면 5천 모자람(빨강)', /부족한 1억 5,000만원을 빌려서 채울 수 있어요/.test(m0) && /50%로는 5,000만원이 더 모자라요/.test(lmsg()) && lbx.querySelector('.loan-msg').classList.contains('bad') && /모자란 돈 5,000만원/.test(lbx.innerText), m0 + ' / ' + lmsg());
+  const tb = d.createElement('div'); tb.innerHTML = fw.eval("loanBox('t', 70000, true, 'reg', '')"); d.querySelector('#subJudge').append(tb); fw.eval('paintLoans()');
+  const tr = tb.querySelector('[data-loanpct]'), tm = () => tb.querySelector('.loan-msg');
+  const t40 = tm().textContent; tr.value = 50; tr.dispatchEvent(new fw.Event('input', { bubbles: true }));
+  ok('매매 서울 7억: 기본 LTV 40% · 50%로 올리면 빨간 "대출이 안 돼요"', /3억 7,000만원이 더 모자라요/.test(t40) && /규제지역 \(서울 등\)은 LTV 40%까지예요\. 50%는 대출이 안 돼요/.test(tm().textContent) && tm().classList.contains('bad'), t40 + ' / ' + tm().textContent);
+  const ts = tb.querySelector('select'); ts.value = 'non'; ts.dispatchEvent(new fw.Event('change', { bubbles: true }));
+  ok('지역을 비규제로 → 슬라이더 70% · 경고 사라짐', tr.value === '70' && !/안 돼요/.test(tm().textContent), tm().textContent);
+  ok('지역 추정: 서울 구 이름 → 규제 · 의왕 → 비규제', fw.eval("guessRegion({ region: '동작구' })") === 'reg' && fw.eval("guessRegion({ region: '의왕시', addr: '경기 의왕시' })") === 'non', '');
+  tb.remove();
+  fw.eval("state.listings.push({ id: 'buy1', name: '매매 시험', region: '동작구', addr: '', deal: '매매', deposit: 70000, rent: 0, fee: 20, area: 59, rooms: 3, basement: false, loanOk: true, usage: '주거용', commute: 30, walk: 5, loanYears: 30, repay: 'amort' }); state.selectedId = 'buy1'; openSheet(); render();"); await W(400);
+  const sl = d.querySelector('#shLoan .loan');
+  ok('매물 시트: 매매는 LTV 계산기 (동작구 → 규제 40%)', sl && sl.dataset.region === 'reg' && sl.querySelector('[data-loanpct]').value === '40' && /LTV/.test(sl.innerText), sl && sl.innerText.replace(/\s+/g, ' ').slice(0, 120));
+  fw.eval("closeSheet(); state.listings = state.listings.filter(l => l.id !== 'buy1'); render();"); await W(200);
   ok('처음 흐름 390: 가로 넘침 없음', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);
   document.body.innerHTML = '<pre id="r">' + asc(out) + '</pre>';
 })().catch(e => { document.body.innerHTML = '<pre id="r">' + asc([...out, ['NG', 'script error', e.message + ' ' + e.stack]]) + '</pre>'; });

@@ -143,6 +143,15 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   await next(); typ('[data-me="a.birth"]', '1992-05-01'); typ('[data-me="b.birth"]', '1993-02-01');
   const age = d.querySelector('[data-age="a.birth"]').textContent;
   await next(); typ('[data-me="nw.married"]', '2024-06-01');
+  const chk = (sel, v) => { const el = d.querySelector(sel); el.checked = v; el.dispatchEvent(new fw.Event('input', { bubbles: true })); };
+  chk('[data-me="nw.pre"]', true); await W(150);
+  ok('결혼 예정 체크 → 혼인신고일 비우고 잠금', fw.eval('state.subs.me.nw.married') === '' && d.querySelector('[data-me="nw.married"]').disabled && d.querySelector('[data-me="nw.married"]').value === '', fw.eval('JSON.stringify(state.subs.me.nw)'));
+  chk('[data-me="nw.pre"]', false); await W(150); typ('[data-me="nw.married"]', '2024-06-01');
+  chk('[data-me="nw.fetus"]', true); await W(150);
+  const kids1 = d.querySelector('[data-me="nw.kids"]').value, hh3 = fw.eval("(() => { const m = structuredClone(state.subs.me); m.a.income = 350; m.b.income = 300; return elig(state.subs.notices[0], m, 'newlywed', 'special').checks.find(c => c.k === 'income').t; })()");
+  chk('[data-me="nw.fetus"]', false); await W(150);
+  ok('태아 체크 → 자녀 수 칸 1 (가구원 3인) · 풀면 0', kids1 === '1' && /3인 기준/.test(hh3) && d.querySelector('[data-me="nw.kids"]').value === '0', kids1 + ' ' + hh3);
+  ok('예전 저장값: 태아 체크·자녀 0 → 자녀 1로 한 번만 옮김', fw.eval("migrate({ listings: [], subs: { me: { nw: { fetus: true, kids: 0 } } } }).subs.me.nw.kids") === 1 && fw.eval("migrate(migrate({ listings: [], subs: { me: { nw: { fetus: true, kids: 0 } } } })).subs.me.nw.kids") === 1, '');
   await next(); typ('[data-me="nw.homeless"]', '1');
   await next(); typ('[data-year-for="a.income"]', 4200); typ('[data-year-for="b.income"]', 3600);
   const mon = d.querySelector('[data-won="a.income"]').textContent;
@@ -154,6 +163,11 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   ok('결과 보기 → 650만 특공 가능 · 3순위 · 지역 2순위 (예산 95 넘어 노랑)', d.querySelector('#subWiz').hidden && e.st === 'ok' && e.rankI === 3 && e.rankR === 2 && /예산은 넘어요/.test(d.querySelector('#subJudge .sig').innerText), JSON.stringify([e.st, e.rankI, e.rankR]));
   fw.eval('state.settings.budget = 140; state.settings.depMax = 25000; render();'); await W(300);
   ok('예산 안이면 초록 "신청할 수 있어요"', d.querySelector('#subJudge .sig').innerText === '신청할 수 있어요' && d.querySelector('#subJudge .sig').classList.contains('ok'), d.querySelector('#subJudge .sig').innerText);
+  const wa = d.querySelector('[data-workaddr]'), kk = d.querySelector('[data-kakao]');
+  const kOff = kk.getAttribute('aria-disabled') === 'true' && !kk.href;
+  wa.value = '서울 영등포구 여의대로 108'; wa.dispatchEvent(new fw.Event('input', { bubbles: true })); wa.dispatchEvent(new fw.Event('change', { bubbles: true })); await W(300);
+  const k2 = d.querySelector('[data-kakao]').href;
+  ok('회사 주소 → 카카오맵 길찾기 (출발 단지 주소 · 도착 회사) · 기억', kOff && k2.startsWith('https://map.kakao.com/?sName=') && decodeURIComponent(k2).includes('sName=' + fw.eval('state.subs.notices[0].addr')) && decodeURIComponent(k2).includes('eName=서울 영등포구 여의대로 108') && fw.eval('state.subs.workAddr') === '서울 영등포구 여의대로 108', decodeURIComponent(k2));
   const cl = d.querySelector('[data-ncommute]').closest('label');
   ok('통근 칸: 라벨 · 예: 50 · 분', /이 단지에서 직장까지 편도 몇 분인가요\?/.test(cl.innerText) && /비교 매물로 넣을 때만 필요해요/.test(cl.innerText) && cl.querySelector('input').placeholder === '예: 50' && cl.querySelector('.with-unit span').textContent === '분', cl.innerText.replace(/\s+/g, ' '));
   ok('처음 흐름 390: 가로 넘침 없음', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);

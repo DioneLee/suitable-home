@@ -166,6 +166,9 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .fit-home .over { color: var(--warn); font-weight: 600; margin: 0; }
 .fit-home .act { display: flex; flex-wrap: wrap; align-items: end; gap: var(--s2); margin-top: var(--s2); }
 .fit-home .act label { display: grid; gap: 6px; max-width: 340px; font-size: 16px; color: var(--ink); }
+.commute-find { display: grid; gap: var(--s1); margin-top: var(--s2); }
+.commute-find label { display: grid; gap: 6px; font-size: 16px; color: var(--ink); max-width: 420px; }
+.commute-find .btn { justify-self: start; } .commute-find .btn[aria-disabled="true"] { opacity: .45; pointer-events: none; }
 .with-unit { display: flex; align-items: center; gap: 8px; font-size: 16px; } .with-unit input { width: 120px; }
 .next-do { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); margin-top: var(--s3); padding-top: var(--s2); border-top: 1px solid var(--line); }
 .next-do .dd { font-weight: 700; color: var(--accent); } .next-do .dd.soon { color: var(--warn); }
@@ -741,8 +744,8 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
             <div data-tier-panel="newlywed">
               <label>혼인신고일<input type="date" data-me="nw.married"><output data-wed></output></label>
               <label class="check"><input type="checkbox" data-me="nw.pre"> 아직 혼인신고 전이에요 (결혼 예정)</label>
-              <div class="wiz-row"><label>자녀 수 <details class="qm"><summary aria-label="가구원 수 설명">?</summary><span>등본에 같이 올라 있는 사람 수예요. 부부 2명에 자녀·태아를 더해요.</span></details><input type="number" inputmode="numeric" min="0" step="1" data-me="nw.kids"></label>
-              <label class="check"><input type="checkbox" data-me="nw.fetus"> 아기를 가졌어요 (태아)</label></div></div>
+              <div class="wiz-row"><label>자녀 수 <span class="unit">태아 포함</span> <details class="qm"><summary aria-label="가구원 수 설명">?</summary><span>등본에 같이 올라 있는 사람 수예요. 부부 2명에 자녀·태아를 더해요.</span></details><input type="number" inputmode="numeric" min="0" step="1" data-me="nw.kids"></label>
+              <label class="check"><input type="checkbox" data-me="nw.fetus"> 아기를 가졌어요 (태아) <span class="unit">체크하면 자녀 수에 1명 더해요</span></label></div></div>
             <div data-tier-panel="youth">
               <label>결혼하지 않았나요?<select data-me="yt.single" data-kind="bool"><option value="">고르세요</option><option value="1">네, 미혼이에요</option><option value="0">아니요, 결혼했어요</option></select></label>
               <p class="hint" data-yt-wed hidden>신혼부부 질문에 혼인신고일(또는 결혼 예정)이 있어서 기혼으로 봐요. 결혼하면 청년 공급은 신청할 수 없어요.</p></div></fieldset>
@@ -1099,7 +1102,9 @@ function migrate(s) {
   if (!('depMax' in s.settings)) s.settings.depMax = 13000;   // v8: 보증금·전세금 상한 (예전 고정 탈락 기준 1억 3천)
   if (!('priceMax' in s.settings)) s.settings.priceMax = null;   // v8: 매매가 상한
   s.subs ??= {}; s.subs.tab = s.subs.tab === 'youth' ? 'youth' : 'newlywed';   // v10: 청약
-  s.subs.me = fillDefaults(subMe(), s.subs.me); const hadWiz = !!s.subs.wizard; s.subs.wizard = fillDefaults({ done: false, step: 0, unk: {} }, s.subs.wizard); if (!hadWiz && (s.subs.me.a.birth || s.subs.me.a.income != null)) s.subs.wizard.done = true; s.subs.notices = (Array.isArray(s.subs.notices) ? s.subs.notices : []).map(normNotice).filter(Boolean);   // v14: wizard = 단계별 질문 진행
+  s.subs.me = fillDefaults(subMe(), s.subs.me); if (!s.subs.kidsFetus) { if (s.subs.me.nw.fetus) s.subs.me.nw.kids = (+s.subs.me.nw.kids || 0) + 1; s.subs.kidsFetus = true; }   // v16: 태아는 자녀 수에 포함
+  s.subs.workAddr = typeof s.subs.workAddr === 'string' ? s.subs.workAddr.slice(0, 80) : null;   // v16: 통근 확인용 회사 주소
+  const hadWiz = !!s.subs.wizard; s.subs.wizard = fillDefaults({ done: false, step: 0, unk: {} }, s.subs.wizard); if (!hadWiz && (s.subs.me.a.birth || s.subs.me.a.income != null)) s.subs.wizard.done = true; s.subs.notices = (Array.isArray(s.subs.notices) ? s.subs.notices : []).map(normNotice).filter(Boolean);   // v14: wizard = 단계별 질문 진행
   if (!s.people) {   // 예전 형식(남편·아내 고정) → 사람 목록
     s.people = [{ id: 'p1', name: '남편', w: s.weights?.husband ?? { ...W5 } }, { id: 'p2', name: '아내', w: s.weights?.wife ?? { ...W5 } }];
     delete s.weights;
@@ -1201,7 +1206,7 @@ function elig(n, me, tier, supply) {
   let rankI = null;
   if (r.incomeMax != null) {
     let hh, sum;
-    if (tier === 'newlywed') { hh = 2 + (+T.kids || 0) + (T.fetus ? 1 : 0); sum = me.a.income == null || me.b.income == null ? null : me.a.income + me.b.income + (+T.others || 0); }   // 세대원 전원, 태아 포함
+    if (tier === 'newlywed') { hh = 2 + (+T.kids || 0); sum = me.a.income == null || me.b.income == null ? null : me.a.income + me.b.income + (+T.others || 0); }   // 세대원 전원, 태아 포함
     else if (T.house === 'alone') { hh = 1; sum = p.income; }   // 청년 단독 세대주: 본인 소득
     else if (T.house === 'none') { hh = 3; sum = T.parents == null ? null : (p.income || 0) + T.parents; }   // 무소득: 본인 + 부모(3인 기준)
     else { hh = Math.max(1, Math.round(+T.hh) || 1); sum = T.hhIncome; }   // 세대원 있음: 세대 전원
@@ -2227,6 +2232,7 @@ const SEOUL_GU = ['강남구', '강동구', '강북구', '강서구', '관악구
 const demoMe = tier => fillDefaults(subMe(), { a: { birth: '1992-05-01', income: 350 }, b: { birth: '1993-02-01', income: 300 }, live: { city: '서울', gu: '동작구' }, work: { city: '서울', gu: '영등포구' },
   nw: { married: tier === 'youth' ? '' : '2024-06-01', homeless: true, asset: 20000 }, yt: { single: true, homeless: true, house: 'alone', asset: 9000 } });
 const ro = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00, j = c >= 0 && c < 11172 ? c % 28 : 0; return w + (j && j !== 8 ? '으로' : '로'); };   // 청년으로 · 신혼부부로
+const kakaoDir = (from, to) => `https://map.kakao.com/?sName=${encodeURIComponent(from)}&eName=${encodeURIComponent(to)}`;   // 카카오맵 길찾기 (출발·도착 이름이 채워진 채로 열림)
 const won = v => { const t = fmtWon(Math.round(v * 10) / 10); return /억$/.test(t) ? t + '원' : t + '만원'; };   // 23800 → '2억 3,800만원'
 const gap = v => v < 1 ? (Math.round(v * 100) / 100).toLocaleString() : Math.round(v).toLocaleString();   // 차이 금액: 1만원 미만이면 소수 둘째 자리
 const mdLong = v => { const d = new Date(v + 'T00:00'); return `${d.getMonth() + 1}월 ${d.getDate()}일(${'일월화수목금토'[d.getDay()]})`; };
@@ -2317,7 +2323,10 @@ function renderSubs(ev) {
         <dl><dt>보증금</dt><dd>${won(o.deposit)}</dd><dt>월세</dt><dd>월 ${won(o.rent)}</dd><dt>실제 한 달 부담</dt><dd>${won(o.monthly)}</dd><dt>계약금</dt><dd>${won(contract)} (보증금의 ${n.contractPct}%)</dd></dl>
         ${over.map(t => `<p class="over">${t}</p>`).join('')}
         ${subDemo ? '<p class="hint">예시 가족 결과라 비교 매물로 넣을 수 없어요.</p>' : l ? `<div class="act"><span class="badge pass">비교에 넣었어요</span><button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button></div>`
-          : `<div class="act"><label>이 단지에서 직장까지 편도 몇 분인가요? <span class="unit">비교 매물로 넣을 때만 필요해요</span><span class="with-unit"><input type="number" inputmode="numeric" min="0" step="1" placeholder="예: 50" data-ncommute="${n.id}" value="${n.commute ?? ''}"><span>분</span></span></label><button type="button" class="primary" data-tadd="${key}">매물로 비교에 넣기</button></div>`}</div>`; })();
+          : `<div class="commute-find"><label>회사 주소 <span class="unit">한 번 넣으면 기억해요</span><input data-workaddr maxlength="80" placeholder="예: 서울 영등포구 여의대로 108" value="${esc(S.workAddr ?? '')}"></label>
+             <a class="btn ghost" data-kakao="${esc(n.addr)}" ${S.workAddr ? `href="${esc(kakaoDir(n.addr, S.workAddr))}"` : 'aria-disabled="true"'} target="_blank" rel="noopener noreferrer">카카오맵에서 통근 시간 보기 ↗</a>
+             <p class="hint">출발은 이 단지 주소, 도착은 회사 주소로 길찾기가 열려요. 대중교통 시간을 보고 돌아와서 아래에 적어 주세요.</p></div>
+            <div class="act"><label>이 단지에서 직장까지 편도 몇 분인가요? <span class="unit">비교 매물로 넣을 때만 필요해요</span><span class="with-unit"><input type="number" inputmode="numeric" min="0" step="1" placeholder="예: 50" data-ncommute="${n.id}" value="${n.commute ?? ''}"><span>분</span></span></label><button type="button" class="primary" data-tadd="${key}">매물로 비교에 넣기</button></div>`}</div>`; })();
     const nx = n.schedule.filter(e => e.to >= t).sort((a, b) => a.from.localeCompare(b.from))[0], dd = nx && ddayOf(nx, t);
     const next = nx ? `<div class="next-do"><span class="dd ${dd.soon ? 'soon' : ''}">${dd.txt}</span><span>다음 할 일: ${mdLong(nx.from)}${nx.from !== nx.to ? '부터' : ''} ${esc(nx.label.replace(/\s*\(.*\)$/, ''))}</span><button type="button" class="small ghost" data-nics="${n.id}">캘린더에 저장</button></div>` : '';
     return `<div class="easy-card sub-card"><h3>${esc(n.short)} · ${TIER_KO[tier]}</h3>
@@ -2349,6 +2358,7 @@ function renderWizard() {
   for (const o of document.querySelectorAll('[data-won]')) { const v = getPath(me, o.dataset.won); o.textContent = v == null || v === '' ? '' : `${o.dataset.per || ''} ${won(v)}`.trim(); }
   { const v = (S.tab === 'youth' ? me.yt : me.nw).asset, u = !!W.unk.asset, o = document.querySelector('[data-won-tier="asset"]'); o.textContent = u ? '확인 필요로 볼게요' : v == null ? '' : won(v);
     document.querySelector('[data-unk="asset"]').checked = u; for (const i of document.querySelectorAll('[data-me="nw.asset"],[data-me="yt.asset"]')) if (u) i.disabled = true; }
+  { const m = document.querySelector('[data-me="nw.married"]'); m.disabled = m.disabled || !!me.nw.pre; m.title = me.nw.pre ? '결혼 예정이면 혼인신고일은 비워 둬요' : ''; }
   { const o = document.querySelector('[data-wed]'), v = me.nw.married; o.textContent = isYmd(v) ? `혼인 ${daysBetween(v, on).toLocaleString()}일째 (공고일 기준)` : ''; }
   document.querySelector('[data-yt-wed]').hidden = !(me.nw.pre || isYmd(me.nw.married));
   document.querySelector('[data-car]').hidden = !me.hasCar;
@@ -2391,7 +2401,13 @@ $('#subMe').addEventListener('input', e => {
     const v = el.value === '' ? null : Math.round(Number(el.value) / 12 * 10) / 10; setPath(state.subs.me, el.dataset.yearFor, v);
     const m = document.querySelector(`[data-me="${el.dataset.yearFor}"]`); if (m) m.value = v ?? ''; render(); return;
   }
-  if (el.dataset.me) { setPath(state.subs.me, el.dataset.me, readMe(el)); render(); }
+  if (el.dataset.me) {
+    const nw = state.subs.me.nw, p = el.dataset.me, v = readMe(el);
+    if (p === 'nw.fetus' && v !== nw.fetus) nw.kids = Math.max(0, (+nw.kids || 0) + (v ? 1 : -1));   // 자녀 수 칸이 바로 바뀌어 보이게
+    if (p === 'nw.pre' && v) nw.married = '';            // 결혼 예정이면 혼인신고일은 없음
+    if (p === 'nw.married' && v) nw.pre = false;
+    setPath(state.subs.me, p, v); render();
+  }
 });
 function addNotice(raw, msg) {
   const n = normNotice(raw); if (!n) { $('#subMsg').textContent = '공고 JSON 형식이 아니에요 (임대 공고 · 공고일 · 주택형이 필요해요).'; return false; }
@@ -2443,7 +2459,12 @@ $('#subFile').addEventListener('change', async e => {
 $('#subSample').addEventListener('click', async () => {
   try { subDemo = !state.subs.wizard.done; addNotice(await (await fetch('samples/notice_yongsan.json')).json(), '예시 공고 넣음'); if (subDemo) $('#subDemo').scrollIntoView({ block: 'start' }); } catch (err) { $('#subMsg').textContent = '예시 공고를 불러오지 못했어요 (인터넷 연결 확인).'; }
 });
+$('#subsSec').addEventListener('input', e => {
+  const w = e.target.closest('[data-workaddr]'); if (!w) return; const v = w.value.trim();
+  for (const a of document.querySelectorAll('[data-kakao]')) { if (v) { a.href = kakaoDir(a.dataset.kakao, v); a.removeAttribute('aria-disabled'); } else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); } }
+});
 $('#subsSec').addEventListener('change', e => {
+  const w = e.target.closest('[data-workaddr]'); if (w) { state.subs.workAddr = w.value.trim() || null; render(); return; }
   const c = e.target.closest('[data-ncommute]');
   if (c) { const n = state.subs.notices.find(x => x.id === c.dataset.ncommute); if (n) { n.commute = c.value === '' ? null : Math.max(0, Math.round(+c.value)); noticesKey = ''; render(); } return; }
   if (subDemo && e.target.closest('[data-pre],[data-opt]')) return;

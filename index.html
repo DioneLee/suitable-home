@@ -111,6 +111,23 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .gl-more { margin-top: 10px; }
 @media (min-width: 768px) { .gl-cards { display: none; } }
 @media (max-width: 767.98px) { .gl-table { display: none; } }
+.subs-next { display: block; margin: var(--s3) 0; padding: 12px var(--s2); border: 1px solid var(--line); border-radius: var(--r2); color: var(--ink); text-decoration: none; font-size: 14px; }
+.subs-next.soon { border-color: var(--warn); } .subs-next b { color: var(--accent); margin-right: 6px; }
+.sub-sched { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; font-size: 14px; }
+.sub-sched li { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.sub-sched .dd { min-width: 64px; font-weight: 600; color: var(--accent); } .sub-sched .dd.soon { color: var(--warn); } .sub-sched .dd.past { color: var(--muted); font-weight: 400; }
+.sub-card { border-top: 1px solid var(--line); padding: var(--s2) 0; margin-top: var(--s2); }
+.sub-card h4 { font: 600 16px/1.4 var(--sans); margin: 0 0 4px; }
+.sub-card .notes { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.sub-card textarea { width: 100%; min-height: 320px; font: 12px/1.5 ui-monospace, monospace; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 8px; box-sizing: border-box; }
+.sub-judge { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--s2); margin-top: 12px; }
+.sub-judge > div { border: 1px solid var(--line); border-radius: var(--r2); padding: var(--s2); }
+.sub-judge ul { list-style: none; padding: 0; margin: 8px 0 0; font-size: 13px; display: grid; gap: 4px; }
+.sub-judge li::before { content: attr(data-mark); display: inline-block; width: 18px; font-weight: 700; }
+.sub-judge li.ok::before { color: var(--pass); } .sub-judge li.no { color: var(--fail); } .sub-judge li.unk { color: var(--muted); }
+.sub-fs { border: 0; padding: 0; margin: var(--s3) 0 0; } .sub-fs legend { font-weight: 600; margin-bottom: 8px; }
+.sub-types td, .sub-types th { white-space: nowrap; }
+.sub-card input[type="radio"] { width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; accent-color: var(--accent); }
 .facts-mini { display: grid; gap: 6px; padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; }
 .type-panel > .facts-mini { border-top: 0; border-bottom: 1px solid var(--line); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px var(--s3); }   /* 두 줄로 접어 고정 패널이 화면 높이를 넘지 않게 */
 @media (min-width: 961px) { .type-panel .type-stage { aspect-ratio: 16 / 9; } }   /* 위에 조건 줄이 생긴 만큼 평면 칸을 조금 낮게 */
@@ -143,7 +160,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 /* 휴대폰: 엄지가 닿는 하단 탭 */
 .tabbar { display: none; }
 @media (max-width: 760px) {
-  .tabbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bg); border-top: 1px solid var(--line);
+  .tabbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bg); border-top: 1px solid var(--line);
     padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
   .tabbar a { display: grid; place-items: center; min-height: 56px; font-size: 13px; color: var(--muted); text-decoration: none; }
   .tabbar a[aria-current="page"] { color: var(--ink); font-weight: 600; box-shadow: inset 0 2px 0 var(--accent); }
@@ -462,6 +479,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
     <a class="brand" href="#home">Suitable Home</a>
     <a class="lnk" href="#home" data-nav="home">홈</a>
     <a class="lnk" href="#listings" data-nav="listings">매물</a>
+    <a class="lnk" href="#subs" data-nav="subs">청약</a>
     <a class="lnk" href="#report" data-nav="report">비교 리포트</a>
     <a class="lnk" href="#criteria" data-nav="criteria">우리 기준</a>
     <a class="lnk" href="#studio" data-nav="studio">3D 집 보기</a>
@@ -491,6 +509,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
     <button type="button" class="scrollbtn" data-scroll="#glanceHome" aria-label="한눈에 비교로 내려가기">↓</button>
   </header>
 
+  <div class="wrap"><a class="subs-next" id="subsNext" href="#subs" hidden></a></div>
   <section class="block glance" id="glanceHome" aria-labelledby="h-glanceHome">
     <div class="wrap">
       <p class="eyebrow">At a glance</p>
@@ -615,6 +634,65 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
         </div>
       </div>
 
+    </div>
+  </section>
+</div>
+
+<div class="view" data-view="subs" hidden>
+  <section class="block" id="subsSec" aria-labelledby="h-subs">
+    <div class="wrap">
+      <p class="eyebrow">Subscription</p>
+      <h2 class="h2" id="h-subs">청약</h2>
+      <p class="lead">공고문 내용(공고 JSON)을 넣고 우리 상황을 한 번 입력하면, 그 공고의 기준으로 예비 판정을 하고 주택형을 매물로 비교에 넣어요.</p>
+      <div class="tool"><h3>다가오는 일정</h3><ul class="sub-sched" id="subSched"></ul></div>
+      <div class="tool"><h3>공고</h3>
+        <div class="io-row"><label class="filebtn ghost">공고 JSON 불러오기<input type="file" id="subFile" accept="application/json,.json"></label>
+          <button type="button" class="ghost" id="subSample">예시 공고 넣기 (원효로 청년안심주택)</button><span class="msg" id="subMsg" role="status"></span></div>
+        <div id="subNotices"></div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="청약 계층" id="subTabs" style="margin-top:var(--s4)">
+        <button type="button" role="tab" data-subtab="newlywed" aria-selected="true">신혼부부</button>
+        <button type="button" role="tab" data-subtab="youth" aria-selected="false">청년</button>
+      </div>
+      <div id="subJudge"></div>
+      <div class="tool" id="subMeTool"><h3>우리 상황 <small class="hint">공고일 기준으로 나이·혼인 기간을 계산해요 · 이 브라우저에만 저장</small></h3>
+        <form id="subMe" onsubmit="return false">
+          <fieldset class="fields sub-fs"><legend>두 탭 공통</legend>
+            <label><span data-pname="0">사람 1</span> 생년월일<input type="date" data-me="a.birth"></label>
+            <label><span data-pname="1">사람 2</span> 생년월일<input type="date" data-me="b.birth"></label>
+            <label><span data-pname="0">사람 1</span> 월평균소득 <span class="unit">(만원 · 세전 연소득 ÷ 12)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="a.income" placeholder="미입력"></label>
+            <label>└ 연소득으로 넣기 <span class="unit">(만원/년 → 월로 바꿔 줘요)</span><input type="number" inputmode="decimal" min="0" step="any" data-year-for="a.income" placeholder="예: 4200"></label>
+            <label><span data-pname="1">사람 2</span> 월평균소득 <span class="unit">(만원 · 세전 연소득 ÷ 12)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="b.income" placeholder="미입력"></label>
+            <label>└ 연소득으로 넣기 <span class="unit">(만원/년 → 월로 바꿔 줘요)</span><input type="number" inputmode="decimal" min="0" step="any" data-year-for="b.income" placeholder="예: 3600"></label>
+            <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" data-me="hasCar"> 자동차 있음 <span class="unit">(주차 정기권을 관리비에 더해요)</span></label>
+            <label>자동차가액 <span class="unit">(만원)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="car" placeholder="미입력"></label>
+            <label>거주지 시·도<input data-me="live.city" maxlength="10" placeholder="예: 서울"></label>
+            <label>거주지 구·시·군<input data-me="live.gu" maxlength="10" placeholder="예: 동작구"></label>
+            <label>직장·대학 시·도<input data-me="work.city" maxlength="10" placeholder="예: 서울"></label>
+            <label>직장·대학 구·시·군<input data-me="work.gu" maxlength="10" placeholder="예: 영등포구"></label>
+          </fieldset>
+          <fieldset class="fields sub-fs" data-tier-panel="newlywed"><legend>신혼부부</legend>
+            <label>신청자 <span class="unit">(부부 중 한 명만 · 1인 1건)</span><select data-me="nw.appl"><option value="a" data-pname="0">사람 1</option><option value="b" data-pname="1">사람 2</option></select></label>
+            <label>혼인신고일<input type="date" data-me="nw.married"></label>
+            <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" data-me="nw.pre"> 예비신혼부부 <span class="unit">(입주 전 혼인 증명)</span></label>
+            <label>세대 전원 무주택<select data-me="nw.homeless" data-kind="bool"><option value="">미입력</option><option value="1">예</option><option value="0">아니오</option></select></label>
+            <label>그 밖의 세대원 월소득 합계 <span class="unit">(만원 · 부모 등 같은 세대)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="nw.others"></label>
+            <label>자녀 수<input type="number" inputmode="numeric" min="0" step="1" data-me="nw.kids"></label>
+            <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" data-me="nw.fetus"> 태아 있음 <span class="unit">(가구원 수에 넣어요)</span></label>
+            <label>세대 총자산 <span class="unit">(만원)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="nw.asset" placeholder="미입력"></label>
+          </fieldset>
+          <fieldset class="fields sub-fs" data-tier-panel="youth" hidden><legend>청년</legend>
+            <label>신청자<select data-me="yt.appl"><option value="a" data-pname="0">사람 1</option><option value="b" data-pname="1">사람 2</option></select></label>
+            <label>미혼<select data-me="yt.single" data-kind="bool"><option value="">미입력</option><option value="1">예</option><option value="0">아니오</option></select></label>
+            <label>본인 무주택<select data-me="yt.homeless" data-kind="bool"><option value="">미입력</option><option value="1">예</option><option value="0">아니오</option></select></label>
+            <label>세대 구분<select data-me="yt.house"><option value="alone">단독 세대주 (본인 소득만)</option><option value="family">세대원 있음 (세대 전원 소득)</option><option value="none">본인 무소득 (본인 + 부모, 3인 기준)</option></select></label>
+            <label>세대원 수 <span class="unit">(세대원 있음일 때)</span><input type="number" inputmode="numeric" min="1" step="1" data-me="yt.hh"></label>
+            <label>세대 월소득 합계 <span class="unit">(만원 · 세대원 있음일 때)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="yt.hhIncome" placeholder="미입력"></label>
+            <label>부모 월소득 합계 <span class="unit">(만원 · 무소득일 때)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="yt.parents" placeholder="미입력"></label>
+            <label>본인 자산 <span class="unit">(만원)</span><input type="number" inputmode="decimal" min="0" step="any" data-me="yt.asset" placeholder="미입력"></label>
+          </fieldset>
+        </form>
+      </div>
     </div>
   </section>
 </div>
@@ -880,6 +958,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 <nav class="tabbar" aria-label="메뉴">
   <a href="#home" data-nav="home">홈</a>
   <a href="#listings" data-nav="listings">매물</a>
+  <a href="#subs" data-nav="subs">청약</a>
   <a href="#report" data-nav="report">리포트</a>
   <a href="#criteria" data-nav="criteria">우리 기준</a>
   <a href="#studio" data-nav="studio">3D</a>
@@ -928,6 +1007,8 @@ function migrate(s) {
   s.settings.mortRate ??= 4;   // v8: 주택담보대출 연이율(매매)
   if (!('depMax' in s.settings)) s.settings.depMax = 13000;   // v8: 보증금·전세금 상한 (예전 고정 탈락 기준 1억 3천)
   if (!('priceMax' in s.settings)) s.settings.priceMax = null;   // v8: 매매가 상한
+  s.subs ??= {}; s.subs.tab = s.subs.tab === 'youth' ? 'youth' : 'newlywed';   // v10: 청약
+  s.subs.me = fillDefaults(subMe(), s.subs.me); s.subs.notices = (Array.isArray(s.subs.notices) ? s.subs.notices : []).map(normNotice).filter(Boolean);
   if (!s.people) {   // 예전 형식(남편·아내 고정) → 사람 목록
     s.people = [{ id: 'p1', name: '남편', w: s.weights?.husband ?? { ...W5 } }, { id: 'p2', name: '아내', w: s.weights?.wife ?? { ...W5 } }];
     delete s.weights;
@@ -997,6 +1078,97 @@ function costParts(l, s) {
   return { monthly: (l.deal === '전세' ? 0 : l.rent) + fee + interest, interest, principal: 0 };
 }
 const monthlyCost = (l, s) => costParts(l, s).monthly;
+
+// ---------- 청약 (임대 공고 v10): 공고 JSON 의 기준값 vs 우리 상황 → 예비 판정 ----------
+function subMe() {   // 우리 상황 기본값 (날짜는 'YYYY-MM-DD', 금액 만원, 비면 null = 미입력)
+  return { a: { birth: '', income: null }, b: { birth: '', income: null }, hasCar: false, car: null, live: { city: '', gu: '' }, work: { city: '', gu: '' },
+    nw: { appl: 'a', married: '', pre: false, homeless: null, others: 0, kids: 0, fetus: false, asset: null },
+    yt: { appl: 'a', single: null, homeless: null, house: 'alone', hh: 2, hhIncome: null, parents: null, asset: null } };
+}
+function fillDefaults(def, v) {   // 저장된 값에 없는 칸만 기본값으로
+  if (!v || typeof v !== 'object') return def;
+  for (const k of Object.keys(def)) v[k] = def[k] && typeof def[k] === 'object' ? fillDefaults(def[k], v[k]) : k in v ? v[k] : def[k];
+  return v;
+}
+function isYmd(v) { return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(Date.parse(v)); }
+function ageAt(birth, on) { const [y, m, d] = birth.split('-').map(Number), [Y, M, D] = on.split('-').map(Number); return Y - y - (M < m || (M === m && D < d) ? 1 : 0); }   // 만 나이
+function daysBetween(a, b) { return Math.round((Date.parse(b) - Date.parse(a)) / 864e5); }
+function incomeBase(n, hh) { const b = n.incomeBase; return hh <= b.length ? b[hh - 1] : b.at(-1) + (hh - b.length) * n.incomeExtra; }   // 가구원수별 100% 금액(만원/월)
+// 판정: 조건마다 true 충족 · false 불충족 · null 확인 필요(입력 없음) → 하나라도 false 면 불가, null 이 있으면 확인 필요
+function elig(n, me, tier, supply) {
+  const r = n.rules?.[tier]?.[supply]; if (!r) return null;
+  const T = tier === 'youth' ? me.yt : me.nw, p = me[T.appl] || me.a, on = n.noticeDate, C = [], add = (t, st) => C.push({ t, st });
+  if (isYmd(p.birth)) { const a = ageAt(p.birth, on); add(`신청자 만 ${a}세 (${r.age[0]}~${r.age[1]}세)`, a >= r.age[0] && a <= r.age[1]); } else add('신청자 생년월일 미입력', null);
+  if (tier === 'newlywed') {
+    if (T.pre) add('예비신혼부부', !!r.preMarried);
+    else if (isYmd(T.married)) { const dd = daysBetween(T.married, on); add(`혼인 ${dd.toLocaleString()}일째 (${r.marriageDays.toLocaleString()}일 이내)`, dd >= 0 && dd <= r.marriageDays); }
+    else add('혼인신고일 미입력 (예비신혼이면 체크)', null);
+  } else add(T.single === true ? '미혼' : T.single === false ? '기혼 (청년은 미혼만)' : '미혼 여부 미입력', T.single);
+  const who = r.homeless === '본인' ? '본인' : '세대';
+  add(T.homeless === true ? `${who} 무주택` : T.homeless === false ? `${who}에 집이 있음` : `${who} 무주택 여부 미입력`, T.homeless);
+  let rankI = null;
+  if (r.incomeMax != null) {
+    let hh, sum;
+    if (tier === 'newlywed') { hh = 2 + (+T.kids || 0) + (T.fetus ? 1 : 0); sum = me.a.income == null || me.b.income == null ? null : me.a.income + me.b.income + (+T.others || 0); }   // 세대원 전원, 태아 포함
+    else if (T.house === 'alone') { hh = 1; sum = p.income; }   // 청년 단독 세대주: 본인 소득
+    else if (T.house === 'none') { hh = 3; sum = T.parents == null ? null : (p.income || 0) + T.parents; }   // 무소득: 본인 + 부모(3인 기준)
+    else { hh = Math.max(1, Math.round(+T.hh) || 1); sum = T.hhIncome; }   // 세대원 있음: 세대 전원
+    if (sum == null) add('소득 미입력', null);
+    else { const pct = sum / incomeBase(n, hh) * 100; rankI = r.incomeRanks.findIndex(x => pct <= x + 1e-9) + 1 || null;
+      add(`소득 월 ${(+sum).toLocaleString()}만 · ${hh}인 기준 ${pct.toFixed(1)}% (${r.incomeMax}% 이하)${rankI ? ` · 소득 ${rankI}순위` : ''}`, pct <= r.incomeMax + 1e-9); }
+  }
+  if (r.asset != null) { const a = T.asset, w = tier === 'youth' ? '본인' : '세대'; add(a == null ? `${w} 자산 미입력` : `${w} 자산 ${fmtMan(a)} (${fmtMan(r.asset)} 이하)`, a == null ? null : a <= r.asset); }
+  if (r.car != null) add(!me.hasCar ? '자동차 없음' : me.car == null ? '자동차가액 미입력' : `자동차 ${fmtMan(me.car)} (${fmtMan(r.car)} 이내)`, !me.hasCar ? true : me.car == null ? null : me.car <= r.car);
+  let rankR = null;   // 특별공급 지역 순위: 거주지·직장(대학) 중 좋은 쪽. 1 해당 구 · 2 서울 · 3 그 밖
+  if (supply === 'special') { const lv = [me.live, me.work].map(x => !x?.city ? null : !x.city.includes('서울') ? 3 : x.gu && n.region && x.gu.includes(n.region.replace(/구$/, '')) ? 1 : 2).filter(Boolean); rankR = lv.length ? Math.min(...lv) : null; }
+  return { st: C.some(c => c.st === false) ? 'no' : C.some(c => c.st == null) ? 'unk' : 'ok', checks: C, rankI, rankR };
+}
+// 주택형의 조건 6가지(공급 2 × 보증금 비율 3)와 실제 월 부담. 관리비 = 공고 공용관리비 + 자동차 있으면 주차 정기권
+function optionsOf(n, t, me, s) {
+  const fee = Math.round((t.fee + (me.hasCar ? n.parking || 0 : 0)) * 10) / 10;
+  return ['special', 'general'].flatMap(sup => (t.prices[sup] || []).map(([deposit, rent], i) => ({ supply: sup, i, ratio: n.ratios[i], deposit, rent, fee, monthly: monthlyCost({ deal: '월세', deposit, rent, fee }, s) })));
+}
+// 자동 선택: 특별공급이 '가능'이면 특공 가격, 아니면 일반 가격 → 그중 실제 월 부담이 가장 낮은 비율(같으면 보증금 낮은 쪽)
+function pickOption(n, t, me, s) {
+  const sup = elig(n, me, t.tier, 'special')?.st === 'ok' ? 'special' : 'general';
+  return optionsOf(n, t, me, s).filter(o => o.supply === sup).sort((a, b) => a.monthly - b.monthly || a.deposit - b.deposit)[0];
+}
+// 불러온 공고 JSON 검사: 형식이 아니면 null, 글자는 길이 제한, 숫자·날짜는 형식 확인 (화면에서는 다시 escape)
+function normNotice(x) {
+  try {
+    const n = x?.notice ?? x; if (!n || n.kind !== '임대' || !isYmd(n.noticeDate) || !Array.isArray(n.types)) return null;
+    const num = v => v !== null && v !== '' && Number.isFinite(+v) ? +v : null, str = v => String(v ?? '').slice(0, 300);
+    const pairs = a => (Array.isArray(a) ? a : []).map(q => [num(q?.[0]), num(q?.[1])]).filter(q => q[0] != null && q[1] != null);
+    const rule = r => !r ? null : { age: Array.isArray(r.age) ? r.age.map(num) : [19, 39], marriageDays: num(r.marriageDays), preMarried: !!r.preMarried, single: !!r.single,
+      homeless: r.homeless === '본인' ? '본인' : '세대', incomeMax: num(r.incomeMax), incomeRanks: (r.incomeRanks || []).map(num).filter(v => v != null), asset: num(r.asset), car: num(r.car) };
+    return { id: str(n.id).replace(/[^\w-]/g, '') || uid(), kind: '임대', name: str(n.name), short: str(n.short || n.name), addr: str(n.addr), city: str(n.city), region: str(n.region), station: str(n.station),
+      noticeDate: n.noticeDate, url: str(n.url), summary: str(n.summary), cite: Object.fromEntries(Object.entries(n.cite || {}).map(([k, v]) => [k, str(v)])),
+      schedule: (n.schedule || []).filter(e => isYmd(e?.from) && isYmd(e?.to)).map(e => ({ key: str(e.key).replace(/[^\w-]/g, ''), label: str(e.label), from: e.from, to: e.to })),
+      ratios: (n.ratios || []).map(num), contractPct: num(n.contractPct) ?? 10, parking: num(n.parking) ?? 0,
+      incomeBase: (n.incomeBase || []).map(num).filter(v => v != null), incomeExtra: num(n.incomeExtra) ?? 0,
+      rules: { newlywed: { special: rule(n.rules?.newlywed?.special), general: rule(n.rules?.newlywed?.general) }, youth: { special: rule(n.rules?.youth?.special), general: rule(n.rules?.youth?.general) } },
+      types: n.types.map(t => ({ id: str(t.id).replace(/[^\w-]/g, ''), tier: t.tier === 'youth' ? 'youth' : 'newlywed', area: num(t.area), rooms: num(t.rooms) ?? 1, fee: num(t.fee) ?? 0,
+        units: { special: num(t.units?.special), general: num(t.units?.general) }, prices: { special: pairs(t.prices?.special), general: pairs(t.prices?.general) } })).filter(t => t.area && t.id),
+      notes: (n.notes || []).map(str), commute: num(n.commute), walk: num(n.walk) };
+  } catch (e) { return null; }
+}
+// 청약 매물: 공고와 연결된 '월세' 매물의 조건을 지금 판정·자금으로 맞춘다 (auto 면 다시 고르고, 직접 고른 건 그대로)
+function syncSubs(st) {
+  for (const l of st.listings) {
+    if (!l.sub) continue;
+    const n = st.subs.notices.find(x => x.id === l.sub.notice), t = n?.types.find(x => x.id === l.sub.type); if (!t) continue;
+    const o = l.sub.auto !== false ? pickOption(n, t, st.subs.me, st.settings) : optionsOf(n, t, st.subs.me, st.settings).find(x => x.supply === l.sub.supply && x.i === l.sub.i);
+    if (!o) continue;
+    Object.assign(l, { deal: '월세', deposit: o.deposit, rent: o.rent, fee: o.fee }); l.sub.supply = o.supply; l.sub.i = o.i;
+    if (n.commute != null) l.commute = n.commute;
+  }
+}
+function subInfo(l, st) {
+  const n = st.subs?.notices.find(x => x.id === l.sub.notice), t = n?.types.find(x => x.id === l.sub.type); if (!t) return null;
+  const me = st.subs.me, sp = elig(n, me, t.tier, 'special'), ge = elig(n, me, t.tier, 'general'), cur = l.sub.supply === 'special' ? sp : ge;
+  const contract = l.deposit * n.contractPct / 100;
+  return { n, t, sp, ge, cur, no: sp?.st === 'no' && ge?.st === 'no', contract, short: contract > st.settings.myCash };
+}
 const overBudget = (monthly, s) => s.budget != null && monthly > s.budget + 1e-9;
 function reasons(l, s = {}) {
   const r = [], deal = l.deal || '월세', depMax = s.depMax === undefined ? 13000 : s.depMax;   // depMax: 보증금·전세금 상한 (null = 사용 안 함)
@@ -1031,11 +1203,12 @@ function evaluate(st) {
   const curL = st.listings.find(l => l.current);
   const all = st.listings.map(l => {
     const cp = costParts(l, s), monthly = cp.monthly, over = !l.current && overBudget(monthly, s), r = l.current ? [] : reasons(l, s);
+    const si = l.sub && st.subs ? subInfo(l, st) : null; if (si?.no && !l.current) r.push('청약 자격 없음');   // 두 공급 모두 불가
     if (over && s.budgetFail) r.push(`실제 월 부담 ${monthly.toFixed(1)}만 (상한 ${s.budget}만 초과)`);
     const overC = !l.current && s.commuteMax != null && l.commute > s.commuteMax;   // 통근 상한
     if (overC && s.commuteFail) r.push(`통근 ${fmtMin(l.commute)} (상한 ${s.commuteMax}분 초과)`);
     const longer = !l.current && curL && s.commuteWarn && l.commute > curL.commute ? l.commute - curL.commute : 0;   // 지금 집보다 긴 통근(분)
-    return { ...l, monthly, interest: cp.interest, principal: cp.principal, over: over && !s.budgetFail, overC: overC && !s.commuteFail, longer, reasons: r };
+    return { ...l, si, monthly, interest: cp.interest, principal: cp.principal, over: over && !s.budgetFail, overC: overC && !s.commuteFail, longer, reasons: r };
   });
   const cur = all.find(l => l.current) ?? null, cands = all.filter(l => !l.current);   // 지금 집: 순위·정규화에서 빼고 기준선으로
   const passed = cands.filter(l => !l.reasons.length), known = passed.filter(l => l.walk != null);
@@ -1125,6 +1298,31 @@ function ensureTypeLetters(listings) {
   console.assert(reasons({ ...base, moveIn: '불가' }).includes('전입신고 불가'), '전입신고 불가 탈락');
   console.assert(!reasons({ ...base, deal: '전세', deposit: 20000, rent: 0 }, { depMax: 25000 }).length && reasons({ ...base, deal: '전세', deposit: 20000, rent: 0 }, { depMax: 13000 }).length === 1, '전세금 상한');
   console.assert(!reasons({ ...base, deal: '매매', deposit: 32500, rent: 0 }, { depMax: 13000, priceMax: null }).length && reasons({ ...base, deal: '매매', deposit: 32500, rent: 0 }, { priceMax: 30000 }).length === 1, '매매가 상한은 매매만');
+  // v10 청약 판정 (공고일 2026-11-03, 2인 100% = 586.627만)
+  const NT = normNotice({ kind: '임대', noticeDate: '2026-11-03', region: '용산구', ratios: [30, 40, 50], contractPct: 10, parking: 12, incomeBase: [381.3363, 586.627, 816.8429, 880.2202, 932.6985], incomeExtra: 57.9278,
+    rules: { newlywed: { special: { age: [19, 39], marriageDays: 2555, preMarried: true, homeless: '세대', incomeMax: 120, incomeRanks: [100, 110, 120], asset: 34500, car: 4542 }, general: { age: [19, 39], marriageDays: 2555, preMarried: true, homeless: '세대', car: 4542 } },
+      youth: { special: { age: [19, 39], single: true, homeless: '본인', incomeMax: 120, incomeRanks: [100, 110, 120], asset: 25100, car: 4542 }, general: { age: [19, 39], single: true, homeless: '본인', car: 4542 } } },
+    types: [{ id: '56', tier: 'newlywed', area: 47.37, fee: 14.784, prices: { special: [[12000, 102], [16000, 88], [20000, 73]], general: [[14300, 121], [19000, 104], [23800, 86]] } }] });
+  const ME = () => fillDefaults(subMe(), { a: { birth: '1992-05-01', income: 350 }, b: { birth: '1993-02-01', income: 300 }, live: { city: '서울', gu: '동작구' },
+    nw: { married: '2024-06-01', homeless: true, asset: 20000 }, yt: { single: true, homeless: true, house: 'alone', asset: 9000 } });
+  let mt = ME(), e1 = elig(NT, mt, 'newlywed', 'special');
+  console.assert(e1.st === 'ok' && e1.rankI === 3 && e1.rankR === 2, '신혼특공 가능 · 650만 = 110.8% → 소득 3순위 · 서울 2순위', e1);
+  mt.a.income = 403.95; console.assert(elig(NT, mt, 'newlywed', 'special').st === 'ok', '120% 경계(703.95만 ≤ 703.9524)');
+  mt.a.income = 404; console.assert(elig(NT, mt, 'newlywed', 'special').st === 'no' && elig(NT, mt, 'newlywed', 'general').st === 'ok', '120.0x% → 특공 불가, 일반 가능');
+  mt = ME(); mt.a.birth = '1986-11-04'; console.assert(elig(NT, mt, 'newlywed', 'special').st === 'ok', '1986.11.04생 = 만 39세 가능');
+  mt.a.birth = '1986-11-03'; console.assert(elig(NT, mt, 'newlywed', 'general').st === 'no', '1986.11.03생 = 만 40세 불가');
+  mt = ME(); mt.nw.married = '2019-11-05'; console.assert(daysBetween('2019-11-05', '2026-11-03') === 2555 && elig(NT, mt, 'newlywed', 'special').st === 'ok', '혼인 2,555일 가능');
+  mt.nw.married = '2019-11-04'; console.assert(elig(NT, mt, 'newlywed', 'special').st === 'no', '혼인 2,556일 불가');
+  mt = ME(); mt.b.income = null; console.assert(elig(NT, mt, 'newlywed', 'special').st === 'unk', '소득 빈칸 → 확인 필요');
+  mt = ME(); mt.hasCar = true; mt.car = 4542; console.assert(elig(NT, mt, 'newlywed', 'general').st === 'ok', '자동차 4,542 가능'); mt.car = 4543; console.assert(elig(NT, mt, 'newlywed', 'general').st === 'no', '자동차 4,543 불가');
+  mt = ME(); console.assert(elig(NT, mt, 'youth', 'special').st === 'ok', '청년특공: 미혼·단독 350만(91.8%) · 자산 9,000');
+  mt.yt.asset = 25101; console.assert(elig(NT, mt, 'youth', 'special').st === 'no', '청년 본인 자산 25,101 불가'); mt.yt.asset = 25100; console.assert(elig(NT, mt, 'youth', 'special').st === 'ok', '25,100 가능');
+  mt.yt.single = false; console.assert(elig(NT, mt, 'youth', 'general').st === 'no', '기혼이면 청년 불가');
+  mt = ME(); const o1 = pickOption(NT, NT.types[0], mt, { myCash: 3000, rate: 3 });
+  console.assert(o1.supply === 'special' && o1.ratio === 50 && Math.abs(o1.monthly - (73 + 14.8 + 17000 * 0.03 / 12)) < 1e-6, '자동 선택: 특공 50% 130.3만', o1);
+  mt.a.income = 500; console.assert(pickOption(NT, NT.types[0], mt, { myCash: 3000, rate: 3 }).supply === 'general', '특공 불가면 일반 가격');
+  mt = ME(); mt.hasCar = true; mt.car = 1000; console.assert(optionsOf(NT, NT.types[0], mt, { myCash: 3000, rate: 3 })[0].fee === 26.8, '자동차 있으면 관리비 + 주차 12');
+  console.assert(normNotice({ kind: '분양', noticeDate: '2026-11-03', types: [] }) === null && normNotice({ kind: '임대', noticeDate: 'x', types: [] }) === null, '공고 형식 검사');
   console.assert(fmtWon(13000) === '1억 3,000' && fmtWon(20000) === '2억' && fmtWon(5000) === '5,000' && fmtWon(32500) === '3억 2,500', '억·천 표기');
   console.assert(cond({ deal: '월세', deposit: 13000, rent: 50, fee: 5 }) === '월세 1억 3,000 / 50 · 관리비 5' && cond({ deal: '전세', deposit: 20000, fee: null }) === '전세 2억 · 관리비 미확인', '조건 문구');
   console.assert(reasons({ ...base, area: 40, deposit: 13000, rent: 95 }).length === 0, '경계값은 통과');
@@ -1232,7 +1430,7 @@ function schematic(l, labels) {
 }
 
 // ---------- 화면 전환: 메뉴별로 한 화면만 보인다 (주소 끝 #home, #listings, #report, #criteria, #studio) ----------
-const VIEWS = { home: '', listings: '매물', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기' };
+const VIEWS = { home: '', listings: '매물', subs: '청약', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기' };
 const OLD = { top: 'home', type: 'listings', manage: 'listings', sim: 'criteria', location: 'report', final: 'home', goto: 'home' };   // 예전 한 페이지 주소
 let pendingFocus = null;
 function route() {
@@ -1295,6 +1493,13 @@ const mapUrl = l => `https://map.naver.com/p/search/${encodeURIComponent([l.regi
 const md = ymd => { const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(ymd || ''); return m ? `${+m[1]}월 ${+m[2]}일` : ''; };
 const sg1 = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1);
 const moveBadge = l => l.moveIn === '가능' ? '<span class="badge pass">전입신고 가능</span>' : l.moveIn === '불가' ? '<span class="badge fail">전입신고 불가</span>' : '<span class="badge unk">전입신고 미확인</span>';
+// 청약 매물 배지: '청약 가능 · 신혼특공 · 소득 3순위' / 확인 필요 / 자격 없음 + 계약금 부족
+const SUP_SHORT = { newlywed: { special: '신혼특공', general: '신혼일반' }, youth: { special: '청년특공', general: '청년일반' } };
+function subBadge(l) {
+  const si = l.si, c = si.cur, nm = SUP_SHORT[si.t.tier][l.sub.supply];
+  const b = si.no ? '<span class="badge fail">청약 자격 없음</span>' : c.st === 'ok' ? `<span class="badge pass">청약 가능 · ${nm}${c.rankI ? ` · 소득 ${c.rankI}순위` : ''}</span>` : `<span class="badge unk">청약 확인 필요 · ${nm}</span>`;
+  return b + (si.short ? `<span class="badge warn">계약금 ${fmtMan(si.contract)} > 내 돈</span>` : '');
+}
 const loanBadge = l => l.loanOk ? '<span class="badge pass">대출 가능</span>' : '<span class="badge fail">대출 불가</span>';
 // 매물 한 곳의 항목 ①~⑧ (표·카드·시트·패널이 같이 쓴다)
 function glanceRows(l, cur) {
@@ -1303,7 +1508,7 @@ function glanceRows(l, cur) {
   return [
     ['조건', `${dealBadge(l)}<b class="gl-amt">${d === '월세' ? '보증금 ' : ''}${fmtWon(l.deposit)}${d === '월세' ? ` / ${l.rent}` : ''}</b><span class="gl-sub">${d === '매매' ? `대출 ${l.loanYears || 30}년 · ${l.repay === 'interest' ? '이자만' : '원리금균등'} · ` : ''}관리비 ${l.fee == null ? '미확인' : l.fee + '만'}</span>`],
     ['실제 월 부담', `<b>${fmtMonthly(l.monthly)}</b> / 월${split(l) ? `<span class="gl-sub">${split(l)}</span>` : ''}${dm != null ? `<span class="gl-sub ${dm > 0.05 ? 'up' : dm < -0.05 ? 'down' : ''}">지금 집보다 ${Math.abs(dm) < 0.05 ? '같음' : sg1(dm) + '만원'}</span>` : isCur ? '<span class="gl-sub">기준</span>' : ''}`],
-    ['전입 · 대출', `<span class="badges">${moveBadge(l)}${loanBadge(l)}</span>`],
+    ['전입 · 대출', `<span class="badges">${moveBadge(l)}${loanBadge(l)}${l.si ? subBadge(l) : ''}</span>`],
     ['주소', q ? `<a href="${mapUrl(l)}" target="_blank" rel="noopener noreferrer" title="네이버지도에서 검색 (새 창)">${esc(q)} ↗</a>` : '<span class="gl-sub">주소 미입력</span>'],
     ['통근', `편도 <b>${fmtMin(l.commute)}</b>${dc ? ` <span class="gl-sub ${dc > 0 ? 'up' : 'down'}" style="display:inline">(${dc > 0 ? '+' : '−'}${Math.abs(dc)}분)</span>` : ''}<span class="gl-sub">${l.route ? esc(l.route) : '경로 미입력'}</span>`],
     ['면적 · 층', `전용 ${l.area}㎡ · 방 ${l.rooms}${l.basement ? ' · 반지하' : ''}${l.floorNo ? ` · ${esc(l.floorNo)}층` : ''}`],
@@ -1728,8 +1933,9 @@ function drawCharts(ev) {
 function render() {
   if (!state.listings.some(l => l.id === state.selectedId)) state.selectedId = state.listings[0]?.id ?? null;
   ensureTypeLetters(state.listings);
+  syncSubs(state);   // 청약 매물 조건(공급·보증금 비율)을 지금 판정·자금으로
   const ev = evaluate(state);
-  renderHero(ev); renderGlance(ev); renderTypes(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
+  renderHero(ev); renderSubsNext(); renderGlance(ev); renderTypes(ev); renderSubs(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
   const areas = ev.all.map(l => l.area);
   const lo = Math.min(...areas), hi = Math.max(...areas);
   $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'Type lineup';
@@ -1823,6 +2029,7 @@ form.addEventListener('submit', e => {
   l.urlSaved = !l.url ? null : prev && prev.url === l.url ? prev.urlSaved : today();   // 링크가 바뀔 때만 오늘 날짜
   if (l.current) for (const x of state.listings) x.current = false;   // 지금 집은 한 곳만
   const i = state.listings.findIndex(x => x.id === l.id);
+  if (i >= 0 && state.listings[i].sub) { const o = state.listings[i]; l.sub = { ...o.sub, auto: o.sub.auto !== false && o.deposit === l.deposit && o.rent === l.rent && o.fee === l.fee }; }
   if (i >= 0) { const old = state.listings[i]; if (old.plan) l.plan = old.plan; if (old.layout) l.layout = old.layout; l.tl = old.tl; state.listings[i] = l; } else state.listings.push(l);
   state.selectedId = l.id;
   resetForm(); render();
@@ -1880,6 +2087,132 @@ function startEdit(id) {
 }
 $('#sel3d').addEventListener('change', e => { state.selectedId = e.target.value; render(); });
 
+
+// ---------- 청약 화면 ----------
+const todayYmd = () => window.__today || (d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)(new Date());   // 검증용으로 __today 를 바꿀 수 있다
+const md2 = v => { const d = new Date(v + 'T00:00'); return `${d.getMonth() + 1}.${d.getDate()}(${'일월화수목금토'[d.getDay()]})`; };
+const span2 = e => md2(e.from) + (e.from !== e.to ? `~${md2(e.to)}` : '');
+function ddayOf(e, t) { if (t < e.from) { const n = daysBetween(t, e.from); return { txt: `D-${n}`, soon: n <= 3 }; } if (t <= e.to) return { txt: e.from === e.to ? 'D-day' : '진행 중', soon: true }; return { txt: '지남', past: true }; }
+const upcoming = () => { const t = todayYmd(); return state.subs.notices.flatMap(n => n.schedule.filter(e => e.to >= t).map(e => ({ n, e }))).sort((a, b) => a.e.from.localeCompare(b.e.from)); };
+function renderSubsNext() {
+  const u = upcoming()[0], a = $('#subsNext'); a.hidden = !u; if (!u) return;
+  const d = ddayOf(u.e, todayYmd()); a.classList.toggle('soon', !!d.soon);
+  a.innerHTML = `<b>${d.txt}</b>${esc(u.n.short)} · ${esc(u.e.label)} ${span2(u.e)} <span class="hint">→ 청약 보기</span>`;
+}
+// ics: 하루 종일 일정 (DTEND 는 다음 날)
+function icsOf(n) {
+  const d = v => v.replace(/-/g, ''), next = v => new Date(Date.parse(v) + 864e5).toISOString().slice(0, 10).replace(/-/g, '');
+  const e = v => String(v).replace(/[\\,;]/g, m => '\\' + m).replace(/\n/g, '\\n'), stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SUITABLE HOME//KO', 'CALSCALE:GREGORIAN',
+    ...n.schedule.flatMap(x => ['BEGIN:VEVENT', `UID:${n.id}-${x.key}@suitable-home`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d(x.from)}`, `DTEND;VALUE=DATE:${next(x.to)}`, `SUMMARY:${e(`${n.short} ${x.label}`)}`, `DESCRIPTION:${e(n.url)}`, 'END:VEVENT']),
+    'END:VCALENDAR'].join('\r\n') + '\r\n';
+}
+let subEdit = null, noticesKey = '';
+const TIER_KO = { newlywed: '신혼부부', youth: '청년' }, SUPPLY_KO = { special: '특별공급', general: '일반공급' };
+const ST_TXT = { ok: ['pass', '가능'], no: ['fail', '불가'], unk: ['unk', '확인 필요'] }, MARK = { true: ['ok', '✔'], false: ['no', '✘'], null: ['unk', '?'] };
+const RANK_R = ['', '해당 구', '서울', '그 밖'];
+function renderSubs(ev) {
+  const S = state.subs, me = S.me, t = todayYmd(), u = upcoming();
+  $('#subSched').innerHTML = u.map(({ n, e }) => { const d = ddayOf(e, t); return `<li><span class="dd ${d.soon ? 'soon' : ''}">${d.txt}</span><span>${span2(e)}</span><span><b>${esc(e.label)}</b> · ${esc(n.short)}</span></li>`; }).join('')
+    || '<li class="hint">공고를 넣으면 접수·발표·계약 일정이 여기에 나와요.</li>';
+  const key = JSON.stringify([S.notices, subEdit]);   // 공고 카드는 바뀔 때만 다시 그린다 (입력 중인 칸이 지워지지 않게)
+  if (key !== noticesKey) {
+    noticesKey = key;
+    $('#subNotices').innerHTML = S.notices.map(n => subEdit === n.id
+      ? `<div class="sub-card"><h4>${esc(n.short)} · 공고 JSON 직접 고치기</h4><p class="hint">공고문과 다른 값이 있으면 여기서 고쳐요. 저장하면 형식을 다시 검사해요.</p><textarea id="subEditBox" spellcheck="false">${esc(JSON.stringify(n, null, 1))}</textarea>
+          <div class="row"><button type="button" class="small primary" data-nsave="${n.id}">저장</button><button type="button" class="small ghost" data-ncancel>취소</button></div></div>`
+      : `<div class="sub-card"><h4>${esc(n.name)}</h4><p class="hint">${esc(n.kind)} · 공고일 ${md2(n.noticeDate)} (자격 판단 기준일) · ${esc(n.addr)}${n.cite.date ? ` · 근거 ${esc(n.cite.date)}` : ''}</p><p>${esc(n.summary)}</p>
+          <ul class="notes">${n.notes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+          <div class="row" style="align-items:end"><label style="max-width:200px">이 단지 통근 시간 <span class="unit">(분, 편도)</span><input type="number" inputmode="numeric" min="0" step="1" data-ncommute="${n.id}" value="${n.commute ?? ''}" placeholder="매물로 넣기 전에"></label>
+            ${safeUrl(n.url) ? `<a class="btn ghost small" href="${esc(safeUrl(n.url))}" target="_blank" rel="noopener noreferrer">공고 사이트 ↗</a>` : ''}
+            <button type="button" class="small ghost" data-nics="${n.id}">일정 .ics 내려받기</button><button type="button" class="small ghost" data-nedit="${n.id}">공고 JSON 고치기</button><button type="button" class="small danger" data-ndel="${n.id}">공고 지우기</button></div></div>`).join('')
+      || '<p class="hint" style="margin-top:12px">아직 넣은 공고가 없어요. 공고문 PDF를 Claude에게 주면 공고 JSON을 만들어 줘요.</p>';
+  }
+  const tier = S.tab;
+  for (const b of document.querySelectorAll('[data-subtab]')) b.setAttribute('aria-selected', b.dataset.subtab === tier);
+  for (const f of document.querySelectorAll('[data-tier-panel]')) f.hidden = f.dataset.tierPanel !== tier;
+  $('#subJudge').innerHTML = S.notices.map(n => {
+    const types = n.types.filter(x => x.tier === tier); if (!types.length) return '';
+    const card = sup => { const e = elig(n, me, tier, sup); if (!e) return ''; const [c, w] = ST_TXT[e.st];
+      return `<div><p><b>${TIER_KO[tier]} ${SUPPLY_KO[sup]}</b> <span class="badge ${c}">${w}</span>${sup === 'special' && e.rankI ? ` <span class="badge deal">소득 ${e.rankI}순위</span>` : ''}${sup === 'special' && e.rankR ? ` <span class="badge deal">지역 ${e.rankR}순위 · ${RANK_R[e.rankR]}</span>` : ''}</p>
+        <ul>${e.checks.map(k => { const [cl, mk] = MARK[k.st]; return `<li class="${cl}" data-mark="${mk}">${esc(k.t)}</li>`; }).join('')}</ul>
+        <p class="hint" style="margin-top:8px">${sup === 'special' ? '선정: 소득 순위 → 지역 순위 → 추첨' : '선정: 타입별 전원 무작위 추첨'} · 근거 ${esc(n.cite.rules || '공고문')}</p></div>`; };
+    const rows = types.map(x => {
+      const l = state.listings.find(m => m.sub?.notice === n.id && m.sub?.type === x.id), opts = optionsOf(n, x, me, state.settings), pick = l ? opts.find(o => o.supply === l.sub.supply && o.i === l.sub.i) : pickOption(n, x, me, state.settings);
+      const head = `<tr><td><b>${esc(x.id)}형</b></td><td>전용 ${x.area}㎡</td><td>특공 ${x.units.special ?? '—'} · 일반 ${x.units.general ?? '—'}세대</td>
+        <td>${pick ? `${SUPPLY_KO[pick.supply]} ${pick.ratio}% · ${fmtWon(pick.deposit)} / ${pick.rent} → <b>${pick.monthly.toFixed(1)}만</b> / 월${l && l.sub.auto === false ? ' (직접 고름)' : ' (자동)'}` : '—'}</td>
+        <td>${l ? `<button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button>` : `<button type="button" class="small primary" data-tadd="${n.id}|${x.id}">매물로 비교에 넣기</button>`}</td></tr>`;
+      if (!l) return head;
+      return head + `<tr><td colspan="5"><div class="tbl"><table class="rank"><thead><tr><th></th><th>공급</th><th class="n">보증금 비율</th><th class="n">보증금 / 월세</th><th class="n">관리비</th><th class="n">실제 월 부담</th></tr></thead><tbody>`
+        + opts.map(o => `<tr><td><input type="radio" name="opt-${l.id}" data-opt="${l.id}|${o.supply}|${o.i}" ${o.supply === l.sub.supply && o.i === l.sub.i ? 'checked' : ''} aria-label="${SUPPLY_KO[o.supply]} ${o.ratio}%"></td><td>${SUPPLY_KO[o.supply]}</td><td class="n">${o.ratio}%</td><td class="n">${fmtWon(o.deposit)} / ${o.rent}</td><td class="n">${o.fee}</td><td class="n">${o.monthly.toFixed(1)}만</td></tr>`).join('')
+        + `</tbody></table></div><p class="hint">${l.sub.auto === false ? `<button type="button" class="small ghost" data-oauto="${l.id}">자동 선택으로 돌리기</button> ` : ''}자동: 특별공급이 '가능'이면 특공 가격, 아니면 일반 가격 중 실제 월 부담이 가장 낮은 비율 · 계약금 ${n.contractPct}% = ${fmtMan(l.deposit * n.contractPct / 100)}${l.deposit * n.contractPct / 100 > state.settings.myCash ? ' (내 돈보다 많아요)' : ''} · 보증금 대출은 은행 확인 필요</p></td></tr>`;
+    }).join('');
+    return `<div class="sub-card"><h4>${esc(n.short)} · ${TIER_KO[tier]}</h4><div class="sub-judge">${card('special')}${card('general')}</div>
+      <p class="hint" style="margin-top:8px">예비 판정이에요. 최종 자격은 사업주체 심사로 정해져요. 1인 1건만 신청할 수 있고 부부가 각자 내면 모두 무효예요.</p>
+      <div class="tbl" style="margin-top:12px"><table class="rank sub-types"><tbody>${rows}</tbody></table></div></div>`;
+  }).join('') || `<p class="hint" style="margin-top:16px">${S.notices.length ? `넣은 공고에 ${TIER_KO[tier]} 주택형이 없어요.` : '공고를 넣으면 여기에 판정이 나와요.'}</p>`;
+  const added = state.listings.filter(l => l.sub), both = new Set(added.map(l => state.subs.notices.find(n => n.id === l.sub.notice)?.types.find(x => x.id === l.sub.type)?.tier)).size > 1;
+  if (both) $('#subJudge').insertAdjacentHTML('afterbegin', '<p class="badge warn" style="margin-top:12px">신혼부부와 청년 주택형을 모두 비교에 넣었어요. 실제 신청은 한 사람이 한 건만 할 수 있어요.</p>');
+}
+// 우리 상황 입력: data-me="a.birth" 경로로 읽고 쓴다
+const getPath = (o, p) => p.split('.').reduce((a, k) => a?.[k], o);
+const setPath = (o, p, v) => { const ks = p.split('.'), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
+function readMe(el) { if (el.type === 'checkbox') return el.checked; if (el.dataset.kind === 'bool') return el.value === '' ? null : el.value === '1'; if (el.type === 'number') return el.value === '' ? null : Math.max(0, Number(el.value)); return el.value.trim(); }
+function fillMe() {
+  for (const el of document.querySelectorAll('[data-me]')) { const v = getPath(state.subs.me, el.dataset.me); if (el.type === 'checkbox') el.checked = !!v; else if (el.dataset.kind === 'bool') el.value = v == null ? '' : v ? '1' : '0'; else el.value = v ?? ''; }
+  for (const el of document.querySelectorAll('[data-pname]')) el.textContent = state.people[+el.dataset.pname]?.name || `사람 ${+el.dataset.pname + 1}`;
+}
+fillMe();
+$('#subMe').addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.yearFor) {   // 연소득 → 월평균소득
+    const v = el.value === '' ? null : Math.round(Number(el.value) / 12 * 10) / 10; setPath(state.subs.me, el.dataset.yearFor, v);
+    const m = document.querySelector(`[data-me="${el.dataset.yearFor}"]`); if (m) m.value = v ?? ''; render(); return;
+  }
+  if (el.dataset.me) { setPath(state.subs.me, el.dataset.me, readMe(el)); render(); }
+});
+function addNotice(raw, msg) {
+  const n = normNotice(raw); if (!n) { $('#subMsg').textContent = '공고 JSON 형식이 아니에요 (임대 공고 · 공고일 · 주택형이 필요해요).'; return false; }
+  const i = state.subs.notices.findIndex(x => x.id === n.id); if (i >= 0) { n.commute ??= state.subs.notices[i].commute; state.subs.notices[i] = n; } else state.subs.notices.push(n);
+  $('#subMsg').textContent = `${msg}: ${n.short} · 주택형 ${n.types.length}개 · 일정 ${n.schedule.length}개`; render(); return true;
+}
+$('#subFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { addNotice(JSON.parse(await f.text()), `${f.name} 불러옴`); } catch (err) { $('#subMsg').textContent = 'JSON 파일을 읽지 못했어요.'; }
+});
+$('#subSample').addEventListener('click', async () => {
+  try { addNotice(await (await fetch('samples/notice_yongsan.json')).json(), '예시 공고 넣음'); } catch (err) { $('#subMsg').textContent = '예시 공고를 불러오지 못했어요 (인터넷 연결 확인).'; }
+});
+$('#subsSec').addEventListener('change', e => {
+  const c = e.target.closest('[data-ncommute]');
+  if (c) { const n = state.subs.notices.find(x => x.id === c.dataset.ncommute); if (n) { n.commute = c.value === '' ? null : Math.max(0, Math.round(+c.value)); noticesKey = ''; render(); } return; }
+  const o = e.target.closest('[data-opt]');
+  if (o) { const [id, sup, i] = o.dataset.opt.split('|'), l = state.listings.find(x => x.id === id); if (l) { Object.assign(l.sub, { auto: false, supply: sup, i: +i }); render(); } }
+});
+$('#subsSec').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const S = state.subs, ds = b.dataset;
+  if (ds.subtab) { S.tab = ds.subtab; render(); return; }
+  if (ds.nics) { const n = S.notices.find(x => x.id === ds.nics); if (!n) return;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([icsOf(n)], { type: 'text/calendar' })); a.download = `${n.id}.ics`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    $('#subMsg').textContent = `일정 ${n.schedule.length}개를 .ics 로 내려받았어요. 휴대폰·구글 캘린더에서 열면 들어가요.`; return; }
+  if (ds.nedit) { subEdit = ds.nedit; render(); $('#subEditBox')?.focus(); return; }
+  if ('ncancel' in ds) { subEdit = null; render(); return; }
+  if (ds.nsave) { let j; try { j = JSON.parse($('#subEditBox').value); } catch (err) { $('#subMsg').textContent = 'JSON 문법이 틀렸어요. 따옴표·쉼표를 확인해 주세요.'; return; }
+    j.id = ds.nsave; if (addNotice(j, '공고를 고쳤어요')) { subEdit = null; render(); } return; }
+  if (ds.ndel && confirmTap(b)) { S.notices = S.notices.filter(x => x.id !== ds.ndel); state.listings = state.listings.filter(l => l.sub?.notice !== ds.ndel); render(); return; }
+  if (ds.tadd) {
+    const [nid, tid] = ds.tadd.split('|'), n = S.notices.find(x => x.id === nid), t = n?.types.find(x => x.id === tid); if (!t) return;
+    if (n.commute == null) { $('#subMsg').textContent = `먼저 "${n.short}" 카드에 이 단지 통근 시간(분)을 넣어 주세요.`; document.querySelector(`[data-ncommute="${nid}"]`)?.focus(); return; }
+    const o = pickOption(n, t, S.me, state.settings);
+    state.listings.push({ id: uid(), name: `${n.short} ${t.id}형`, region: n.region, addr: n.addr.replace(/^\S+\s+/, '').replace(n.region, '').trim(), station: n.station, deal: '월세',
+      deposit: o.deposit, rent: o.rent, fee: o.fee, area: t.area, rooms: t.rooms, basement: false, loanOk: true, usage: '주거용', walk: n.walk, commute: n.commute, current: false, facing: null,
+      moveIn: '가능', floorNo: '', route: '', url: safeUrl(n.url) ? n.url : '', urlSaved: todayYmd(), loanYears: 30, repay: 'amort', sub: { notice: n.id, type: t.id, supply: o.supply, i: o.i, auto: true } });
+    $('#subMsg').textContent = `${n.short} ${t.id}형을 매물로 넣었어요. 한눈에 비교에서 다른 집과 같이 볼 수 있어요.`; render(); return;
+  }
+  if (ds.tdel) { state.listings = state.listings.filter(l => l.id !== ds.tdel); render(); return; }
+  if (ds.oauto) { const l = state.listings.find(x => x.id === ds.oauto); if (l) { l.sub.auto = true; render(); } }
+});
 // 데이터 옮기기: 내보낸 파일 = { app, version, exportedAt, data(state 그대로, 큰 평면도는 다시 압축) }
 const shrinkImg = src => new Promise(ok => {   // 300KB 넘는 평면도만 긴 변 900px·JPEG 0.75로
   if (src.length < 400000) return ok(src);
@@ -1897,7 +2230,8 @@ $('#exportBtn').addEventListener('click', async () => {
   const blob = new Blob([JSON.stringify({ app: 'suitable-home', version: 3, exportedAt: d.toISOString(), data })], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `suitable-home-${ymd}.json`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  $('#ioMsg').textContent = `내보냈어요: 매물 ${data.listings.length}곳 · 평면도 ${data.listings.filter(l => l.plan).length}개 · 가구 ${data.furniture.length}개 (${(blob.size / 1024).toFixed(0)}KB)`;
+  const priv = ['a', 'b'].some(k => data.subs?.me?.[k]?.birth || data.subs?.me?.[k]?.income != null);
+  $('#ioMsg').textContent = (priv ? '⚠ 청약 우리 상황(생년월일·소득) 개인정보가 들어 있어요. 파일을 공유할 때 주의하세요. ' : '') + `내보냈어요: 매물 ${data.listings.length}곳 · 평면도 ${data.listings.filter(l => l.plan).length}개 · 가구 ${data.furniture.length}개 (${(blob.size / 1024).toFixed(0)}KB)`;
 });
 const replaceState = (s, msg) => {   // 저장한 뒤 다시 열어 3D·가구 목록까지 새 데이터로 그린다
   try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { $('#ioMsg').textContent = '브라우저 저장 공간이 부족해 불러오지 못했어요.'; return; }

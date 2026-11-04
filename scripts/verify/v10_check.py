@@ -132,8 +132,8 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   // v21: aside 시험 피드 (fixtures/feed_test.json) — 긴 기관 이름 · 오늘 마감 · 8개 넘으면 더 보기
   const ft = await (await fetch('/scripts/verify/fixtures/feed_test.json')).json();
   fw.eval('setFeed')(ft); await W(100);
-  const orgs = [...fd.querySelectorAll('.org')], lng = orgs.find(o => o.title === '한국자산관리공사(긴이름)'), lefts = [...fd.querySelectorAll('li')].map(li => li.children[li.querySelector('.new') ? 2 : 1].getBoundingClientRect().left);
-  ok('v21-1 기관 칸: 긴 이름 말줄임 + title 전체 · 제목 시작 위치 같음', lng && lng.scrollWidth > lng.clientWidth && getComputedStyle(lng).textOverflow === 'ellipsis' && new Set(orgs.map(o => Math.round(o.getBoundingClientRect().width))).size === 1, lng && [lng.title, lng.scrollWidth, lng.clientWidth, orgs.map(o => Math.round(o.getBoundingClientRect().width))].join(' '));
+  const orgs = [...fd.querySelectorAll('.org')], lng = orgs.find(o => o.title === '한국자산관리공사(긴이름)'), tl = [...fd.querySelectorAll('.ttl')].map(t => Math.round(t.getBoundingClientRect().left));   // '새 공고' 배지가 있어도 제목 시작 같게
+  ok('v21-1 기관 칸: 긴 이름 말줄임 + title 전체 · 제목 시작 위치 같음 (새 공고 줄 포함)', lng && lng.scrollWidth > lng.clientWidth && getComputedStyle(lng).textOverflow === 'ellipsis' && new Set(orgs.map(o => Math.round(o.getBoundingClientRect().width))).size === 1 && new Set(tl).size === 1, lng && [lng.title, lng.scrollWidth, lng.clientWidth, tl].join(' '));
   const today = [...fd.querySelectorAll('li')].find(li => /오늘 마감 공고/.test(li.textContent));
   ok('v21-2 마감일 = 오늘 → "오늘 마감"(경고색) · 다른 줄은 D-n 그대로', today && today.querySelector('.dd').textContent === '오늘 마감' && /D-\d+/.test(fd.textContent) && !/진행 중/.test(today.textContent), today && today.querySelector('.dd')?.textContent);
   ft.items.push(...[1, 2, 3, 4].map(k => ({ id: 'more' + k, org: 'LH', title: '추가 공고 ' + k, to: '2026-12-0' + k })));
@@ -159,6 +159,11 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   fw.eval("state.subs.me.nw.fetus = true; state.subs.me.nw.kids = 1; render();"); await W(100);
   { const k = d.querySelector('[data-me="nw.kids"]'); k.value = 0; k.dispatchEvent(new fw.Event('input', { bubbles: true })); await W(100); }
   ok('자녀 수 0 입력 → 태아 체크 풀림', fw.eval('state.subs.me.nw.fetus') === false && fw.eval('state.subs.me.nw.kids') === 0, fw.eval('JSON.stringify(state.subs.me.nw)'));
+  // v22: 데스크톱 매물 패널에도 돈 계산 · 순위 칸 4.4em
+  fw.eval("state.selectedId = state.listings[0].id; render();"); await W(200);
+  d.querySelector('#typeLoanBtn').click();
+  { const tl = !d.querySelector('#typeLoan').hidden && d.querySelector('#typeLoan .loan'), li = d.querySelector('.simrank li');
+    ok('v22 데스크톱 매물 패널(.type-panel) "돈 계산" 누르면 계산기 · 순위 첫 칸 4.4em', tl && tl.querySelector('[data-loanpct]') && (!li || getComputedStyle(li).gridTemplateColumns.split(' ')[0] === parseFloat(getComputedStyle(li).fontSize) * 4.4 + 'px'), [!!tl, li && getComputedStyle(li).gridTemplateColumns].join(' ')); }
   // 공고 둘: 왼쪽 목록 · 새로 넣은 공고가 골라짐 · 눌러서 바꾸기 · 제목 띠
   const head = () => d.querySelector('#subJudge .sub-main .sub-head h3')?.textContent, picks = () => [...d.querySelectorAll('#subJudge .sub-pick')];
   ok('공고 2개 → 목록 2장 · 새 공고가 골라져 제목 띠에 표시', picks().length === 2 && head() === '붙여넣기 시험' && picks()[1].getAttribute('aria-current') === 'true' && d.querySelectorAll('#subJudge .sub-main .easy-card').length === 1, head());
@@ -170,6 +175,7 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   f.remove(); f = await frame(390); d = f.contentDocument; fw = f.contentWindow;
   ok('휴대폰: 청약 화면 가로 넘침 없음', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);
   fw.eval('setFeed')(await (await fetch('/scripts/verify/fixtures/feed_test.json')).json()); await W(100);
+  { const nl = d.querySelector('#subFeed .new'), nt = nl && nl.parentElement.querySelector('.ttl'); ok('v22 휴대폰: 새 공고 배지는 지금처럼 기관 옆 · 제목은 다음 줄', nl && nt.getBoundingClientRect().top > nl.getBoundingClientRect().top, ''); }
   { const dt = d.querySelector('#subFeed h3 small .d'); ok('v21-3 휴대폰: "2026-11-04 확인" 한 줄 (안 쪼개짐) · 가로 넘침 없음', dt && dt.getClientRects().length === 1 && dt.textContent === '2026-11-04 확인' && d.documentElement.scrollWidth <= 390, dt && [dt.getClientRects().length, d.documentElement.scrollWidth].join(' ')); }
   fw.eval('state.subs.wizard.done = false; wizOpen = false; render();'); await W(300);
   ok('휴대폰: 질문 화면 가로 넘침 없음 · 한 열', !d.querySelector('#subWiz').hidden && d.documentElement.scrollWidth <= 390 && d.querySelectorAll('.wiz-pick button')[1].getBoundingClientRect().top > d.querySelectorAll('.wiz-pick button')[0].getBoundingClientRect().bottom - 1, d.documentElement.scrollWidth);

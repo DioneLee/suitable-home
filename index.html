@@ -130,7 +130,7 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .sub-feed ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
 .sub-feed li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .sub-feed li:last-child { border-bottom: 0; }
-.sub-feed .org { font-weight: 700; color: var(--accent); flex: 0 0 7.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .sub-feed .more { margin-top: var(--s1); } .sub-feed .dd { font-weight: 700; color: var(--warn); } .sub-feed .new { color: var(--pass); font-weight: 700; }
+.sub-feed .org { font-weight: 700; color: var(--accent); flex: 0 0 7.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .sub-feed .more { margin-top: var(--s1); } .sub-feed .dd { font-weight: 700; color: var(--warn); } .sub-feed .new { color: var(--pass); font-weight: 700; } @media (min-width: 768px) { .sub-feed .new { order: 1; } .sub-feed li .hint, .sub-feed li .dd { order: 2; } }
 .sub-start { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); }
 .sub-start .big { min-height: 56px; padding: 0 var(--s3); font-size: 17px; }
 .sub-add .sub-steps { margin: 0; padding-left: 22px; display: grid; gap: var(--s3); }
@@ -257,11 +257,11 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 31; background: var(--bg); }
 .nav .wrap { display: flex; align-items: center; gap: var(--s3); height: var(--nav); }
 .brand { font: 500 17px var(--brand); text-decoration: none; margin-right: auto; letter-spacing: .32em; text-transform: uppercase; white-space: nowrap; }
-.nav .lnk { font-size: 14px; text-decoration: none; color: var(--muted); }
+.nav .lnk { font-size: 14px; text-decoration: none; color: var(--muted); white-space: nowrap; }
 @media (hover: hover) { .nav .lnk:hover { color: var(--ink); } }
 .nav .lnk[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); padding-block: 18px; }
 @media (max-width: 760px) { .nav .lnk { display: none; } }
-@media (min-width: 761px) and (max-width: 960px) { .nav .wrap { gap: var(--s2); } .brand { letter-spacing: .16em; } }
+@media (min-width: 761px) and (max-width: 960px) { .nav .wrap { gap: 12px; } .nav .lnk { font-size: 13px; } .brand { letter-spacing: .16em; } }
 /* 휴대폰: 엄지가 닿는 하단 탭 */
 .tabbar { display: none; }
 @media (max-width: 760px) {
@@ -306,7 +306,6 @@ a.stat:active .go i { transform: translateX(4px); }
 .simrank li.flash { animation: rowFlash 2s ease-out; box-shadow: inset 2px 0 0 var(--accent); }
 @media (prefers-reduced-motion: reduce) { .simrank li.flash { animation: none; background: none; box-shadow: none; outline: 1px solid var(--accent); outline-offset: -1px; } }
 .simrank .rk small, .rank td.num small { font: 500 11px var(--sans); color: var(--muted); margin-right: 2px; }
-.simrank li { grid-template-columns: 4.4em minmax(0, 1fr) 3em; }
 .simrank .rk, .rank td.num { white-space: nowrap; }   /* '공동 3'이 두 줄로 꺾이지 않게 */
 .stat + .stat { padding-left: var(--s3); border-left: 1px solid var(--line); }
 .stat b { display: block; font: 200 clamp(32px, 5vw, 64px)/1.1 var(--serif); white-space: nowrap; }
@@ -403,6 +402,7 @@ html.sheet-lock body { position: fixed; left: 0; right: 0; overflow: hidden; }
 @media (max-width: 600px) { #type2d { padding: var(--s2); } .hero .sub { font-size: 16px; } }
 #type2d svg, #type2d img { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; display: block; }
 .type-cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s1) var(--s3); padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+.type-loan { padding: var(--s2) var(--s3); border-top: 1px solid var(--line); } .type-panel:has(#typeLoan:not([hidden])) { position: static; }   /* 펼치면 화면보다 길어져서 고정 풀기 */
 .type-cap b { color: var(--ink); font-weight: 600; margin-right: 6px; }
 .type-list { list-style: none; padding: 0; border-top: 1px solid var(--ink); }
 .type-list li { border-bottom: 1px solid var(--line); }
@@ -482,7 +482,7 @@ table.rank tr.top td.nm { font-weight: 600; }
 .avg { margin-top: var(--s2); padding-top: var(--s2); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px var(--s2); }
 .avg b { color: var(--ink); }
 .simrank { list-style: none; padding: 0; margin-top: var(--s2); border-top: 1px solid var(--ink); }
-.simrank li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr) 3em; gap: var(--s1); align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.simrank li { display: grid; grid-template-columns: 4.4em minmax(0, 1fr) 3em;   /* 4.4em: '공동 3' 들어갈 폭 */ gap: var(--s1); align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
 .simrank .rk { font: 300 22px var(--serif); }
 .simrank li.top .rk, .simrank li.top .sc { color: var(--accent); }
 .simrank .sc { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
@@ -676,12 +676,14 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
             <button type="button" role="tab" id="tab2d" aria-selected="true" aria-controls="type2d">2D 평면</button>
             <button type="button" role="tab" id="tab3d" aria-selected="false" aria-controls="type3d">3D 보기</button>
             <a class="tab-link btn ghost small" href="#studio" data-focus="#studioTool" style="margin:6px 8px 6px auto;min-height:36px">가구 배치하러 가기</a>
+            <button type="button" class="ghost small" id="typeLoanBtn" aria-expanded="false" aria-controls="typeLoan" style="margin:6px 8px 6px 0;min-height:36px">돈 계산</button>
           </div>
           <div class="type-stage">
             <div id="type2d" role="tabpanel" aria-labelledby="tab2d"></div>
             <div id="type3d" role="tabpanel" aria-labelledby="tab3d" hidden></div>
           </div>
           <div class="type-cap" id="typeCap"></div>
+          <div class="type-loan" id="typeLoan" hidden></div>
         </div>
         <ul class="type-list reveal" id="typeList" aria-label="매물 타입 목록"></ul>
       </div>
@@ -1704,6 +1706,11 @@ function foldBadges(html, max = 3) {
 }
 
 // ---------- 1 TYPE 라인업 ----------
+function listingLoan(l, box) {   // 매물 한 곳의 돈 계산 (휴대폰 시트 · 데스크톱 패널 공통)
+  const buy = l.deal === '매매', region = buy ? (LOAN_RULES[l.loanRegion] ? l.loanRegion : guessRegion(l)) : null;
+  box.innerHTML = loanBox(`l|${l.id}|${l.deposit}|${region}`, l.deposit, buy, region, l.id); paintLoans(box);
+}
+$('#typeLoanBtn').addEventListener('click', e => { const o = $('#typeLoan').hidden; $('#typeLoan').hidden = !o; e.currentTarget.setAttribute('aria-expanded', o); });
 function renderTypes(ev) {
   const sel = ev.all.find(l => l.id === state.selectedId) ?? ev.all[0];
   $('#typeList').innerHTML = ev.all.map(l => `<li class="${l.id === sel?.id ? 'on' : ''}"><button type="button" data-type="${l.id}" aria-pressed="${l.id === sel?.id}">
@@ -1711,7 +1718,8 @@ function renderTypes(ev) {
       <span class="tcost"><b>${l.monthly.toFixed(1)}</b><small>만원 / 월</small><span class="tcond">${cond(l)}${split(l) ? ` · ${split(l)}` : ''}</span><span class="badges">${foldBadges(dealBadge(l) + badge(l) + costTags(l) + commuteTags(l) + (l.moveIn ? '' : '<span class="badge unk">전입 미확인</span>'))}</span></span>
       <span class="tmeta"><b>${esc(l.name)}</b>${esc(l.region)} · 방 ${l.rooms}</span>
     </button></li>`).join('') || '<li class="empty">매물을 등록하면 TYPE이 생겨요.</li>';
-  if (!sel) { $('#type2d').innerHTML = ''; $('#typeCap').innerHTML = ''; $('#typeFacts').innerHTML = ''; return; }
+  if (!sel) { $('#type2d').innerHTML = ''; $('#typeCap').innerHTML = ''; $('#typeFacts').innerHTML = ''; $('#typeLoan').innerHTML = ''; return; }
+  listingLoan(sel, $('#typeLoan'));
   const vs = vsCur(sel, ev.cur);
   $('#typeFacts').innerHTML = factsHtml(sel, ev.cur) + `<p><span class="k">실제 월 부담</span>${fmtMonthly(sel.monthly)} / 월${split(sel) ? ` (${split(sel)})` : ''}</p><p class="formula">${formula(sel)}</p>` + (vs ? `<p class="vs">지금 집보다 ${vs}</p>` : '');
   $('#typeCap').innerHTML = `<span><b>${typeCode(sel)}</b>${esc(sel.name)} · ${esc(sel.region)}</span><span>전용 ${sel.area}㎡ · 방 ${sel.rooms} · ${sel.plan ? '실제 평면도' : '면적 기준 대략 구조'}</span>`;
@@ -1736,8 +1744,7 @@ function renderSheet(ev) {
   $('#shBadges').innerHTML = badge(l) + costTags(l) + commuteTags(l) + (l.walk == null ? ' ' + walkTag(l) : '');
   $('#shWhy').textContent = l.reasons.length ? `탈락 사유: ${l.reasons.join(', ')}` : ''; $('#shWhy').hidden = !l.reasons.length;
   const vs = vsCur(l, ev.cur); $('#shVs').textContent = vs ? `지금 집보다 ${vs}` : ''; $('#shVs').hidden = !vs;
-  { const buy = l.deal === '매매', region = buy ? (LOAN_RULES[l.loanRegion] ? l.loanRegion : guessRegion(l)) : null;
-    $('#shLoan').innerHTML = loanBox(`l|${l.id}|${l.deposit}|${region}`, l.deposit, buy, region, l.id); paintLoans($('#shLoan')); }
+  listingLoan(l, $('#shLoan'));
   $('#sheet').dataset.id = l.id;   // 검증용: 시트가 보여주는 매물
 }
 function setSheetTab(which) {
@@ -1930,7 +1937,7 @@ async function geocodeQueue() {   // OpenStreetMap Nominatim: 1초에 1건 이�
   if (geocodeQueue.busy) return; geocodeQueue.busy = true;
   for (const q of geoQueue) {
     try {
-      const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }));
+      const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }), { signal: AbortSignal.timeout(4000) });
       if (!r.ok) throw r.status;
       const j = await r.json();
       state.geo[q] = j[0] ? [+(+j[0].lat).toFixed(5), +(+j[0].lon).toFixed(5)] : { miss: Date.now() }; save();
@@ -2298,7 +2305,7 @@ async function geoFind(q) {
   for (let k = w.length; k >= Math.min(2, w.length); k--) {
     const t = w.slice(0, k).join(' '); if (geoOf(t)) return (state.geo[q] = geoOf(t));
     try {
-      const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q: t, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }));
+      const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q: t, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }), { signal: AbortSignal.timeout(4000) });
       const j = r.ok ? await r.json() : [];
       if (j[0]) { state.geo[q] = [+(+j[0].lat).toFixed(5), +(+j[0].lon).toFixed(5)]; save(); return state.geo[q]; }
     } catch (e) { return null; }
@@ -2560,7 +2567,7 @@ function renderFeed() {
   box.hidden = !items.length; if (!items.length) return;
   box.innerHTML = `<h3>새로 올라온 공고<small>${f.updated ? `<span class="d">${esc(f.updated.slice(0, 10))} 확인</span>` : ''}${f.source ? ` · ${esc(f.source)}` : ''}</small></h3><ul>${items.map(i => {
     const dd = i.to ? ddayOf({ from: i.from || i.to, to: i.to }, t) : null, isNew = i.posted && daysBetween(i.posted, t) <= 3;
-    return `<li><span class="org" title="${esc(i.org)}">${esc(i.org)}</span>${isNew ? '<span class="new">새 공고</span>' : ''}<span>${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.title)} ↗</a>` : esc(i.title)}</span>
+    return `<li><span class="org" title="${esc(i.org)}">${esc(i.org)}</span>${isNew ? '<span class="new">새 공고</span>' : ''}<span class="ttl">${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.title)} ↗</a>` : esc(i.title)}</span>
       <span class="hint">${[i.region, i.kind, i.from && i.to ? `접수 ${md2(i.from)}~${md2(i.to)}` : ''].filter(Boolean).map(esc).join(' · ')}</span>${i.to === t ? '<span class="dd">오늘 마감</span>' : dd && !dd.past ? `<span class="dd">${dd.txt}</span>` : ''}</li>`; }).join('')}</ul>${more > 0 ? `<button type="button" class="ghost small more" data-feedmore>공고 ${more}개 더 보기</button>` : ''}
     <p class="hint">마음에 드는 공고는 공고문 PDF를 받아 아래 '공고 추가하기'로 넣으면 판정해 줘요.</p>`;
   const mb = box.querySelector('[data-feedmore]'); if (mb) mb.onclick = () => { feedAll = true; renderFeed(); };

@@ -124,6 +124,13 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   ok('붙여넣기: 빈 칸 알려 줌 (가격·소득표·자격)', /주택형 59의 가격/.test(d.querySelector('#subPasteErr').innerText) && /소득 기준표/.test(d.querySelector('#subPasteErr').innerText), d.querySelector('#subPasteErr').innerText.replace(/\s+/g, ' '));
   const good = fw.eval('JSON.stringify({ ...state.subs.notices[0], id: "paste-test", short: "붙여넣기 시험" })'); paste('여기 결과예요:\n```json\n' + good + '\n```'); await W(300);
   ok('붙여넣기: 올바르면 바로 들어감', fw.eval('state.subs.notices.some(n => n.id === "paste-test")') && d.querySelector('#subAdd').hidden, fw.eval('state.subs.notices.length'));
+  // 공고 둘: 왼쪽 목록 · 새로 넣은 공고가 골라짐 · 눌러서 바꾸기 · 제목 띠
+  const head = () => d.querySelector('#subJudge .sub-main .sub-head h3')?.textContent, picks = () => [...d.querySelectorAll('#subJudge .sub-pick')];
+  ok('공고 2개 → 목록 2장 · 새 공고가 골라져 제목 띠에 표시', picks().length === 2 && head() === '붙여넣기 시험' && picks()[1].getAttribute('aria-current') === 'true' && d.querySelectorAll('#subJudge .sub-main .easy-card').length === 1, head());
+  picks()[0].click(); await W(300);
+  const hd = d.querySelector('#subJudge .sub-head');
+  ok('목록에서 원효로 누르면 그 공고 · 제목 띠(청약 종류 · 이름 · 구·일정)', head() === '원효로 청년안심주택' && fw.eval('state.subs.sel') === 'yongsan-2026-11' && /청약 · 임대/.test(hd.querySelector('.sub-kind').textContent) && /용산구/.test(hd.querySelector('.sub-meta').textContent) && /D-8 청약 접수/.test(hd.querySelector('.sub-meta').textContent), hd.innerText.replace(/\s+/g, ' '));
+  ok('제목 글자 26px', getComputedStyle(hd.querySelector('h3')).fontSize === '26px', getComputedStyle(hd.querySelector('h3')).fontSize);
   // 휴대폰 390
   f.remove(); f = await frame(390); d = f.contentDocument; fw = f.contentWindow;
   ok('휴대폰: 청약 화면 가로 넘침 없음', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);

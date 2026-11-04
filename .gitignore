@@ -5,3 +5,5 @@ screenshots/process/
 __pycache__/
 # 실제 매물 데이터·스크린샷 (실제 주소·네이버 평면도) — 절대 커밋하지 않는다
 local-data/
+# 개인 Claude 설정 · 회사 정보 · 남이 만든 스킬 (공개 저장소에 올리지 않는다)
+setup/

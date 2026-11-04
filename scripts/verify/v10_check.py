@@ -229,6 +229,8 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   fw.fetch = realFetch; fw.open = realOpen;
   const cl = d.querySelector('[data-ncommute]').closest('label');
   ok('통근 칸: 라벨 · 예: 50 · 분', /이 단지에서 직장까지 편도 몇 분인가요\?/.test(cl.innerText) && /비교 매물로 넣을 때만 필요해요/.test(cl.innerText) && cl.querySelector('input').placeholder === '예: 50' && cl.querySelector('.with-unit span').textContent === '분', cl.innerText.replace(/\s+/g, ' '));
+  { const fm = d.querySelector('#subJudge .fit-home .formula')?.textContent || '', ft = d.querySelector('footer').textContent;
+    ok('공모전: 청약 카드 계산식 · 결과 아래 "참고용 예비 판정" · 맨 아래 출처·면책', /^계산: [\d.]+ = 월세 [\d.]+ \+ 관리비 [\d.]+ \+ /.test(fm) && /참고용 예비 판정/.test(d.querySelector('#subJudge .sub-note')?.textContent || '') && /공고 출처: 마이홈포털·LH 공공데이터 API, SH·서울 청년안심주택\(원문 링크\)/.test(ft) && /법적·금융적 효력이 없습니다/.test(ft), fm); }
   // 대출 계산기 (청약 = 빌릴 비율 80% 기본, 매매 = 지역 LTV)
   const lbx = d.querySelector('#subJudge .fit-home .loan'), lmsg = () => lbx.querySelector('.loan-msg').textContent;
   const m0 = lmsg(); const rg = lbx.querySelector('[data-loanpct]'); rg.value = 50; rg.dispatchEvent(new fw.Event('input', { bubbles: true }));

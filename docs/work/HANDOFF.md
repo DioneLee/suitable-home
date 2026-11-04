@@ -61,5 +61,5 @@ python scripts/verify/ana_shots.py sample          # 도면 분석 스크린샷
 ## 다른 노트북 세팅
 
 1. `git clone https://github.com/DioneLee/suitable-home.git`
-2. 전역 Claude 설정 복사: `setup/README.md` 참고 (`setup/claude/` → `~/.claude/`)
+2. 전역 Claude 설정: 공개 저장소에는 없다(2026-11-04 뺌). 이 PC의 `setup/`(git 제외 폴더)을 직접 옮겨서 `setup/README.md` 참고
 3. **매물 데이터는 브라우저마다 따로 저장된다.** 지금 PC 사이트에서 '매물 → 데이터 옮기기 → JSON 내보내기' → 새 노트북 사이트에서 'JSON 불러오기'

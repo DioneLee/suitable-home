@@ -1507,7 +1507,7 @@ function glanceRows(l, cur) {
   const dm = cur && !isCur ? l.monthly - cur.monthly : null, dc = cur && !isCur ? l.commute - cur.commute : null;
   return [
     ['조건', `${dealBadge(l)}<b class="gl-amt">${d === '월세' ? '보증금 ' : ''}${fmtWon(l.deposit)}${d === '월세' ? ` / ${l.rent}` : ''}</b><span class="gl-sub">${d === '매매' ? `대출 ${l.loanYears || 30}년 · ${l.repay === 'interest' ? '이자만' : '원리금균등'} · ` : ''}관리비 ${l.fee == null ? '미확인' : l.fee + '만'}</span>`],
-    ['실제 월 부담', `<b>${fmtMonthly(l.monthly)}</b> / 월${split(l) ? `<span class="gl-sub">${split(l)}</span>` : ''}${dm != null ? `<span class="gl-sub ${dm > 0.05 ? 'up' : dm < -0.05 ? 'down' : ''}">지금 집보다 ${Math.abs(dm) < 0.05 ? '같음' : sg1(dm) + '만원'}</span>` : isCur ? '<span class="gl-sub">기준</span>' : ''}`],
+    ['실제 월 부담', `<b>${fmtMonthly(l.monthly)}</b> / 월${split(l) ? `<span class="gl-sub">${split(l)}</span>` : ''}${dm != null ? `<span class="gl-sub ${dm > 0.05 ? 'up' : dm < -0.05 ? 'down' : ''}">지금 집보다 ${Math.abs(dm) < 0.05 ? '같음' : sg1(dm) + '만원'}${l.fee == null ? ' (관리비 미확인)' : ''}</span>` : isCur ? '<span class="gl-sub">기준</span>' : ''}`],
     ['전입 · 대출', `<span class="badges">${moveBadge(l)}${loanBadge(l)}${l.si ? subBadge(l) : ''}</span>`],
     ['주소', q ? `<a href="${mapUrl(l)}" target="_blank" rel="noopener noreferrer" title="네이버지도에서 검색 (새 창)">${esc(q)} ↗</a>` : '<span class="gl-sub">주소 미입력</span>'],
     ['통근', `편도 <b>${fmtMin(l.commute)}</b>${dc ? ` <span class="gl-sub ${dc > 0 ? 'up' : 'down'}" style="display:inline">(${dc > 0 ? '+' : '−'}${Math.abs(dc)}분)</span>` : ''}<span class="gl-sub">${l.route ? esc(l.route) : '경로 미입력'}</span>`],
@@ -1755,7 +1755,13 @@ function buildWeights() {
 let locId = null, locMap = null, locLayer = null, lastLocEv = null;
 // 위치 검색: 검색어 → [위도, 경도] | null(못 찾음). state.geo 에 저장해 같은 검색어는 다시 묻지 않는다.
 const geoQueue = new Set();
-const geoOf = q => q ? (q in GEO_PRESET ? GEO_PRESET[q] : state.geo[q]) : null;
+// 못 찾음은 { miss: 시각 } 으로 두고 7일 지나면 다시 묻는다 (예전 null 은 시각이 없어 한 번 다시 묻는다)
+const GEO_RETRY = 7 * 864e5;
+const geoOf = q => q ? (q in GEO_PRESET ? GEO_PRESET[q] : Array.isArray(state.geo[q]) ? state.geo[q] : null) : null;
+const geoKnown = q => q in GEO_PRESET || Array.isArray(state.geo[q]) || (state.geo[q]?.miss > 0 && Date.now() - state.geo[q].miss < GEO_RETRY);
+const geoMiss = q => !!q && !geoOf(q) && geoKnown(q);
+// '서초구 방배동' + '방배동 100-1' → '서초구 방배동 100-1' (같은 낱말 두 번이면 검색이 실패한다)
+const homeQuery = l => [...new Set([l.region, l.addr].filter(Boolean).join(' ').split(/\s+/).filter(Boolean))].join(' ');
 async function geocodeQueue() {   // OpenStreetMap Nominatim: 1초에 1건 이하
   if (geocodeQueue.busy) return; geocodeQueue.busy = true;
   for (const q of geoQueue) {
@@ -1763,7 +1769,7 @@ async function geocodeQueue() {   // OpenStreetMap Nominatim: 1초에 1건 이�
       const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }));
       if (!r.ok) throw r.status;
       const j = await r.json();
-      state.geo[q] = j[0] ? [+(+j[0].lat).toFixed(5), +(+j[0].lon).toFixed(5)] : null; save();
+      state.geo[q] = j[0] ? [+(+j[0].lat).toFixed(5), +(+j[0].lon).toFixed(5)] : { miss: Date.now() }; save();
     } catch (e) { geoQueue.clear(); break; }   // 네트워크 실패 → 이번엔 그림으로, 다음 렌더에 다시 시도
     geoQueue.delete(q);
     if (lastLocEv) renderLocation(lastLocEv);
@@ -1818,29 +1824,33 @@ function renderLocation(ev) {
   $('#locSvg').toggleAttribute('hidden', !l); $('#locMap').hidden = true;
   if (!l) { $('#locSvg').innerHTML = ''; $('#locFacts').innerHTML = '<p class="empty">매물을 등록하면 역과 직장까지의 거리를 그려 드려요.</p>'; return; }
   const work = state.settings.work || '직장', stn = l.station || '역';
-  const qHome = [l.region, l.addr].filter(Boolean).join(' '), qs = [qHome, l.station, state.settings.work];
-  const g = qs.map(geoOf), mapOk = typeof L !== 'undefined' && !!g[0];
-  for (const q of qs) if (q && !(q in GEO_PRESET) && !(q in state.geo)) geoQueue.add(q);
+  const qHome = homeQuery(l), qRegion = l.region && l.region !== qHome ? l.region : '';
+  const byRegion = geoMiss(qHome) && !!geoOf(qRegion);   // 상세 주소를 못 찾으면 지역(구·동) 위치로
+  const qs = [qHome, l.station, state.settings.work], g = qs.map(geoOf); if (!g[0] && byRegion) g[0] = geoOf(qRegion);
+  const mapOk = typeof L !== 'undefined' && !!g[0];
+  for (const q of [...qs, geoMiss(qHome) ? qRegion : '']) if (q && !geoKnown(q)) geoQueue.add(q);
   if (geoQueue.size && typeof L !== 'undefined') geocodeQueue();
   $('#locMap').hidden = !mapOk; $('#locSvg').toggleAttribute('hidden', mapOk);
   const wr = mapOk && g[1] && state.routes[routeKey(g[0], g[1])];
   const cr = mapOk && g[2] && state.routes[routeKey(g[0], g[2], true)];
   const kmS = wr ? `걷는 길 ${(wr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[1]) : '', kmW = cr ? `도로 ${(cr.d / 1000).toFixed(1)}km` : mapOk ? km(g[0], g[2]) : '';
   const facts = () => {
-    const wk = ev.all.filter(x => x.walk != null), walkRank = rankOf(wk, l, 'walk'), comRank = rankOf(ev.all, l, 'commute'), many = ev.all.length > 1;
+    const P = ev.passed, inP = P.some(x => x.id === l.id), wk = P.filter(x => x.walk != null);   // 순위는 통과 매물끼리만 (지금 집·탈락 매물은 순위 없음)
+    const walkRank = rankOf(wk, l, 'walk'), comRank = rankOf(P, l, 'commute'), many = inP && P.length > 1;
     $('#locFacts').innerHTML = `
     <div><dt>위치</dt><dd>${esc(qHome || '—')}<small>${esc(l.name)} · ${typeCode(l)}</small></dd></div>
-    <div><dt>가까운 역</dt><dd>${esc(stn)} 도보 ${walkTxt(l)}${many || kmS ? `<small>${[many && l.walk != null && wk.length > 1 ? `${wk.length}곳 중 ${ord(walkRank)} 가까워요` : '', kmS].filter(Boolean).join(' · ')}</small>` : ''}</dd></div>
-    <div><dt>직장</dt><dd>${esc(work)} 편도 ${fmtMin(l.commute)}<small>${many ? `${ev.all.length}곳 중 ${ord(comRank)} 가까워요 · ` : ''}하루 왕복 ${fmtMin(l.commute * 2)}${kmW ? ` · ${kmW}` : ''}</small></dd></div>`;
+    <div><dt>가까운 역</dt><dd>${esc(stn)} 도보 ${walkTxt(l)}${many || kmS ? `<small>${[many && l.walk != null && wk.length > 1 ? `통과 ${wk.length}곳 중 ${ord(walkRank)} 가까워요` : '', kmS].filter(Boolean).join(' · ')}</small>` : ''}</dd></div>
+    <div><dt>직장</dt><dd>${esc(work)} 편도 ${fmtMin(l.commute)}<small>${many ? `통과 ${P.length}곳 중 ${ord(comRank)} 가까워요 · ` : ''}하루 왕복 ${fmtMin(l.commute * 2)}${kmW ? ` · ${kmW}` : ''}</small></dd></div>`;
   };
   if (mapOk) {
-    $('#locLead').textContent = '역까지는 걷는 길, 직장까지는 도로를 따라 그렸어요. 직장 경로는 지하철·버스 노선이 아닌 도로 기준이고, 시간은 입력한 도보·통근 시간이에요.';
+    $('#locLead').textContent = '역까지는 걷는 길, 직장까지는 도로를 따라 그렸어요. 직장 경로는 지하철·버스 노선이 아닌 도로 기준이고, 시간은 입력한 도보·통근 시간이에요.'
+      + (byRegion ? ` 상세 주소를 지도에서 찾지 못해 '${l.region}' 위치로 보여 드려요.` : '');
     drawLocMap(l, g[0], g[1], g[2]); facts(); return;
   }
   const far = Math.max(l.commute, l.walk ?? 0), step = far <= 60 ? 10 : far <= 180 ? 30 : 60;
   const maxM = Math.max(30, Math.ceil(far / step) * step), cx = 340, cy = 220, R = 150 / maxM;
   $('#locLead').textContent = `집에서 역과 직장까지 걸리는 시간을 거리처럼 그렸어요. 원 하나가 ${fmtMin(step)}이에요.` +
-    (geoQueue.has(qHome) ? ' 지도 위치를 찾는 중이에요.' : state.geo[qHome] === null ? ' 지도에서 이 지역을 찾지 못했어요. 매물에 상세 주소를 적으면 지도로 보여 드려요.' : '');
+    (geoQueue.has(qHome) || geoQueue.has(qRegion) ? ' 지도 위치를 찾는 중이에요.' : geoMiss(qHome) ? ' 지도에서 이 주소와 지역을 찾지 못했어요. 7일 뒤 다시 찾아볼게요.' : '');
   const pt = (deg, m) => [cx + Math.cos(deg * Math.PI / 180) * m * R, cy + Math.sin(deg * Math.PI / 180) * m * R];
   const [sx, sy] = pt(205, Math.max(l.walk ?? 4, 4)), [wx, wy] = pt(-28, Math.max(l.commute, 3));
   let rings = '';
@@ -2761,6 +2771,25 @@ function constrain(m, x, z) {
   return { x: px, z: pz };
 }
 // 가장 가까운 빈자리 (평면도 모드에서 처음 배치·회전할 때)
+// 사방 여유(벽·설비·집 밖·다른 가구까지)가 가장 큰 자리 = 가장 넓은 빈 바닥. 같으면 집 가운데에 가까운 쪽
+function boxFree(m, fw, fd, x, z) {
+  if (!grid) { if (Math.abs(x) > W / 2 - WALL_T / 2 - fw / 2 + 1e-9 || Math.abs(z) > D / 2 - WALL_T / 2 - fd / 2 + 1e-9) return false; }
+  else { const c = grid.cellM, x0 = Math.floor((x - fw / 2 + W / 2) / c), x1 = Math.ceil((x + fw / 2 + W / 2) / c) - 1, y0 = Math.floor((z - fd / 2 + D / 2) / c), y1 = Math.ceil((z + fd / 2 + D / 2) / c) - 1;
+    if (!(x0 >= 0 && y0 >= 0 && x1 < grid.gw && y1 < grid.gh && grid.free(x0, y0, x1, y1) === 0)) return false; }
+  return !furniture.some(o => { if (o === m) return false; const [ow, od] = footprint(o); return Math.abs(o.position.x - x) < (fw + ow) / 2 - 1e-6 && Math.abs(o.position.z - z) < (fd + od) / 2 - 1e-6; });
+}
+function roomiest(m) {
+  const [fw, fd] = footprint(m), c = grid ? grid.cellM * 2 : 0.1, gw = Math.ceil(W / c), gh = Math.ceil(D / c);
+  let best = null, br = -1, bd = Infinity;
+  for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
+    const x = (gx + 0.5) * c - W / 2, z = (gy + 0.5) * c - D / 2; if (!fits(m, x, z)) continue;
+    let lo = 0, hi = 40;   // 여유 r = 0.05m × k, 이분 탐색 (최대 2m)
+    while (lo < hi) { const k = (lo + hi + 1) >> 1; if (boxFree(m, fw + k * 0.1, fd + k * 0.1, x, z)) lo = k; else hi = k - 1; }
+    const d = (x - focus.x) ** 2 + (z - focus.z) ** 2;
+    if (lo > br || (lo === br && d < bd)) { br = lo; bd = d; best = { x, z }; }
+  }
+  return best;
+}
 function nearestFree(m, tx, tz) {
   let best = null, bd = Infinity;
   const c = grid ? grid.cellM * 2 : 0.1, gw = Math.ceil(W / c), gh = Math.ceil(D / c);
@@ -2803,7 +2832,7 @@ function addFurniture() {
     const w = f.w / 100, d = f.d / 100, h = f.h / 100, m = model(f.type, w, d, h), k = lay[f.id];
     m.userData = { fid: f.id, name: f.name, w, d, h, rot: k ? k.rot : 0 };
     m.rotation.y = m.userData.rot * Math.PI / 2;
-    const p = (k && fits(m, k.x, k.z) ? k : nearestFree(m, focus.x, focus.z)) ?? { x: focus.x, z: focus.z };
+    const p = (k && fits(m, k.x, k.z) ? k : roomiest(m)) ?? { x: focus.x, z: focus.z };
     m.position.set(p.x, 0, p.z);
     house.add(m); furniture.push(m);
   }
@@ -3143,13 +3172,24 @@ const endPaint = () => {
 cv.addEventListener('pointerup', endPaint);
 cv.addEventListener('pointercancel', endPaint);
 
+// 확인창(confirm) 대신 문구 옆 버튼으로 묻는다 (공유 링크 화면에서는 confirm 이 늘 취소)
+function askPlan(msg, choices) {
+  const el = $('#planMsg'); el.innerHTML = `${esc3(msg)} ` + choices.map(([t], i) => `<button type="button" class="small ${i ? 'ghost' : 'primary'}" data-ask="${i}">${esc3(t)}</button>`).join(' ');
+  el.onclick = e => { const b = e.target.closest('[data-ask]'); if (!b) return; el.onclick = null; el.textContent = ''; choices[+b.dataset.ask][1](); };
+}
 $('#measureApply').addEventListener('click', () => {
   const len = +$('#measureLen').value;
   if (!ed || ed.meas.length < 2 || !(len > 0)) { $('#planMsg').textContent = '두 점을 찍고 0보다 큰 길이를 입력해 주세요.'; return; }
   const [[x1, y1], [x2, y2]] = ed.meas, cells = Math.hypot(x2 - x1, y2 - y1) / CELL;
   if (cells < 1) { $('#planMsg').textContent = '두 점이 너무 가까워요. 길게 찍어 주세요.'; return; }
-  ed.meas = []; $('#measureRow').hidden = true; $('#planMsg').textContent = '';
-  commit({ scaleM: len / cells }); $('#scaleReset').hidden = false; drawEditor();
+  const apply = m => { ed.meas = []; $('#measureRow').hidden = true; $('#planMsg').textContent = ''; commit({ scaleM: m / cells }); $('#scaleReset').hidden = false; drawEditor(); };
+  const sizeCheck = m => {   // 이 길이로 맞추면 집 테두리 상자가 몇 m 가 되나
+    const g = planGeometry(ed.l), b = g.box, size = Math.max(b[2] - b[0], b[3] - b[1]) / g.cellM * (m / cells);
+    if (size > 50) askPlan(`이 길이(${m.toLocaleString()}m)로 맞추면 집 한 변이 약 ${Math.round(size)}m가 돼요. 숫자를 다시 확인해 주세요.`, [['그래도 적용', () => apply(m)], ['취소', () => {}]]);
+    else apply(m);
+  };
+  if (len > 50) askPlan(`입력한 ${len.toLocaleString()}은(는) mm로 보여요. ${(len / 1000).toLocaleString()}m로 적용할까요?`, [[`mm로 보고 ${(len / 1000).toLocaleString()}m`, () => sizeCheck(len / 1000)], [`${len.toLocaleString()}m 그대로`, () => sizeCheck(len)]]);
+  else sizeCheck(len);
 });
 $('#scaleReset').addEventListener('click', () => { if (ed) { commit({ scaleM: null }); $('#scaleReset').hidden = true; } });
 
@@ -3316,13 +3356,19 @@ async function analyze(l) {
   // 현관: 직접 찍은 곳, 없으면 바깥과 바로 이어진 문 틈(회색 체크 바닥 우선)
   const walk = i => free(i) && !fix[i];
   let entry = -1, entryHow = '';
-  if (p.entry) { const i0 = p.entry.y * gw + p.entry.x; entry = walk(i0) ? i0 : -1; entryHow = '직접 찍은 위치'; }
+  if (p.entry) {   // 직접 지정: 그 칸이 설비·벽 위면 가장 가까운 걸을 수 있는 칸 (말없이 자동으로 돌아가지 않게)
+    let bd = Infinity;
+    for (let y = Math.max(0, p.entry.y - 20); y < Math.min(gh, p.entry.y + 21); y++) for (let x = Math.max(0, p.entry.x - 20); x < Math.min(gw, p.entry.x + 21); x++) {
+      const i = y * gw + x, dd = (x - p.entry.x) ** 2 + (y - p.entry.y) ** 2; if (dd < bd && walk(i)) { bd = dd; entry = i; } }
+    entryHow = entry >= 0 ? '직접 지정' : '직접 지정한 곳 근처에 걸을 수 있는 바닥이 없어 자동으로 찾았어요';
+  }
   if (entry < 0) {
     const gap = [];
     for (let i = 0; i < n; i++) if (walk(i)) { const x = i % gw; if ([x > 0 ? i - 1 : -1, x < gw - 1 ? i + 1 : -1, i - gw, i + gw].some(j => j >= 0 && j < n && out[j])) gap.push(i); }
     const pick = gap.filter(i => kind[i] === 3).length ? gap.filter(i => kind[i] === 3) : gap;
     if (pick.length) { const byComp = new Map(); for (const i of pick) byComp.set(comp[i], [...(byComp.get(comp[i]) || []), i]); const g = [...byComp.values()].sort((a, b) => b.length - a.length)[0]; entry = g[g.length >> 1]; entryHow = '자동 (바깥과 이어진 문 틈)'; }
     else entryHow = '찾지 못함';
+    if (p.entry && entry >= 0) entryHow = '직접 지정한 곳 근처에 걸을 수 있는 바닥이 없어 자동 (바깥과 이어진 문 틈)';
   }
   // 이름: 같은 종류가 여럿이면 번호, 회색은 현관이 있는 곳 = 현관, 나머지 = 수납
   const byKind = new Map(); for (const sp of live) byKind.set(sp.kind, [...(byKind.get(sp.kind) || []), sp]);
@@ -3371,7 +3417,7 @@ async function analyze(l) {
     }
   }
   const rough = [...bnd].filter(([, e]) => e.n >= 6 && e.n / Math.max(1, (e.x1 - e.x0 + 1) + (e.y1 - e.y0 + 1) - 1) > 1.25).map(([k]) => k.split('|').map(v => live[+v].name).join('–'));
-  const A = { l, gw, gh, c, mask, out, kind, comp, spaceOf, spaces: live, entry, entryHow, entrySp, routes, zoning, floorM2, wallM2, total, diff: (total - l.area) / l.area * 100, zones, rough, box: [bx0, by0, bx1, by1] };
+  const A = { l, gw, gh, c, mask, out, fix, kind, comp, spaceOf, spaces: live, entry, entryHow, entrySp, routes, zoning, floorM2, wallM2, total, diff: (total - l.area) / l.area * 100, zones, rough, box: [bx0, by0, bx1, by1] };
   anaCache = { key, A };
   return A;
 }
@@ -3438,7 +3484,8 @@ async function refreshAnalysis() {
   $('#anaRoute').innerHTML = A.entry < 0 ? '<tbody><tr><td>현관을 찾지 못했어요. \'현관 찍기\'를 고르고 도면의 현관을 눌러 주세요.</td></tr></tbody>'
     : `<thead><tr><th>현관 →</th><th class="n">걷는 거리</th></tr></thead><tbody>` + A.routes.map(r => `<tr><td>${r.sp.name}</td><td class="n">${r.m == null ? '닫힌 칸 (가는 길 없음)' : r.m.toFixed(1) + 'm'}</td></tr>`).join('') + '</tbody>';
   $('#anaRough').hidden = !(A.zoning && A.rough.length);
-  $('#anaEntryInfo').textContent = `현관: ${A.entryHow}. 벽·설비를 피해 8방향으로 걷는 가장 짧은 길이고, 각 공간의 가운데에 가장 가까운 곳까지 쟀어요.`;
+  $('#anaEntryInfo').innerHTML = esc3(`현관: ${A.entryHow}. 벽·설비를 피해 8방향으로 걷는 가장 짧은 길이고, 각 공간의 가운데에 가장 가까운 곳까지 쟀어요.`)
+    + (A.l.plan.entry ? ' <button type="button" class="small ghost" id="anaEntryReset">자동으로 되돌리기</button>' : '');
   updateSun();
 }
 function updateSun() {
@@ -3543,7 +3590,7 @@ $('#anaCanvas').addEventListener('click', async e => {
   }
   if (t === 'entry') {   // 누른 곳에서 가장 가까운 걸을 수 있는 칸
     let best = null, bd = Infinity;
-    for (let yy = Math.max(0, y - 15); yy < Math.min(A.gh, y + 16); yy++) for (let xx = Math.max(0, x - 15); xx < Math.min(A.gw, x + 16); xx++) { const i = yy * A.gw + xx; if (A.mask[i] || A.out[i]) continue; const d = (xx - x) ** 2 + (yy - y) ** 2; if (d < bd) { bd = d; best = { x: xx, y: yy }; } }
+    for (let yy = Math.max(0, y - 15); yy < Math.min(A.gh, y + 16); yy++) for (let xx = Math.max(0, x - 15); xx < Math.min(A.gw, x + 16); xx++) { const i = yy * A.gw + xx; if (A.mask[i] || A.out[i] || A.fix[i]) continue; const d = (xx - x) ** 2 + (yy - y) ** 2; if (d < bd) { bd = d; best = { x: xx, y: yy }; } }
     if (!best) { $('#anaMsg').textContent = '집 안쪽 바닥을 눌러 주세요.'; return; }
     l.plan.entry = best; $('#anaMsg').textContent = '현관 위치를 저장했어요.';
   } else {   // 누른 곳에서 바깥이 가장 가까운 쪽 = 그 벽이 바라보는 쪽
@@ -3561,6 +3608,10 @@ $('#anaCanvas').addEventListener('click', async e => {
   }
   save(); document.querySelector('input[name=anaTool][value=""]').checked = true; $('#anaCanvas').classList.remove('picking');
   refreshAnalysis();
+});
+$('#anaEntryInfo').addEventListener('click', e => {
+  if (!e.target.closest('#anaEntryReset') || !cur?.plan) return;
+  delete cur.plan.entry; save(); $('#anaMsg').textContent = '현관을 자동으로 찾게 되돌렸어요.'; refreshAnalysis();
 });
 // 보드: 평면 · 조닝 · 동선 · 3D 사선뷰 → 2400×1800 PNG 한 장
 $('#anaBoard').addEventListener('click', async () => {

@@ -124,6 +124,11 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   ok('붙여넣기: 빈 칸 알려 줌 (가격·소득표·자격)', /주택형 59의 가격/.test(d.querySelector('#subPasteErr').innerText) && /소득 기준표/.test(d.querySelector('#subPasteErr').innerText), d.querySelector('#subPasteErr').innerText.replace(/\s+/g, ' '));
   const good = fw.eval('JSON.stringify({ ...state.subs.notices[0], id: "paste-test", short: "붙여넣기 시험" })'); paste('여기 결과예요:\n```json\n' + good + '\n```'); await W(300);
   ok('붙여넣기: 올바르면 바로 들어감', fw.eval('state.subs.notices.some(n => n.id === "paste-test")') && d.querySelector('#subAdd').hidden, fw.eval('state.subs.notices.length'));
+  // 새로 올라온 공고(feed): 없으면 숨김 · 예시 형식이면 마감 안 지난 것만 · 위험한 링크 거름
+  const fd = d.querySelector('#subFeed'), noFeed = fd.hidden;
+  const ex = await (await fetch('/samples/feed_example.json')).json(); ex.items.push({ title: '지난 공고', to: '2026-11-01' }, { title: '나쁜 링크', url: 'javascript:alert(1)', to: '2026-12-01' });
+  fw.eval('setFeed')(ex); await W(100);
+  ok('새로 올라온 공고: feed 없으면 숨김 · 있으면 표시(지난 공고 빼고, D-day, 새 공고, javascript 링크 없음) · 공고 보러 가기 링크 4개', noFeed && !fd.hidden && fd.querySelectorAll('li').length === 3 && /행복주택 입주자 모집공고/.test(fd.innerText) && /새 공고/.test(fd.innerText) && /D-6/.test(fd.innerText) && !fd.innerHTML.includes('javascript:') && d.querySelectorAll('.sub-go a').length === 4, fd.innerText.replace(/\s+/g, ' ').slice(0, 200));
   // 공고 둘: 왼쪽 목록 · 새로 넣은 공고가 골라짐 · 눌러서 바꾸기 · 제목 띠
   const head = () => d.querySelector('#subJudge .sub-main .sub-head h3')?.textContent, picks = () => [...d.querySelectorAll('#subJudge .sub-pick')];
   ok('공고 2개 → 목록 2장 · 새 공고가 골라져 제목 띠에 표시', picks().length === 2 && head() === '붙여넣기 시험' && picks()[1].getAttribute('aria-current') === 'true' && d.querySelectorAll('#subJudge .sub-main .easy-card').length === 1, head());

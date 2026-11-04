@@ -25,7 +25,7 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   d.querySelector('#subSample').click(); await W(800);
   ok('예시 공고 넣기', fw.eval('state.subs.notices.length') === 1 && /주택형 4개 · 일정 6개/.test(d.querySelector('#subMsg').textContent), d.querySelector('#subMsg').textContent);
   const nd = () => d.querySelector('#subJudge .next-do')?.innerText.replace(/\s+/g, ' ');
-  ok('예시 가족 결과 먼저 (저장 안 함 표시 · 신호등 · 다음 할 일 D-8 11월 12일(목)부터)', /예시 가족 기준 결과예요 · 저장되지 않아요/.test(d.querySelector('#subDemo').innerText) && /신청할 수 있어요/.test(d.querySelector('#subJudge .sig').innerText) && /^D-8 다음 할 일: 11월 12일\(목\)부터 청약 접수/.test(nd()), nd());
+  ok('예시 가족 결과 먼저 (저장 안 함 표시 · 자격 되지만 예산 넘음 노랑 + 첫 줄 예산 · 다음 할 일 D-8 11월 12일(목)부터)', /예시 가족 기준 결과예요 · 저장되지 않아요/.test(d.querySelector('#subDemo').innerText) && /신청은 할 수 있어요 · 예산은 넘어요/.test(d.querySelector('#subJudge .sig').innerText) && /^예산보다 월 30만원 많아요/.test(d.querySelector('#subJudge .why li').innerText) && /^D-8 다음 할 일: 11월 12일\(목\)부터 청약 접수/.test(nd()), nd());
   ok('예시 가족 값은 우리 상황에 안 들어감', fw.eval('JSON.stringify([state.subs.me.a.birth, state.subs.me.a.income, state.subs.me.nw.married])') === '["",null,""]', fw.eval('JSON.stringify(state.subs.me.a)'));
   d.querySelector('#subDemoExit').click(); await W(300);
   ok('우리 상황 입력하기 → 질문 1/7', !d.querySelector('#subWiz').hidden && /^1 \/ 7/.test(d.querySelector('#wizCount').textContent) && !d.querySelector('#subDemo').innerHTML, d.querySelector('#wizCount').textContent);
@@ -61,7 +61,7 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   ok('일반 50% 월 부담 147.8', Math.abs(es.monthly - (86 + 14.8 + 18800 * 0.03 / 12)) < 1e-6, es.monthly);
   set('b.income', 400); await W(300);
   e = fw.eval("[elig(state.subs.notices[0], state.subs.me, 'newlywed', 'special').st, elig(state.subs.notices[0], state.subs.me, 'newlywed', 'general').st]");
-  ok('소득 750만 → 특공 불가 · 일반 가능 · 쉬운 이유 "월 46만원 많아서"', e.join() === 'no,ok' && /부부 소득이 기준보다 월 46만원 많아서 특별공급은 어려워요\./.test(d.querySelector('#subJudge .why').innerText) && /일반공급\(추첨\)은 신청할 수 있어요/.test(d.querySelector('#subJudge .why').innerText) && /신청할 수 있어요/.test(d.querySelector('#subJudge .sig').innerText), d.querySelector('#subJudge .why').innerText.replace(/\s+/g, ' '));
+  ok('소득 750만 → 특공 불가 · 일반 가능 · 쉬운 이유 "월 46만원 많아서"', e.join() === 'no,ok' && /부부 소득이 기준보다 월 46만원 많아서 특별공급은 어려워요\./.test(d.querySelector('#subJudge .why').innerText) && /일반공급\(추첨\)은 신청할 수 있어요/.test(d.querySelector('#subJudge .why').innerText) && /예산은 넘어요/.test(d.querySelector('#subJudge .sig').innerText) && /^예산보다/.test(d.querySelector('#subJudge .why li').innerText), d.querySelector('#subJudge .why').innerText.replace(/\s+/g, ' '));
   // 소득 빈칸 → 확인 필요, 탈락 안 함
   set('b.income', ''); await W(300); es = evSub();
   ok('소득 빈칸 → 특공 확인 필요 · 탈락 안 함', es.si.sp.st === 'unk' && !es.reasons.length && /청약 (가능|확인 필요)/.test(fw.eval('subBadge(evaluate(state).all.find(l => l.sub))')), es.si.sp.st);
@@ -87,7 +87,7 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   set('hasCar', false); await W(300);
   // 청년 탭
   d.querySelector('[data-subtab="youth"]').click(); await W(300);
-  ok('청년으로 보기: 판정 전환 · 결혼 안내', fw.eval('state.subs.tab') === 'youth' && /청년 특별공급/.test(d.querySelector('#subJudge').textContent) && /결혼하면 청년 공급은 신청할 수 없어요/.test(d.querySelector('#subJudge').innerText), '');
+  ok('청년으로 보기: 판정 전환 · 결혼 이유 한 줄 · 고치기 없음 · 신혼부부로 보기', fw.eval('state.subs.tab') === 'youth' && /청년 특별공급/.test(d.querySelector('#subJudge').textContent) && d.querySelector('#subJudge .why').innerText.trim() === '결혼한 경우 청년 공급은 신청할 수 없어요.' && !d.querySelector('#subJudge .why button') && (d.querySelector('#subJudge').innerText.match(/청년 공급은 신청할 수 없어/g) || []).length === 1 && /신혼부부로 보기/.test(d.querySelector('#subJudge').innerText), '');
   ok('혼인신고일 있음 → 청년 미혼 칸 잠김·기혼 불가', d.querySelector('[data-me="yt.single"]').disabled && fw.eval("elig(state.subs.notices[0], state.subs.me, 'youth', 'general')").st === 'no', '');
   fw.eval("state.subs.me.nw.married = ''; render();"); await W(300);
   set('yt.single', '1'); set('yt.homeless', '1'); set('yt.asset', 9000); await W(300);
@@ -132,8 +132,31 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   // 처음 온 사람: 메뉴 '청약'(1) → '예시 공고로 체험하기'(2) → 결과
   localStorage.clear(); localStorage.setItem('suitable-intro', '1'); f.remove(); f = await frame(390); d = f.contentDocument; fw = f.contentWindow;
   d.querySelector('#subSample').click(); await W(1200);
-  ok('처음 온 사람: 클릭 2번으로 예시 결과 (390)', /신청할 수 있어요/.test(d.querySelector('#subJudge .sig')?.innerText || '') && d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);
+  ok('처음 온 사람: 클릭 2번으로 예시 결과 (390)', /신청은 할 수 있어요/.test(d.querySelector('#subJudge .sig')?.innerText || '') && d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);
   ok('휴대폰: 탭바에 청약', [...d.querySelectorAll('.tabbar a')].some(a => a.textContent === '청약' && a.getAttribute('aria-current') === 'page'), '');
+  // 처음 사용자 흐름: 예시 → 우리 상황 입력하기 → 7단계를 '다음'으로만 한 칸씩 → 결과
+  d.querySelector('#subDemoExit').click(); await W(300);
+  const cnt = () => d.querySelector('#wizCount').textContent.split(' · ')[0], seen = [cnt()];
+  const typ = (sel, v) => { const el = d.querySelector(sel); el.value = v; el.dispatchEvent(new fw.Event('input', { bubbles: true })); };
+  d.querySelector('[data-wtier="newlywed"]').click(); await W(200); seen.push(cnt());   // 고르기만 → 그대로 1/7
+  const next = async () => { d.querySelector('#wizNext').click(); await W(200); seen.push(cnt()); };
+  await next(); typ('[data-me="a.birth"]', '1992-05-01'); typ('[data-me="b.birth"]', '1993-02-01');
+  const age = d.querySelector('[data-age="a.birth"]').textContent;
+  await next(); typ('[data-me="nw.married"]', '2024-06-01');
+  await next(); typ('[data-me="nw.homeless"]', '1');
+  await next(); typ('[data-year-for="a.income"]', 4200); typ('[data-year-for="b.income"]', 3600);
+  const mon = d.querySelector('[data-won="a.income"]').textContent;
+  await next(); typ('[data-me="nw.asset"]', 20000);
+  await next(); typ('[data-me="live.city"]', '서울'); await W(100); typ('[data-me="live.gu"][data-gu-sel]', '동작구');
+  ok('7단계를 한 칸씩 (선택만으로 안 넘어감)', seen.join(',') === '1 / 7,1 / 7,2 / 7,3 / 7,4 / 7,5 / 7,6 / 7,7 / 7' && age === '만 34세 (공고일 기준)' && mon === '월 350만원', seen.join(',') + ' ' + age + ' ' + mon);
+  d.querySelector('#wizNext').click(); await W(300);
+  e = fw.eval("elig(state.subs.notices[0], state.subs.me, 'newlywed', 'special')");
+  ok('결과 보기 → 650만 특공 가능 · 3순위 · 지역 2순위 (예산 95 넘어 노랑)', d.querySelector('#subWiz').hidden && e.st === 'ok' && e.rankI === 3 && e.rankR === 2 && /예산은 넘어요/.test(d.querySelector('#subJudge .sig').innerText), JSON.stringify([e.st, e.rankI, e.rankR]));
+  fw.eval('state.settings.budget = 140; state.settings.depMax = 25000; render();'); await W(300);
+  ok('예산 안이면 초록 "신청할 수 있어요"', d.querySelector('#subJudge .sig').innerText === '신청할 수 있어요' && d.querySelector('#subJudge .sig').classList.contains('ok'), d.querySelector('#subJudge .sig').innerText);
+  const cl = d.querySelector('[data-ncommute]').closest('label');
+  ok('통근 칸: 라벨 · 예: 50 · 분', /이 단지에서 직장까지 편도 몇 분인가요\?/.test(cl.innerText) && /비교 매물로 넣을 때만 필요해요/.test(cl.innerText) && cl.querySelector('input').placeholder === '예: 50' && cl.querySelector('.with-unit span').textContent === '분', cl.innerText.replace(/\s+/g, ' '));
+  ok('처음 흐름 390: 가로 넘침 없음', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);
   document.body.innerHTML = '<pre id="r">' + asc(out) + '</pre>';
 })().catch(e => { document.body.innerHTML = '<pre id="r">' + asc([...out, ['NG', 'script error', e.message + ' ' + e.stack]]) + '</pre>'; });
 """

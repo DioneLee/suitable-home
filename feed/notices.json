@@ -1,32 +1,54 @@
 {
- "updated": "2026-11-04T16:32:49+09:00",
+ "updated": "2026-11-06T00:16:56+09:00",
  "source": "마이홈포털·LH 공고 API · SH·청년안심주택 게시판",
  "items": [
   {
-   "id": "youth-6716",
+   "id": "youth-6724",
    "org": "청년안심주택",
-   "title": "[민간임대] 미아사거리역 미아 헤리츠타워 추가모집공고",
-   "region": "서울 성북구",
+   "title": "[민간임대] 화랑대역 에이트플레이스 추가모집공고",
+   "region": "서울 중랑구",
    "kind": "청년안심주택(민간)",
-   "posted": "2026-10-29",
-   "from": "2026-11-02",
-   "to": "2026-11-04",
-   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6716"
+   "posted": "2026-11-05",
+   "from": "2026-11-06",
+   "to": "2026-11-10",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6724"
   },
   {
-   "id": "youth-6715",
+   "id": "youth-6722",
    "org": "청년안심주택",
-   "title": "[민간임대] 개봉역 에드가개봉 추가모집공고",
+   "title": "[민간임대] 개봉역 세이지움 개봉 추가모집공고",
    "region": "서울 구로구",
    "kind": "청년안심주택(민간)",
-   "posted": "2026-10-29",
-   "from": "2026-11-02",
-   "to": "2026-11-04",
-   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6715"
+   "posted": "2026-11-05",
+   "from": "2026-11-09",
+   "to": "2026-11-10",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6722"
+  },
+  {
+   "id": "youth-6721",
+   "org": "청년안심주택",
+   "title": "[민간임대] 숭곡초교역(예정) 성북펠릭스 추가모집공고",
+   "region": "서울 성북구",
+   "kind": "청년안심주택(민간)",
+   "posted": "2026-11-05",
+   "from": "2026-11-09",
+   "to": "2026-11-10",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6721"
+  },
+  {
+   "id": "youth-6720",
+   "org": "청년안심주택",
+   "title": "[민간임대] 건대입구역 더포디엄830 추가모집공고",
+   "region": "서울 광진구",
+   "kind": "청년안심주택(민간)",
+   "posted": "2026-11-05",
+   "from": "2026-11-09",
+   "to": "2026-11-10",
+   "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6720"
   },
   {
    "id": "myhome-21471",
-   "org": "한국자산관리공사",
+   "org": "캠코",
    "title": "나라키움영등포복합청사 예비입주자 모집공고(21형)",
    "region": "서울 영등포구",
    "kind": "행복주택",
@@ -56,28 +78,6 @@
    "from": "2026-11-12",
    "to": "2026-11-15",
    "url": "https://soco.seoul.go.kr/youth/bbs/BMSR00015/view.do?menuNo=400008&boardId=6718"
-  },
-  {
-   "id": "sh-312351",
-   "org": "SH",
-   "title": "[토지지원 사회주택]유니버설디자인하우스_수락 입주자 모집 공고",
-   "region": "서울",
-   "kind": "사회주택",
-   "posted": "2026-11-02",
-   "from": "",
-   "to": "",
-   "url": "https://www.i-sh.co.kr/app/lay2/program/S48T1581C563/www/brd/m_247/view.do?multi_itm_seq=2&seq=312351"
-  },
-  {
-   "id": "sh-312053",
-   "org": "SH",
-   "title": "[청년형] 특화형 매입임대주택(구로구) 입주자 모집 공고(운영기관 : 마을과집 협동조합)",
-   "region": "서울 구로구",
-   "kind": "매입임대",
-   "posted": "2026-11-02",
-   "from": "",
-   "to": "",
-   "url": "https://www.i-sh.co.kr/app/lay2/program/S48T1581C563/www/brd/m_247/view.do?multi_itm_seq=2&seq=312053"
   }
  ]
 }

@@ -541,8 +541,19 @@ kbd { font: 12px var(--sans); border: 1px solid var(--line); border-bottom-width
 .flist li { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); padding: var(--s1) 12px; border: 1px solid var(--line); border-radius: var(--r1); background: var(--bg); font-size: 14px; }
 .flist li span { font-variant-numeric: tabular-nums; }
 .flist .empty { justify-content: center; color: var(--muted); }
-.studio-grid { display: grid; gap: var(--s3); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-@media (max-width: 960px) { .studio-grid { grid-template-columns: minmax(0, 1fr); } }
+/* 3D 집 보기: PC 는 왼쪽 3D(고정) · 오른쪽 가구 추가·도면 보정, 휴대폰·도면 분석은 한 줄로 */
+.studio-main { display: grid; gap: var(--s3); grid-template-columns: minmax(0, 1fr); margin-top: var(--s2); }
+.studio-view > .hint { margin-top: var(--s1); }
+.studio-side > .row:first-child { margin-top: 0; }
+.studio-side #h-furn { margin-top: var(--s3); }
+#planEditorFold { margin-top: var(--s3); }
+@media (min-width: 961px) {
+  #studioTool:not(.ana) .studio-main { grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr); align-items: start; }
+  #studioTool:not(.ana) .studio-view { position: sticky; top: calc(var(--nav-h, 57px) + 16px); }
+  #studioTool:not(.ana) #view3d { height: min(480px, calc(100svh - var(--nav-h, 57px) - 220px)); min-height: 320px; }
+  #studioTool:not(.ana) .studio-side #furnForm .fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+#studioTool.ana .studio-main { display: flex; flex-direction: column; } #studioTool.ana .studio-view { order: 2; }   /* 도면 분석: 그림·표가 넓게, 3D(그림자)는 아래 */
 
 /* 4 입지 (분양 사이트 입지환경) */
 .loc-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); margin-top: var(--s4); align-items: center; }
@@ -896,23 +907,48 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <button type="button" role="tab" id="stTabPlace" aria-selected="true">3D 배치</button>
           <button type="button" role="tab" id="stTabAna" aria-selected="false">도면 분석</button>
         </div>
-        <p class="note" id="note3d"></p>
-        <div class="studio-grid">
-          <div>
+        <div class="studio-main">
+          <div class="studio-view">
             <label>볼 매물<select id="sel3d"></select></label>
+            <div id="view3d"><div class="msg" id="msg3d">3D 화면을 불러오는 중…</div></div>
+            <div class="place-only">
+        <div class="row">
+          <button type="button" class="ghost" id="topBtn">위에서 보기</button>
+          <button type="button" class="ghost" id="rotBtn">선택한 가구 90° 회전</button>
+          <span class="selname" id="selName">가구를 눌러 선택하고 끌어서 옮겨요. <kbd>R</kbd> 회전</span>
+        </div>
+            </div>
+            <p class="note" id="note3d"></p>
+            <p class="hint">끌면 회전, 3D 화면을 한 번 누른 뒤 휠(휴대폰은 두 손가락)로 확대해요. 가구는 눌러서 끌고 <kbd>R</kbd>로 돌려요.</p>
+          </div>
+          <div class="studio-side">
             <div class="row">
               <label class="filebtn">평면도 올리기<input type="file" id="planFile" accept="image/*"></label>
               <button type="button" class="danger" id="planDel" hidden>평면도 지우기</button>
               <span class="selname" id="planMsg" role="status"></span>
             </div>
             <p class="hint">2D 평면도가 가장 정확해요. 위에서 본 3D 이미지도 되지만, 비스듬히 본(사선) 이미지는 구조를 알 수 없어요.</p>
+            <div class="place-only">
+        <h3 id="h-furn">가구 추가</h3>
+        <p class="hint">가로·세로·높이를 넣고 만들기를 누르면 그 크기 그대로 3D에 생겨요. 가로는 정면에서 본 폭, 세로는 앞뒤 길이예요 (침대는 가로 = 폭, 세로 = 길이). 만든 가구는 모든 매물에 같이 들어가고, 위치는 매물마다 따로 저장돼요.</p>
+        <form id="furnForm" style="margin-top:16px">
+          <div class="fields">
+            <label>종류<select name="type">
+              <option value="bed">침대</option><option value="sofa">소파</option><option value="fridge">냉장고</option>
+              <option value="wardrobe">옷장</option><option value="desk">책상</option><option value="table">식탁</option>
+              <option value="washer">세탁기</option><option value="box">기타 (상자)</option>
+            </select></label>
+            <label>이름 <span class="unit">(선택)</span><input name="name" maxlength="20" placeholder="예: 우리 침대"></label>
+            <label>가로 <span class="unit">(cm)</span><input name="w" type="number" inputmode="decimal" min="10" max="600" step="any" required></label>
+            <label>세로 <span class="unit">(cm)</span><input name="d" type="number" inputmode="decimal" min="10" max="600" step="any" required></label>
+            <label>높이 <span class="unit">(cm)</span><input name="h" type="number" inputmode="decimal" min="5" max="300" step="any" required></label>
           </div>
-          <div>
-            <p class="hint" style="margin-top:22px">끌면 회전, 3D 화면을 한 번 누른 뒤 휠(휴대폰은 두 손가락)로 확대해요. 가구는 눌러서 끌고 <kbd>R</kbd>로 돌려요.</p>
-          </div>
-        </div>
-
-        <div id="planEditor" class="place-only" hidden>
+          <div class="row"><button class="primary" type="submit">가구 만들기</button></div>
+        </form>
+        <ul class="flist" id="furnList"></ul>
+            </div>
+            <details class="tool fold place-only" id="planEditorFold" hidden><summary><b>평면도 벽·설비·축척 보정하기</b> <span class="hint">벽 지우기·그리기 · 치수 · 설비</span></summary>
+        <div id="planEditor">
           <p class="hint" style="margin-top:16px">빨간 부분이 벽으로 인식된 곳이에요. 틀린 곳은 지우개나 벽 그리기로 고쳐 주세요.</p>
           <div class="plan-wrap"><canvas id="planCanvas"></canvas></div>
           <div class="tools" role="radiogroup" aria-label="보정 도구">
@@ -940,30 +976,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <div class="row"><span class="selname" id="planInfo"></span><button type="button" class="small ghost" id="scaleReset" hidden>면적 기준 축척으로 되돌리기</button></div>
         </div>
 
-        <div class="place-only">
-        <h3 id="h-furn" style="margin-top:32px">가구 추가</h3>
-        <p class="hint">가로·세로·높이를 넣고 만들기를 누르면 그 크기 그대로 3D에 생겨요. 가로는 정면에서 본 폭, 세로는 앞뒤 길이예요 (침대는 가로 = 폭, 세로 = 길이). 만든 가구는 모든 매물에 같이 들어가고, 위치는 매물마다 따로 저장돼요.</p>
-        <form id="furnForm" style="margin-top:16px">
-          <div class="fields">
-            <label>종류<select name="type">
-              <option value="bed">침대</option><option value="sofa">소파</option><option value="fridge">냉장고</option>
-              <option value="wardrobe">옷장</option><option value="desk">책상</option><option value="table">식탁</option>
-              <option value="washer">세탁기</option><option value="box">기타 (상자)</option>
-            </select></label>
-            <label>이름 <span class="unit">(선택)</span><input name="name" maxlength="20" placeholder="예: 우리 침대"></label>
-            <label>가로 <span class="unit">(cm)</span><input name="w" type="number" inputmode="decimal" min="10" max="600" step="any" required></label>
-            <label>세로 <span class="unit">(cm)</span><input name="d" type="number" inputmode="decimal" min="10" max="600" step="any" required></label>
-            <label>높이 <span class="unit">(cm)</span><input name="h" type="number" inputmode="decimal" min="5" max="300" step="any" required></label>
-          </div>
-          <div class="row"><button class="primary" type="submit">가구 만들기</button></div>
-        </form>
-        <ul class="flist" id="furnList"></ul>
-        <div class="row">
-          <button type="button" class="ghost" id="topBtn">위에서 보기</button>
-          <button type="button" class="ghost" id="rotBtn">선택한 가구 90° 회전</button>
-          <span class="selname" id="selName">가구를 눌러 선택하고 끌어서 옮겨요. <kbd>R</kbd> 회전</span>
-        </div>
-        </div>
+            </details>
         <div class="ana-only" id="anaPane">
           <p class="note" id="anaNote" style="margin-top:16px"></p>
           <div id="anaBody">
@@ -992,7 +1005,8 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
             <div class="row"><button type="button" class="primary" id="anaBoard">분석 보드 PNG 내려받기</button><span class="selname" id="anaMsg" role="status"></span></div>
           </div>
         </div>
-        <div id="view3d"><div class="msg" id="msg3d">3D 화면을 불러오는 중…</div></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -3603,9 +3617,9 @@ function drawEditor() {
 function setSlider(id, v) { const el = $('#' + id); el.value = v; el.nextElementSibling.value = v; }
 async function syncEditor(l) {
   const has = !!l?.plan;
-  $('#planEditor').hidden = !has; $('#planDel').hidden = !has;
+  $('#planEditorFold').hidden = !has; $('#planDel').hidden = !has;
   $('#note3d').textContent = has
-    ? '올린 평면도에서 벽·주방 카운터·변기·세면대·욕조를 자동 인식해 도면 위치 그대로 세운 구조예요. 틀린 곳은 아래에서 고칠 수 있어요.'
+    ? '올린 평면도에서 벽·주방 카운터·변기·세면대·욕조를 자동 인식해 도면 위치 그대로 세운 구조예요. 틀린 곳은 “평면도 벽·설비·축척 보정하기”에서 고칠 수 있어요.'
     : '실제 도면이 아닌 면적 기준 대략 구조예요. 평면도를 올리면 그 구조대로 바뀌어요. 가구는 \'가구 추가\'에 넣은 치수 그대로예요.';
   if (!has) { ed = null; return; }
   const sameListing = ed && ed.l === l;

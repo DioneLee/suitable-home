@@ -28,14 +28,16 @@
   --brand: "Cormorant Garamond", "Noto Serif KR", serif;
   --serif: "Noto Serif KR", "Nanum Myeongjo", serif;
   --sans: "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 48px; --s5: 96px;
+  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 36px; --s5: 56px;
   --r1: 4px; --r2: 8px; --pill: 999px;
   color-scheme: dark;
   --ease: cubic-bezier(.2, .7, .2, 1);
   --nav: 56px;
   --lab: 104px;
+  --panel-w: 560px;   /* PC 오른쪽 패널(매물 시트·등록 창) 폭 */
+  --tabbar-h: 57px;   /* 휴대폰 하단 탭 높이(56 + 윗줄 1) */
 }
-@media (max-width: 600px) { :root { --lab: 72px; } }
+@media (max-width: 600px) { :root { --lab: 72px; --s4: 28px; --s5: 40px; } }
 * { box-sizing: border-box; }
 html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }   /* 탭할 때 회색 번쩍임 제거 */
 button, .btn, .filebtn, .chip-btn, .tabbar a, .golist a { -webkit-user-select: none; user-select: none; }      /* 길게 눌러도 버튼 글자가 선택되지 않게 */
@@ -50,12 +52,12 @@ h1, h2, h3, p, ol, ul, dl, dd, figure { margin: 0; }
 h1, h2, h3 { font-family: var(--serif); font-weight: 300; letter-spacing: -0.01em; text-wrap: balance; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.num, table, output, .stat b, .tcost, .ch-no { font-variant-numeric: tabular-nums; }
+.num, table, output, .stat b, .ch-no { font-variant-numeric: tabular-nums; }
 .wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 @media (min-width: 900px) { .wrap { padding-left: max(48px, env(safe-area-inset-left, 0px)); padding-right: max(48px, env(safe-area-inset-right, 0px)); } }
 .block { padding-block: var(--s5); border-top: 1px solid var(--line); scroll-margin-top: var(--nav); }
 .eyebrow { font: 500 13px/1.4 var(--brand), var(--sans); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); font-variant-numeric: lining-nums; }
-.h2 { font-size: clamp(32px, 4.6vw, 56px); line-height: 1.15; margin-top: var(--s2); }
+.h2 { font-size: clamp(26px, 3.6vw, 40px); line-height: 1.2; margin-top: var(--s1); }
 .lead { max-width: 34em; color: var(--muted); margin-top: var(--s2); }
 .hint { font-size: 14px; color: var(--muted); }
 .unit { font-size: 12px; }
@@ -93,7 +95,7 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .gl-table table { border-collapse: collapse; font-size: 14px; min-width: 100%; }
 .gl-table th, .gl-table td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
 .gl-table td { min-width: 150px; max-width: 240px; }
-.gl-table tr > th:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg); color: var(--muted); font: 500 12px/1.4 var(--sans); white-space: nowrap; width: 1%; }
+.gl-table tr > th:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg); color: var(--muted); font: 500 12px/1.4 var(--sans); white-space: nowrap; width: 1%; box-shadow: 1px 0 0 var(--line); }
 .gl-table thead th { font-weight: 600; color: var(--ink); }
 .gl-table .cur { background: var(--paper); }
 .gl-cards { list-style: none; padding: 0; display: grid; gap: var(--s2); }
@@ -108,7 +110,51 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .gl-sub.up { color: var(--warn); } .gl-sub.down { color: var(--pass); }
 .gl-score { color: var(--muted); font-size: 12px; } .gl-score.fail { color: var(--fail); }
 .gl-body a { color: var(--ink); text-underline-offset: 3px; }
-.gl-more { margin-top: 10px; }
+.gl-more { margin-top: 0; }
+.gl-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--s1) var(--s2); }
+.gl-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.gl-table .gl-acts { margin-top: 0; }
+.gl-cards details > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px var(--s1); align-items: start; }
+.gl-cards details > summary::-webkit-details-marker { display: none; }
+.gl-cards details > summary .badge { grid-column: 2; grid-row: 1; }
+.gl-cards details > summary::after { content: "펼치기 ▾"; grid-column: 2; grid-row: 2; justify-self: end; color: var(--muted); font-size: 12px; }
+.gl-cards details[open] > summary::after { content: "접기 ▴"; }
+.gl-line { grid-column: 1; font-size: 14px; color: var(--muted); } .gl-line b { color: var(--ink); font-weight: 600; }
+.gl-failed { margin-top: var(--s2); } .gl-failed > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; color: var(--muted); }
+[data-card].flash { animation: rowFlash 2s ease-out; box-shadow: inset 0 0 0 2px var(--accent); }
+@media (prefers-reduced-motion: reduce) { [data-card].flash { animation: none; } }
+@media (max-width: 767.98px) { .gl-sort { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding: 2px 16px; } .gl-sort::-webkit-scrollbar { display: none; } .gl-sort > * { flex: none; } }
+/* 등록 창: 휴대폰 아래에서 · PC 오른쪽 패널 */
+.fdlg { padding: 0; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; max-width: 100%; margin: auto 0 0; max-height: 92dvh; border-radius: var(--r2) var(--r2) 0 0; display: none; flex-direction: column; }
+.fdlg[open] { display: flex; }
+.fdlg::backdrop { background: rgba(0, 0, 0, .55); }
+.fdlg-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); padding: 12px var(--s2); border-bottom: 1px solid var(--line); }
+.fdlg-head h3 { font: 600 18px/1.4 var(--sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fdlg-body { overflow-y: auto; overscroll-behavior: contain; padding: var(--s2) var(--s2) calc(var(--s3) + env(safe-area-inset-bottom, 0px)); }
+.fdlg .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 768px) { .fdlg { margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(var(--panel-w), 100%); border-radius: 0; border-width: 0 0 0 1px; } }
+.form-more { margin-top: var(--s2); } .form-more > summary { cursor: pointer; min-height: 44px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-weight: 600; color: var(--accent); }
+.form-more > .fields { margin-top: var(--s1); }
+.in { position: relative; display: block; }
+.in > i { position: absolute; right: 12px; top: calc(50% + 3px); transform: translateY(-50%); font: 13px var(--sans); color: var(--muted); pointer-events: none; }
+.in > input { padding-right: 3.2em; }
+/* 접어 둔 도구 (데이터 옮기기 · AI 설정) */
+details.tool.fold > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--s1); min-height: 28px; }
+details.tool.fold > summary b { font: 600 17px/1.4 var(--sans); }
+details.tool.fold[open] > summary { margin-bottom: var(--s2); }
+/* 리포트: 위쪽 고정 탭 */
+.rp-tabs { position: sticky; top: var(--nav-h, 57px); z-index: 5; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: var(--s2) -16px 0; padding: 8px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.rp-tabs::-webkit-scrollbar { display: none; }
+.rp-tabs a { flex: none; display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--s2); border: 1px solid var(--line); border-radius: var(--pill); color: var(--ink); text-decoration: none; font-size: 15px; }
+.rp-tabs a[aria-current] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+#report:has(#ch4[hidden]):has(#ch3[hidden]):has(#ch2[hidden]):has(#ch1[hidden]) { padding-bottom: 0; }
+details.ch-foot > summary { cursor: pointer; color: var(--muted); font-size: 13px; min-height: 36px; display: flex; align-items: center; }
+details.ch-foot > p { margin-top: 4px; }
+.sub-tabs { margin: var(--s2) 0; }
+/* 맨 위로 */
+.totop { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 25; background: var(--bg); border-color: var(--line); box-shadow: 0 4px 16px rgba(0, 0, 0, .35); }
+@media (max-width: 767.98px) { .totop { bottom: calc(var(--tabbar-h, 64px) + 12px + env(safe-area-inset-bottom, 0px)); } }
+.sheet-lock .totop { display: none; }
 @media (min-width: 768px) { .gl-cards { display: none; } }
 @media (max-width: 767.98px) { .gl-table { display: none; } }
 .subs-next { display: block; margin: var(--s3) 0; padding: 12px var(--s2); border: 1px solid var(--line); border-radius: var(--r2); color: var(--ink); text-decoration: none; font-size: 14px; }
@@ -140,7 +186,7 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); margin: var(--s2) 0; }
 .ai-send { margin: var(--s2) 0; padding: var(--s2); border: 1px solid var(--line); border-left: 6px solid var(--accent); border-radius: var(--r2); }
 .ai-send p { margin: 0 0 4px; }
-.ai-tag { display: inline-block; margin-left: 6px; padding: 0 8px; border: 1px solid var(--accent); border-radius: var(--pill); color: var(--accent); font-size: 12px; font-weight: 600; }
+.ai-filled { border-color: var(--accent) !important; box-shadow: 0 0 0 1px var(--accent); }   /* AI가 채운 칸 · 사람이 고치면 해제 */
 .ai-paste { padding-bottom: var(--s3); margin-bottom: var(--s3); border-bottom: 1px solid var(--line); }
 .ai-paste textarea { display: block; width: 100%; margin: var(--s1) 0; font: 16px/1.6 var(--sans); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 12px; }
 .ai-key label { margin-top: var(--s2); max-width: 32em; }
@@ -239,14 +285,10 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .sub-type-head p { margin: 0; }
 .sub-card input[type="radio"] { width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; accent-color: var(--accent); }
 .facts-mini { display: grid; gap: 6px; padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; }
-.type-panel > .facts-mini { border-top: 0; border-bottom: 1px solid var(--line); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px var(--s3); }   /* 두 줄로 접어 고정 패널이 화면 높이를 넘지 않게 */
-@media (min-width: 961px) { .type-panel .type-stage { aspect-ratio: 16 / 9; } }   /* 위에 조건 줄이 생긴 만큼 평면 칸을 조금 낮게 */
-.type-panel > .facts-mini .formula, .type-panel > .facts-mini .vs, .type-panel > .facts-mini .wide { grid-column: 1 / -1; }
 .facts-mini .formula, .fit-home .formula { color: var(--muted); font-size: 12px; }
 .sheet .facts-mini { padding: 12px 0; border-top: 0; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
 .facts-mini p { margin: 0; } .facts-mini .k { color: var(--muted); font-size: 12px; margin-right: 6px; }
 .facts-mini .gl-amt { display: inline; font-size: 18px; }
-.tcost .tcond { display: block; font-size: 12px; color: var(--muted); margin: 0 0 6px auto; max-width: 220px; }
 .rank .cond { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; }
 .rank .cond .badge { margin-top: 4px; } .subs-easy .rank .cond .badge { font-size: 14px; padding: 4px 8px; }
 .badges { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; }
@@ -290,7 +332,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 @media (max-width: 600px) { .golist a { grid-template-columns: minmax(0, 1fr) auto; } .golist .gv { grid-column: 1; grid-row: 2; } .golist .ga { grid-row: 1 / span 2; align-self: center; } }
 
 /* 0 히어로 */
-.hero { position: relative; min-height: var(--hero-h, calc(100svh - var(--nav))); display: grid; align-items: end; overflow: hidden; }
+.hero { position: relative; min-height: var(--hero-h, clamp(460px, 68svh, 680px)); display: grid; align-items: end; overflow: hidden; }
 #heroCanvas { position: absolute; inset: 0 0 0 50%; }
 #heroCanvas canvas { display: block; }
 .hero .wrap { position: relative; width: 100%; padding-block: var(--s5) var(--s4); pointer-events: none; }
@@ -330,11 +372,6 @@ a.stat:active .go i { transform: translateX(4px); }
 }
 
 /* 1 TYPE 라인업: 큰 평면 한 장 + 작은 목록 */
-.type-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); margin-top: var(--s4); align-items: start; }
-@media (max-width: 960px) { .type-grid { grid-template-columns: minmax(0, 1fr); } }
-.type-panel { border: 1px solid var(--line); border-radius: var(--r2); background: var(--paper); overflow: hidden; transition: border-color .2s; }
-@media (min-width: 961px) { .type-panel { position: sticky; top: calc(var(--nav-h, 57px) + 16px); } }   /* 메뉴바 실제 높이 + 16px: 탭·가구 배치 버튼이 메뉴바에 가리지 않게 */   /* 두 단일 때: 목록을 내려도 평면·3D 가 보이게 */
-.type-panel.changed { border-color: var(--accent); }
 .stale-bar { position: fixed; z-index: 80; left: 50%; transform: translateX(-50%); top: calc(var(--nav-h, 57px) + 8px); width: min(560px, calc(100% - 32px));
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px; background: var(--paper); color: var(--ink); border: 1px solid var(--accent); border-radius: var(--r2); font-size: 14px; }
 /* ---- 3D 집 보기: 3D 배치 | 도면 분석 ---- */
@@ -372,6 +409,10 @@ table.ana tr.sum td { border-top: 1px solid var(--ink); font-weight: 600; }
   background: var(--paper); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; transform: translateY(100%); transition: transform .26s cubic-bezier(.2,.7,.2,1); outline: none; }
 .sheet.open .sheet-panel { transform: none; }
 .sheet.dragging .sheet-panel { transition: none; }
+@media (min-width: 768px) {   /* PC: 같은 시트를 오른쪽 패널로 */
+  .sheet-panel { left: auto; top: 0; height: 100%; width: min(var(--panel-w), 100%); border-top: 0; border-left: 1px solid var(--line); border-radius: 0; transform: translateX(100%); }
+  .sheet .sheet-grab { display: none; }
+}
 .sheet-grab { display: flex; justify-content: center; padding: 10px 0 4px; touch-action: none; cursor: grab; }
 .sheet-grab span { width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
 .sheet-head { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px 44px; align-items: center; gap: 4px; padding: 0 8px 8px; touch-action: none; }
@@ -402,27 +443,8 @@ html.sheet-lock body { position: fixed; left: 0; right: 0; overflow: hidden; }
 .tabs button { border: 0; border-radius: 0; min-height: 48px; padding: 0 var(--s3); color: var(--muted); background: transparent; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 @media (hover: hover) { .tabs button:hover { background: transparent; color: var(--ink); } }
 .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
-.tabs .tab-link { margin-left: auto; font-size: 13px; }
 .type-stage { position: relative; aspect-ratio: 16 / 10; max-width: 100%; }
-#type2d, #type3d { position: absolute; inset: 0; }
-#type2d { display: grid; place-items: center; grid-template: minmax(0, 1fr) / minmax(0, 1fr); padding: var(--s4); color: var(--ink); overflow: hidden; }   /* 줄 높이를 영역에 묶어 큰 이미지가 아래 정보 줄을 덮지 않게 */
-@media (max-width: 600px) { #type2d { padding: var(--s2); } .hero .sub { font-size: 16px; } }
-#type2d svg, #type2d img { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; display: block; }
-.type-cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s1) var(--s3); padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
-.type-loan { padding: var(--s2) var(--s3); border-top: 1px solid var(--line); } .type-panel:has(#typeLoan:not([hidden])) { position: static; }   /* 펼치면 화면보다 길어져서 고정 풀기 */
-.type-cap b { color: var(--ink); font-weight: 600; margin-right: 6px; }
-.type-list { list-style: none; padding: 0; border-top: 1px solid var(--ink); }
-.type-list li { border-bottom: 1px solid var(--line); }
-.type-list li button { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px var(--s2); padding: var(--s3) 0; cursor: pointer; }
-.type-list li button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.tcode { font: 300 30px/1.1 var(--serif); letter-spacing: -0.01em; transition: color .2s; }
-.type-list li.on .tcode { color: var(--accent); }
-@media (hover: hover) { .type-list li button:hover .tcode { color: var(--accent); } }
-.tmeta { grid-column: 1; font-size: 14px; color: var(--muted); }
-.tmeta b { color: var(--ink); font-weight: 600; margin-right: 6px; }
-.tcost { grid-column: 2; grid-row: 1 / span 2; text-align: right; align-self: center; }
-.tcost b { display: block; font: 300 24px/1.1 var(--serif); }
-.tcost small { display: block; font-size: 12px; color: var(--muted); margin: 2px 0 6px; }
+@media (max-width: 600px) { .hero .sub { font-size: 16px; } }
 
 /* 2 분석 리포트: 얇은 선 격자 + 장 번호 + 오른쪽 핵심 결론 */
 .rp-meta { margin-top: var(--s2); font-size: 13px; color: var(--muted); }
@@ -493,13 +515,6 @@ table.rank tr.top td.nm { font-weight: 600; }
 .simrank .rk { font: 300 22px var(--serif); }
 .simrank li.top .rk, .simrank li.top .sc { color: var(--accent); }
 .simrank .sc { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
-.manage { list-style: none; padding: 0; margin-top: var(--s3); border-top: 1px solid var(--ink); }
-.manage li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s1) var(--s2); align-items: center; padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
-.manage .info { min-width: 0; font-size: 14px; color: var(--muted); }
-.manage .info b { color: var(--ink); font-weight: 600; margin-right: 6px; }
-.manage .acts { display: flex; gap: var(--s1); flex-wrap: wrap; justify-content: flex-end; }
-.manage .why { display: block; color: var(--fail); font-size: 13px; }
-@media (max-width: 600px) { .manage li { grid-template-columns: minmax(0, 1fr); } .manage .acts { justify-content: flex-start; } }
 .chips { display: flex; flex-wrap: wrap; gap: var(--s1); }
 .chip-btn { min-height: 36px; font-size: 13px; border-color: var(--line); display: inline-block; line-height: 34px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .chip-btn[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
@@ -548,15 +563,6 @@ kbd { font: 12px var(--sans); border: 1px solid var(--line); border-bottom-width
 .facts dd small { display: block; font: 400 13px var(--sans); color: var(--muted); margin-top: 2px; }
 
 /* 5 추천 */
-.final { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: var(--s4); align-items: end; }
-@media (max-width: 960px) { .final { grid-template-columns: minmax(0, 1fr); } }
-.final .pick { font: 200 clamp(48px, 7vw, 96px)/1.05 var(--serif); letter-spacing: -0.03em; }
-.final .pick small { display: block; font: 400 16px var(--sans); color: var(--muted); margin-top: var(--s2); letter-spacing: 0; }
-.final .pick em { font-style: normal; color: var(--accent); }
-.final .pick.long { font-size: clamp(32px, 4vw, 56px); }
-.final .pick.long em { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.why3 { list-style: none; padding: 0; border-top: 1px solid var(--ink); }
-.why3 li { padding: var(--s2) 0; border-bottom: 1px solid var(--line); font-size: 17px; }
 footer p { margin: var(--s1) 0 0; }
 footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 
@@ -596,7 +602,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
     <a class="lnk" href="#report" data-nav="report">비교 리포트</a>
     <a class="lnk" href="#criteria" data-nav="criteria">우리 기준</a>
     <a class="lnk" href="#studio" data-nav="studio">3D 집 보기</a>
-    <a class="btn primary" href="#listings" data-focus="#manage" style="min-height:36px;font-size:13px">매물 등록</a>
+    <a class="btn primary" href="#listings" data-addform style="min-height:36px;font-size:13px">매물 등록</a>
   </div>
 </nav>
 
@@ -615,47 +621,20 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <p class="sub">월세에 대출 이자까지 더한 실제 월 부담, 우리 기준으로 매긴 적합도, 실제 평면도로 만든 3D까지 한 곳에서 비교해요.</p>
       <div class="stats" id="heroStats">
         <a class="stat" href="#listings"><b id="stCount">0</b><span>비교 중인 매물</span><em class="go">매물 보기 <i aria-hidden="true">→</i></em></a>
-        <a class="stat" href="#report" data-focus="#ch1"><b id="stCost">0</b><span id="stCostSub">최저 실제 월 부담</span><em class="go">비용 분석 보기 <i aria-hidden="true">→</i></em></a>
-        <a class="stat" href="#report" data-focus="#ch3"><b id="stScore">0</b><span id="stScoreSub">가장 가까운 집</span><em class="go">통근 분석 보기 <i aria-hidden="true">→</i></em></a>
+        <a class="stat" href="#report/cost"><b id="stCost">0</b><span id="stCostSub">최저 실제 월 부담</span><em class="go">비용 분석 보기 <i aria-hidden="true">→</i></em></a>
+        <a class="stat" href="#report/commute"><b id="stScore">0</b><span id="stScoreSub">가장 가까운 집</span><em class="go">통근 분석 보기 <i aria-hidden="true">→</i></em></a>
       </div>
     </div>
-    <button type="button" class="scrollbtn" data-scroll="#glanceHome" aria-label="한눈에 비교로 내려가기">↓</button>
+    <button type="button" class="scrollbtn" data-scroll="#homeTop" aria-label="적합도 상위 3곳으로 내려가기">↓</button>
   </header>
 
   <div class="wrap"><a class="subs-next" id="subsNext" href="#subs" hidden></a></div>
-  <section class="block glance" id="glanceHome" aria-labelledby="h-glanceHome">
+  <section class="block" id="homeTop" aria-labelledby="h-homeTop">
     <div class="wrap">
-      <p class="eyebrow">At a glance</p>
-      <h2 class="h2" id="h-glanceHome">한눈에 비교</h2>
-      <p class="lead">계약 조건 · 전입신고 · 주소 · 통근 · 원문을 매물마다 나란히 봐요. 점수·평면도·3D는 "자세히 보기"에서.</p>
-      <div class="gl-sort" role="group" aria-label="정렬"><span class="hint">정렬</span>
-        <button type="button" class="small ghost" data-gsort="price">금액 낮은 순</button><button type="button" class="small ghost" data-gsort="monthly">실제 월 부담 낮은 순</button><button type="button" class="small ghost" data-gsort="commute">통근 짧은 순</button><button type="button" class="small ghost" data-gsort="area">넓은 순</button></div>
-      <div class="gl-body" data-glance></div>
-    </div>
-  </section>
-
-
-  <!-- 5 마무리 -->
-  <section class="block" id="final" aria-labelledby="h-final">
-    <div class="wrap">
-      <p class="eyebrow reveal" id="ebFinal">Recommendation</p>
-      <h2 class="h2 reveal" id="h-final">더 깊이 보기</h2>
-      <p class="lead reveal">우리 기준 점수로 고른 최종 추천이에요. 비교 리포트 · 우리 기준 · 3D · 도면 분석은 그 아래 메뉴에서 봐요.</p>
-      <div class="final reveal" id="finalPick"></div>
-    </div>
-  </section>
-
-  <!-- 홈: 메뉴 바로가기 (각 화면의 지금 상태를 한 줄로) -->
-  <section class="block" id="goto" aria-labelledby="h-goto">
-    <div class="wrap">
-      <p class="eyebrow reveal">Menu</p>
-      <h2 class="h2 reveal" id="h-goto">더 자세히 보기</h2>
-      <nav class="golist reveal" aria-label="메뉴 바로가기">
-        <a href="#listings"><span class="gk">매물</span><span class="gv" id="goListings"></span><span class="ga" aria-hidden="true">→</span></a>
-        <a href="#report"><span class="gk">비교 리포트</span><span class="gv" id="goReport"></span><span class="ga" aria-hidden="true">→</span></a>
-        <a href="#criteria"><span class="gk">우리 기준</span><span class="gv" id="goCriteria"></span><span class="ga" aria-hidden="true">→</span></a>
-        <a href="#studio"><span class="gk">3D 집 보기</span><span class="gv" id="goStudio"></span><span class="ga" aria-hidden="true">→</span></a>
-      </nav>
+      <p class="eyebrow" id="ebTop">Top 3</p>
+      <h2 class="h2" id="h-homeTop">적합도 상위 3곳</h2>
+      <nav class="golist" id="topList" aria-label="적합도 상위 3곳"></nav>
+      <div class="row"><a class="btn ghost" href="#listings">전체 비교 보기 <i aria-hidden="true">→</i></a></div>
     </div>
   </section>
 </div>
@@ -663,92 +642,17 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 <div class="view" data-view="listings" hidden>
   <section class="block glance" id="glanceList" aria-labelledby="h-glanceList">
     <div class="wrap">
-      <p class="eyebrow">At a glance</p>
-      <h2 class="h2" id="h-glanceList">한눈에 비교</h2>
-      <p class="lead">계약 조건 · 전입신고 · 주소 · 통근 · 원문을 매물마다 나란히 봐요. 점수·평면도·3D는 "자세히 보기"에서.</p>
+      <p class="eyebrow" id="ebType">At a glance</p>
+      <div class="gl-head"><h2 class="h2" id="h-glanceList">한눈에 비교</h2><button type="button" class="primary" data-addform>+ 매물 등록</button></div>
+      <p class="lead">계약 조건 · 전입신고 · 주소 · 통근 · 원문을 매물마다 나란히 봐요. 평면도·3D·계산식은 "자세히 보기"에서.</p>
       <div class="gl-sort" role="group" aria-label="정렬"><span class="hint">정렬</span>
         <button type="button" class="small ghost" data-gsort="price">금액 낮은 순</button><button type="button" class="small ghost" data-gsort="monthly">실제 월 부담 낮은 순</button><button type="button" class="small ghost" data-gsort="commute">통근 짧은 순</button><button type="button" class="small ghost" data-gsort="area">넓은 순</button></div>
       <div class="gl-body" data-glance></div>
     </div>
   </section>
-  <!-- 1 TYPE 라인업 · 분양 사이트 -->
-  <section class="block" id="type" aria-labelledby="h-type">
+  <section class="block" id="manageSec" aria-label="데이터와 AI 설정">
     <div class="wrap">
-      <p class="eyebrow reveal" id="ebType">Type lineup</p>
-      <h2 class="h2 reveal" id="h-type">매물 타입</h2>
-      <p class="lead reveal">전용면적으로 이름 붙인 후보 집들이에요. 목록에서 고르면 평면과 3D가 바뀌어요.</p>
-      <div class="type-grid">
-        <div class="type-panel reveal">
-          <div class="facts-mini" id="typeFacts"></div>
-          <div class="tabs" role="tablist" aria-label="보기 방식">
-            <button type="button" role="tab" id="tab2d" aria-selected="true" aria-controls="type2d">2D 평면</button>
-            <button type="button" role="tab" id="tab3d" aria-selected="false" aria-controls="type3d">3D 보기</button>
-            <a class="tab-link btn ghost small" href="#studio" data-focus="#studioTool" style="margin:6px 8px 6px auto;min-height:36px">가구 배치하러 가기</a>
-            <button type="button" class="ghost small" id="typeLoanBtn" aria-expanded="false" aria-controls="typeLoan" style="margin:6px 8px 6px 0;min-height:36px">돈 계산</button>
-          </div>
-          <div class="type-stage">
-            <div id="type2d" role="tabpanel" aria-labelledby="tab2d"></div>
-            <div id="type3d" role="tabpanel" aria-labelledby="tab3d" hidden></div>
-          </div>
-          <div class="type-cap" id="typeCap"></div>
-          <div class="type-loan" id="typeLoan" hidden></div>
-        </div>
-        <ul class="type-list reveal" id="typeList" aria-label="매물 타입 목록"></ul>
-      </div>
-    </div>
-  </section>
-
-
-  <section class="block" id="manageSec" aria-labelledby="h-form">
-    <div class="wrap">
-      <div class="tool" id="manage" style="scroll-margin-top:72px">
-        <div class="ai-paste">
-          <h3>매물 글 붙여넣기 <span class="unit">(선택)</span></h3>
-          <p class="hint">직방·네이버 매물 설명을 붙여넣으면 AI가 아래 칸을 채워요. 글에 없는 값은 비워 두고, 저장은 확인한 뒤 '매물 추가'를 눌러야 돼요. <a href="#listings" data-focus="#aiSet">AI 설정</a></p>
-          <textarea id="lstText" rows="4" maxlength="5000" placeholder="예: 투룸 보증금 3000 / 월세 70, 관리비 8만, 전용 42㎡, 3층/5층, 망원역 도보 6분, 전입신고 가능" aria-label="매물 설명 글"></textarea>
-          <div class="row"><button type="button" class="ghost" id="lstGo">칸 채우기</button><span class="msg" id="lstMsg" role="status"></span></div>
-          <div class="ai-send" id="lstSend" hidden><p>이 내용만 Gemini로 보내요: <b data-what></b></p>
-          <p class="unit">무료 등급은 구글 제품 개선에 쓰일 수 있어요. 소득·자산·지금 집·직장·가족 정보는 보내지 않아요.</p>
-          <div class="row"><button type="button" class="primary" data-go>Gemini로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
-        </div>
-        <h3 id="h-form">매물 등록</h3>
-        <p class="hint">금액은 만원 단위로 적어 주세요. 예: 1억 2천 → 12000</p>
-        <form id="form" style="margin-top:16px">
-          <input type="hidden" name="id">
-          <div class="fields">
-            <label class="wide">이름<input name="name" required maxlength="40" placeholder="예: 망원동 투룸"></label>
-            <label class="wide">지역<input name="region" maxlength="40" placeholder="예: 마포구 망원동"></label>
-            <label class="wide">상세 주소 <span class="unit">(선택 · 지도 위치용)</span><input name="addr" maxlength="60" placeholder="예: 월드컵로 123"></label>
-            <label>거래 유형<select name="deal" id="fDeal"><option>월세</option><option>전세</option><option>매매</option></select></label>
-            <label><span id="fDepLabel">보증금</span> <span class="unit">(만원)</span><input name="deposit" type="number" inputmode="decimal" min="0" step="any" required></label>
-            <label data-deal="월세">월세 <span class="unit">(만원)</span><input name="rent" type="number" inputmode="decimal" min="0" step="any" required></label>
-            <label data-deal="매매" hidden>대출 기간 <span class="unit">(년)</span><input name="loanYears" type="number" inputmode="numeric" min="1" max="50" step="1" value="30"></label>
-            <label data-deal="매매" hidden>상환 방식<select name="repay"><option value="amort">원리금균등</option><option value="interest">이자만</option></select></label>
-            <label>관리비 <span class="unit">(만원 · 모르면 비워 두기)</span><input name="fee" type="number" inputmode="decimal" min="0" step="any" placeholder="미확인"></label>
-            <label>전용면적 <span class="unit">(㎡)</span><input name="area" type="number" inputmode="decimal" min="1" step="any" required></label>
-            <label>방 개수<input name="rooms" type="number" inputmode="numeric" min="1" max="6" step="1" required></label>
-            <label>층<select name="floor"><option>지상</option><option>반지하</option></select></label>
-            <label>층/총층 <span class="unit">(선택 · 예: 3/5)</span><input name="floorNo" maxlength="10" placeholder="예: 3/5"></label>
-            <label>전입신고<select name="moveIn"><option value="">미확인</option><option>가능</option><option value="불가">불가 (허그대출 안 됨 → 탈락)</option></select></label>
-            <label>대출<select name="loan"><option>가능</option><option>불가</option></select></label>
-            <label>건물 용도<select name="usage"><option>주거용</option><option value="업무용">업무용 오피스텔</option></select></label>
-            <label>방향 <span class="unit">(평면도 아래쪽이 바라보는 방위)</span><select name="facing"><option value="">미확인</option><option value="S">남</option><option value="SE">남동</option><option value="E">동</option><option value="NE">북동</option><option value="N">북</option><option value="NW">북서</option><option value="W">서</option><option value="SW">남서</option></select></label>
-            <label>가까운 역<input name="station" maxlength="20" placeholder="예: 망원역"></label>
-            <label>역까지 도보 <span class="unit">(분 · 모르면 비워 두기)</span><input name="walk" type="number" inputmode="numeric" min="0" step="1" placeholder="미확인"></label>
-            <label>통근 시간 <span class="unit">(분, 편도)</span><input name="commute" type="number" inputmode="numeric" min="0" step="1" required></label>
-            <label class="wide">통근 경로 <span class="unit">(선택 · 짧게)</span><input name="route" maxlength="80" placeholder="예: 망원역 6호선 → 합정역 환승 → 여의도역 하차, 도보 5분"></label>
-            <label class="wide">매물 원문 링크 <span class="unit">(선택 · 네이버부동산·직방 등, 저장한 날짜가 같이 남아요)</span><input name="url" type="url" inputmode="url" maxlength="500" enterkeyhint="done" placeholder="https://"></label>
-          </div>
-          <label class="check" style="margin-top:16px"><input type="checkbox" name="current"> 지금 사는 집 <span class="unit">(순위에서 빼고 비교 기준선으로 써요 · 한 곳만)</span></label>
-          <div class="row">
-            <button class="primary" type="submit" id="submitBtn">매물 추가</button>
-            <button type="button" class="ghost" id="cancelEdit" hidden>수정 취소</button>
-          </div>
-        </form>
-        <ul class="manage" id="manageList" aria-label="등록한 매물"></ul>
-      </div>
-      <div class="tool" id="io">
-        <h3>데이터 옮기기</h3>
+      <details class="tool fold" id="io"><summary><b>데이터 옮기기</b> <span class="hint">JSON 내보내기 · 불러오기 · 초기화</span></summary>
         <p class="hint">매물·사람별 가중치·자금 설정·가구·평면도를 파일 하나로 저장하고, 다른 기기나 발표 PC에서 불러와요.</p>
         <div class="io-row">
           <button type="button" class="ghost" id="exportBtn">JSON 내보내기</button>
@@ -756,15 +660,13 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <button type="button" class="danger" id="resetBtn">예시 데이터로 초기화</button>
           <span class="msg" id="ioMsg" role="status"></span>
         </div>
-      </div>
-      <div class="tool" id="aiSet" style="scroll-margin-top:72px">
-        <h3>AI 설정</h3>
+      </details>
+      <details class="tool fold" id="aiSet" style="scroll-margin-top:72px"><summary><b>AI 설정</b> <span class="hint">Google Gemini 키</span></summary>
         <p class="hint">공고 PDF 읽기와 매물 글 칸 채우기에 Google Gemini를 써요. AI는 읽기만 하고, 자격 판정은 이 앱의 규칙이, 저장은 내가 해요.</p>
         <p class="hint" id="aiState"></p>
         <form class="ai-key" id="aiKeyForm"><label>내 Gemini 키 <span class="unit">(선택 · 이 기기에만 저장 · 내보내기 파일에 안 들어가요)</span><input id="aiKey" type="password" autocomplete="off" spellcheck="false" maxlength="100"></label>
           <div class="row"><button class="primary" id="aiKeySave">키 저장</button><button type="button" class="ghost" id="aiKeyDel">키 지우기</button><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">키 받기 ↗</a><span class="msg" id="aiKeyMsg" role="status"></span></div></form>
-      </div>
-
+      </details>
     </div>
   </section>
 </div>
@@ -793,7 +695,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
         <p class="hint" id="subAiOff">AI 설정에 Gemini 키를 넣으면 PDF를 올리기만 해도 읽어 줘요. 지금은 아래 순서대로 직접 붙여넣어 주세요. <a href="#listings" data-focus="#aiSet">AI 설정</a></p>
         <div class="ai-send" id="subSend" hidden><p>이 내용만 Gemini로 보내요: <b data-what></b></p>
           <p class="unit">무료 등급은 구글 제품 개선에 쓰일 수 있어요. 소득·자산·지금 집·직장·가족 정보는 보내지 않아요.</p>
-          <div class="row"><button type="button" class="primary" data-go>Gemini로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
+          <div class="row"><button type="button" class="primary" data-go>AI로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
         <ol class="sub-steps" id="subSteps">
           <li><b>공고문 PDF를 받아요.</b>
             <span class="links"><a href="https://soco.seoul.go.kr/youth/main/main.do" target="_blank" rel="noopener noreferrer">청년안심주택 ↗</a><a href="https://www.i-sh.co.kr" target="_blank" rel="noopener noreferrer">SH 서울주택도시공사 ↗</a><a href="https://apply.lh.or.kr" target="_blank" rel="noopener noreferrer">LH 청약플러스 ↗</a></span></li>
@@ -877,24 +779,25 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <p class="eyebrow reveal">Analysis report</p>
       <h2 class="h2 reveal" id="h-report">분석 리포트</h2>
       <p class="rp-meta reveal" id="rpMeta"></p>
+      <nav class="rp-tabs" aria-label="리포트 장 고르기"><a href="#report/cost" data-rptab="cost">비용</a><a href="#report/space" data-rptab="space">공간</a><a href="#report/commute" data-rptab="commute">통근</a><a href="#report/fit" data-rptab="fit">적합도</a><a href="#report/location" data-rptab="location">입지</a></nav>
 
-      <article class="chapter reveal" id="ch1" aria-labelledby="h-c1">
+      <article class="chapter reveal" id="ch1" data-rp="cost" aria-labelledby="h-c1">
         <div class="ch-no">01</div>
         <div class="ch-title"><h3 id="h-c1">비용 분석</h3><p class="hint">거래 유형별로 매달 실제로 나가는 돈. 막대 이름 아래 줄이 계약 조건, 회색 막대는 탈락 매물.</p></div>
         <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c1"></p></aside>
         <div class="ch-body"><div class="chart-box" id="costBox"><canvas id="costChart" aria-label="매물별 실제 월 부담 막대 차트" role="img"></canvas></div></div>
-        <p class="ch-foot">계산식(실제 월 부담) — 월세: 월세 + 관리비 + max(0, 보증금 − 내 돈) × 대출 연이율 ÷ 12 · 전세: 관리비 + max(0, 전세금 − 내 돈) × 대출 연이율 ÷ 12 · 매매: 관리비 + 주택담보대출(매매가 − 내 돈) 월 상환액 — 이자만이면 대출 × 주담대 연이율 ÷ 12, 원리금균등이면 대출 × r ÷ (1 − (1 + r)<sup>−n</sup>) (r = 연이율 ÷ 12, n = 대출 기간 × 12). 매매 월 상환 중 원금은 자산으로 쌓이는 돈이라 '이자 ○만 + 원금 ○만'으로 따로 적어요 · 출처: 입력한 매물 정보와 '우리 기준'의 자금 설정</p>
+        <details class="ch-foot"><summary>계산식 · 판정 기준</summary><p>계산식(실제 월 부담) — 월세: 월세 + 관리비 + max(0, 보증금 − 내 돈) × 대출 연이율 ÷ 12 · 전세: 관리비 + max(0, 전세금 − 내 돈) × 대출 연이율 ÷ 12 · 매매: 관리비 + 주택담보대출(매매가 − 내 돈) 월 상환액 — 이자만이면 대출 × 주담대 연이율 ÷ 12, 원리금균등이면 대출 × r ÷ (1 − (1 + r)<sup>−n</sup>) (r = 연이율 ÷ 12, n = 대출 기간 × 12). 매매 월 상환 중 원금은 자산으로 쌓이는 돈이라 '이자 ○만 + 원금 ○만'으로 따로 적어요 · 출처: 입력한 매물 정보와 '우리 기준'의 자금 설정</p></details>
       </article>
 
-      <article class="chapter reveal" aria-labelledby="h-c2">
+      <article class="chapter reveal" id="ch2" data-rp="space" aria-labelledby="h-c2">
         <div class="ch-no">02</div>
         <div class="ch-title"><h3 id="h-c2">공간 분석</h3><p class="hint">전용면적 비교와, 퀸 침대(150 × 200cm)가 들어가는지.</p></div>
         <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c2"></p></aside>
         <div class="ch-body"><div class="hbars" id="areaBars"></div></div>
-        <p class="ch-foot">침대 판정: 평면도가 있으면 인식한 벽·설비를 피해 집 안 어디든 150 × 200cm가 놓이는지, 없으면 면적과 방 개수로 나눈 방 한 칸(벽 두께 10cm 제외)에 들어가는지로 봐요 · 출처: 입력한 전용면적·방 개수, 올린 평면도</p>
+        <details class="ch-foot"><summary>계산식 · 판정 기준</summary><p>침대 판정: 평면도가 있으면 인식한 벽·설비를 피해 집 안 어디든 150 × 200cm가 놓이는지, 없으면 면적과 방 개수로 나눈 방 한 칸(벽 두께 10cm 제외)에 들어가는지로 봐요 · 출처: 입력한 전용면적·방 개수, 올린 평면도</p></details>
       </article>
 
-      <article class="chapter reveal" id="ch3" aria-labelledby="h-c3">
+      <article class="chapter reveal" id="ch3" data-rp="commute" aria-labelledby="h-c3">
         <div class="ch-no">03</div>
         <div class="ch-title"><h3 id="h-c3">통근 분석</h3><p class="hint">집에서 직장까지 편도 시간. 옅은 부분은 그중 역까지 걷는 시간.</p></div>
         <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c3"></p></aside>
@@ -903,10 +806,10 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <div class="hbars" id="timeline"></div>
           <div class="axis" aria-hidden="true"><span></span><div class="ticks" id="tlTicks"></div><span></span></div>
         </div>
-        <p class="ch-foot">통근 시간은 입력한 편도 시간이고, 역까지 도보 시간이 그 안에 포함된 것으로 그렸어요 · 출처: 입력한 매물 정보</p>
+        <details class="ch-foot"><summary>계산식 · 판정 기준</summary><p>통근 시간은 입력한 편도 시간이고, 역까지 도보 시간이 그 안에 포함된 것으로 그렸어요 · 출처: 입력한 매물 정보</p></details>
       </article>
 
-      <article class="chapter reveal" aria-labelledby="h-c4">
+      <article class="chapter reveal" id="ch4" data-rp="fit" aria-labelledby="h-c4">
         <div class="ch-no">04</div>
         <div class="ch-title"><h3 id="h-c4">적합도</h3><p class="hint">탈락 조건을 통과한 집끼리 비교한, 우리 기준에 얼마나 맞는지 100점 만점.</p></div>
         <aside class="ch-concl"><p class="eyebrow">핵심 결론</p><p id="c4"></p></aside>
@@ -914,14 +817,14 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <div class="tbl"><table class="rank" id="rankTable"></table></div>
           <ul class="notes" id="failNotes"></ul>
         </div>
-        <p class="ch-foot">항목 점수 = 통과 매물 사이 상대평가(가장 좋은 집 1, 가장 나쁜 집 0, 모두 같으면 1) · 적합도 = Σ(평균 가중치 × 항목 점수) ÷ Σ가중치 × 100 · 탈락 조건: 반지하, 대출 불가, 전입신고 불가(허그대출 안 됨), 업무용 오피스텔, 전용 40㎡ 미만, 보증금·전세금 상한 초과(기본 1억 3천, '우리 기준'에서 바꿈), 매매가 상한 초과(설정했을 때), 월세 95만 초과(월세만)<br>미확인 값: 관리비를 모르면 0으로 계산하고 '관리비 미확인', 역 도보를 모르면 통과 매물의 평균 도보 시간으로 역세권 점수를 매기고 '도보 미확인'을 붙였어요 · 실제 월 부담이 상한을 넘으면 '예산 초과' 경고(설정하면 탈락) · '지금 사는 집'은 순위에서 빼고 비교 기준선으로만 써요 · 통근이 상한을 넘거나(설정하면 탈락) 지금 집보다 길면 '통근 ○분 증가' 경고 · 적합도가 같으면(반올림 점수) 공동 순위, 실제 월 부담이 낮은 순으로 놓아요</p>
+        <details class="ch-foot"><summary>계산식 · 판정 기준</summary><p>항목 점수 = 통과 매물 사이 상대평가(가장 좋은 집 1, 가장 나쁜 집 0, 모두 같으면 1) · 적합도 = Σ(평균 가중치 × 항목 점수) ÷ Σ가중치 × 100 · 탈락 조건: 반지하, 대출 불가, 전입신고 불가(허그대출 안 됨), 업무용 오피스텔, 전용 40㎡ 미만, 보증금·전세금 상한 초과(기본 1억 3천, '우리 기준'에서 바꿈), 매매가 상한 초과(설정했을 때), 월세 95만 초과(월세만)<br>미확인 값: 관리비를 모르면 0으로 계산하고 '관리비 미확인', 역 도보를 모르면 통과 매물의 평균 도보 시간으로 역세권 점수를 매기고 '도보 미확인'을 붙였어요 · 실제 월 부담이 상한을 넘으면 '예산 초과' 경고(설정하면 탈락) · '지금 사는 집'은 순위에서 빼고 비교 기준선으로만 써요 · 통근이 상한을 넘거나(설정하면 탈락) 지금 집보다 길면 '통근 ○분 증가' 경고 · 적합도가 같으면(반올림 점수) 공동 순위, 실제 월 부담이 낮은 순으로 놓아요</p></details>
       </article>
     </div>
   </section>
 
 
   <!-- 4 입지 · 분양 사이트 -->
-  <section class="block" id="location" aria-labelledby="h-loc">
+  <section class="block" id="location" data-rp="location" aria-labelledby="h-loc">
     <div class="wrap">
       <p class="eyebrow reveal" id="ebLoc">Location</p>
       <h2 class="h2 reveal" id="h-loc">입지 환경</h2>
@@ -1098,6 +1001,59 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 <footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요. AI 읽기를 쓸 때만 공고문·매물 글을 Google Gemini로 보내요.
   <p>공고 출처: 마이홈포털·LH 공공데이터 API, SH·서울 청년안심주택(원문 링크)</p>
   <p>본 서비스에서 제공하는 실제 월 부담·대출(LTV) 계산 및 청약 자격 판정은 의사결정을 돕기 위한 참고용 시뮬레이션이며 법적·금융적 효력이 없습니다. 실제 청약 신청 및 부동산 계약 전에는 반드시 모집공고문 원본과 금융기관을 통해 최종 확인하시기 바랍니다.</p></div></footer>
+<dialog class="fdlg" id="formDlg" aria-labelledby="h-form">
+  <div class="fdlg-head"><h3 id="h-form">매물 등록</h3><button type="button" class="ghost small" id="formClose" aria-label="닫기">✕</button></div>
+  <div class="fdlg-body" id="manage">
+    <div class="ai-paste">
+      <h4>매물 글 붙여넣기 <span class="unit">(선택)</span></h4>
+      <p class="hint">직방·네이버 매물 설명을 붙여넣으면 AI가 아래 칸을 채워요. 글에 없는 값은 비워 두고, 저장은 확인한 뒤 '매물 추가'를 눌러야 돼요. <a href="#listings" data-focus="#aiSet">AI 설정</a></p>
+      <textarea id="lstText" rows="3" maxlength="5000" placeholder="예: 투룸 보증금 3000 / 월세 70, 관리비 8만, 전용 42㎡, 3층/5층, 망원역 도보 6분, 전입신고 가능" aria-label="매물 설명 글"></textarea>
+      <div class="ai-send" id="lstSend"><p>이 내용만 Gemini로 보내요: <b data-what>붙여넣은 매물 글</b></p>
+      <p class="unit">무료 등급은 구글 제품 개선에 쓰일 수 있어요. 소득·자산·지금 집·직장·가족 정보는 보내지 않아요.</p>
+      <div class="row"><button type="button" class="primary" data-go id="lstGo">AI로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
+      <p class="msg" id="lstMsg" role="status"></p>
+    </div>
+    <p class="hint" style="margin-top:16px">금액은 만원 단위로 적어 주세요. 예: 1억 2천 → 12000</p>
+    <form id="form" style="margin-top:12px">
+      <input type="hidden" name="id">
+      <div class="fields">
+        <label class="wide">이름<input name="name" required maxlength="40" placeholder="예: 망원동 투룸"></label>
+        <label class="wide">지역<input name="region" maxlength="40" placeholder="예: 마포구 망원동"></label>
+        <label>거래 유형<select name="deal" id="fDeal"><option>월세</option><option>전세</option><option>매매</option></select></label>
+        <label><span id="fDepLabel">보증금</span><span class="in"><input name="deposit" type="number" inputmode="decimal" min="0" step="any" required><i>만원</i></span></label>
+        <label data-deal="월세">월세<span class="in"><input name="rent" type="number" inputmode="decimal" min="0" step="any" required><i>만원</i></span></label>
+        <label>관리비<span class="in"><input name="fee" type="number" inputmode="decimal" min="0" step="any" placeholder="모르면 비워 두기"><i>만원</i></span></label>
+        <label>전용면적<span class="in"><input name="area" type="number" inputmode="decimal" min="1" step="any" required><i>㎡</i></span></label>
+        <label>방 개수<span class="in"><input name="rooms" type="number" inputmode="numeric" min="1" max="6" step="1" required><i>개</i></span></label>
+        <label>통근<span class="in"><input name="commute" type="number" inputmode="numeric" min="0" step="1" required placeholder="편도"><i>분</i></span></label>
+      </div>
+      <details class="form-more" id="formMore"><summary>더 입력하기 <span class="hint">주소 · 층 · 전입신고 · 역 · 경로 · 원문 링크</span></summary>
+      <div class="fields">
+        <label class="wide">상세 주소<input name="addr" maxlength="60" placeholder="지도 위치용 · 예: 월드컵로 123"></label>
+        <label data-deal="매매" hidden>대출 기간<span class="in"><input name="loanYears" type="number" inputmode="numeric" min="1" max="50" step="1" value="30"><i>년</i></span></label>
+        <label data-deal="매매" hidden>상환 방식<select name="repay"><option value="amort">원리금균등</option><option value="interest">이자만</option></select></label>
+        <label>층<select name="floor"><option>지상</option><option>반지하</option></select></label>
+        <label>층/총층<input name="floorNo" maxlength="10" placeholder="예: 3/5"></label>
+        <label>전입신고<select name="moveIn"><option value="">미확인</option><option>가능</option><option value="불가">불가 (허그대출 안 됨 → 탈락)</option></select></label>
+        <label>대출<select name="loan"><option>가능</option><option>불가</option></select></label>
+        <label>건물 용도<select name="usage"><option>주거용</option><option value="업무용">업무용 오피스텔</option></select></label>
+        <label>방향<select name="facing"><option value="">미확인 · 평면도 아래쪽 방위</option><option value="S">남</option><option value="SE">남동</option><option value="E">동</option><option value="NE">북동</option><option value="N">북</option><option value="NW">북서</option><option value="W">서</option><option value="SW">남서</option></select></label>
+        <label>가까운 역<input name="station" maxlength="20" placeholder="예: 망원역"></label>
+        <label>역까지 도보<span class="in"><input name="walk" type="number" inputmode="numeric" min="0" step="1" placeholder="모르면 비워 두기"><i>분</i></span></label>
+        <label class="wide">통근 경로<input name="route" maxlength="80" placeholder="예: 망원역 6호선 → 합정역 환승 → 여의도역 하차, 도보 5분"></label>
+        <label class="wide">원문 링크<input name="url" type="url" inputmode="url" maxlength="500" enterkeyhint="done" placeholder="https:// · 저장한 날짜가 같이 남아요"></label>
+      </div>
+      <label class="check" style="margin-top:16px"><input type="checkbox" name="current"> 지금 사는 집 <span class="unit">(순위에서 빼고 비교 기준선으로 써요 · 한 곳만)</span></label>
+      </details>
+      <div class="row">
+        <button class="primary" type="submit" id="submitBtn">매물 추가</button>
+        <button type="button" class="ghost" id="cancelEdit" hidden>수정 취소</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<button type="button" class="totop" id="toTop" hidden>↑ 맨 위로</button>
 <div class="sheet" id="sheet" hidden>
   <div class="sheet-scrim" data-sheet-close></div>
   <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="shTitle" tabindex="-1">
@@ -1631,10 +1587,14 @@ function schematic(l, labels) {
 
 // ---------- 화면 전환: 메뉴별로 한 화면만 보인다 (주소 끝 #home, #listings, #report, #criteria, #studio) ----------
 const VIEWS = { home: '', listings: '매물', subs: '청약', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기' };
+const RP = ['cost', 'space', 'commute', 'fit', 'location'];
 const OLD = { top: 'home', type: 'listings', manage: 'listings', sim: 'criteria', location: 'report', final: 'home', goto: 'home' };   // 예전 한 페이지 주소
 let pendingFocus = null;
 function route() {
-  const h = location.hash.slice(1), v = SHOT ? (SHOT[2] in VIEWS ? SHOT[2] : 'home') : h in VIEWS ? h : OLD[h] ?? 'home';
+  const [h, sub] = location.hash.slice(1).split('/'), v = SHOT ? (SHOT[2] in VIEWS ? SHOT[2] : 'home') : h in VIEWS ? h : OLD[h] ?? 'home';
+  const rp = RP.includes(sub) ? sub : h === 'location' ? 'location' : 'cost';   // 리포트는 한 장씩 (#report/cost …, 예전 #location 은 입지)
+  for (const el of document.querySelectorAll('[data-rp]')) el.hidden = el.dataset.rp !== rp;
+  for (const a of document.querySelectorAll('[data-rptab]')) a.dataset.rptab === rp ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
   for (const el of document.querySelectorAll('.view')) el.hidden = el.dataset.view !== v;
   for (const a of document.querySelectorAll('[data-nav]')) a.dataset.nav === v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
   document.title = VIEWS[v] ? `${VIEWS[v]} · SUITABLE HOME` : 'SUITABLE HOME';
@@ -1648,15 +1608,11 @@ function go(view, focus) {
   if (location.hash === '#' + view) route(); else location.hash = view;
 }
 addEventListener('hashchange', route);
+// 긴 화면: 한 화면 넘게 내리면 오른쪽 아래 '맨 위로'
+addEventListener('scroll', () => { const b = $('#toTop'), on = scrollY > innerHeight; if (b.hidden === on) b.hidden = !on; }, { passive: true });
+$('#toTop').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' }); document.querySelector('.view:not([hidden]) h1, .view:not([hidden]) .h2')?.closest('section, header')?.querySelector('a, button')?.focus({ preventScroll: true }); });
 
 // ---------- 홈: 메뉴 바로가기 한 줄 요약 ----------
-function renderGoto(ev) {
-  const P = ev.passed, cheap = P.reduce((a, b) => (a && a.monthly <= b.monthly ? a : b), null);
-  $('#goListings').textContent = `${ev.cands.length}곳 등록 · 통과 ${P.length}곳 · 탈락 ${ev.failed.length}곳` + (ev.cur ? ' · 지금 집 기준선' : '');
-  $('#goReport').textContent = cheap ? `최저 실제 월 부담 ${cheap.name} ${costLine(cheap)} · 비용·공간·통근·적합도·입지` : ev.cands.length ? '통과한 매물이 없어요 · 탈락 사유 보기' : '매물을 등록하면 비교가 시작돼요';
-  $('#goCriteria').textContent = `${state.people.length}명 기준` + (P[0] ? ` · 지금 ${topLabel(P)} 적합도 ${Math.round(P[0].score)}점` : '');
-  $('#goStudio').textContent = `평면도 ${state.listings.filter(l => l.plan).length}곳 · 가구 ${state.furniture.length}개`;
-}
 
 // ---------- 0 히어로: 숫자 3개 (화면에 들어오면 카운트업) ----------
 let counted = !!SHOT || reducedMotion || !('IntersectionObserver' in window), counting = false;
@@ -1719,48 +1675,40 @@ function glanceRows(l, cur) {
 }
 let glSort = 'price';
 const GL_SORT = { price: (a, b) => a.deposit - b.deposit, monthly: (a, b) => a.monthly - b.monthly, commute: (a, b) => a.commute - b.commute, area: (a, b) => b.area - a.area };
+const glOpen = new Set();   // 휴대폰에서 펼친 카드 (다시 그려도 유지)
 function renderGlance(ev) {
   const cur = ev.cur, L = [...(cur ? [cur] : []), ...[...ev.cands].sort(GL_SORT[glSort])];   // 지금 집은 맨 앞(기준)
   const head = l => `<span class="gl-name"><b>${esc(l.name)}</b><small>${typeCode(l)}${l.current ? ' · 지금 집' : ''}</small></span>`;
-  const more = l => `<button type="button" class="small ghost gl-more" data-detail="${l.id}">자세히 보기</button>`;
-  const rows = L.map(l => glanceRows(l, cur));
-  const html = !L.length ? '<p class="empty">매물을 등록하면 여기에서 나란히 비교해요.</p>'
-    : `<div class="gl-table"><table><thead><tr><th scope="col"><span class="sr">항목</span></th>${L.map(l => `<th scope="col" class="${l.current ? 'cur' : ''}">${head(l)}</th>`).join('')}</tr></thead><tbody>`
-      + rows[0].map((r, i) => `<tr><th scope="row">${r[0]}</th>${L.map((l, j) => `<td class="${l.current ? 'cur' : ''}">${rows[j][i][1]}</td>`).join('')}</tr>`).join('')
-      + `<tr><th scope="row"><span class="sr">자세히</span></th>${L.map(l => `<td class="${l.current ? 'cur' : ''}">${more(l)}</td>`).join('')}</tr></tbody></table></div>`
-      + `<ul class="gl-cards">${L.map((l, j) => `<li class="${l.current ? 'cur' : ''}">${head(l)}<dl>${rows[j].map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl>${more(l)}</li>`).join('')}</ul>`;
+  const acts = l => `<div class="gl-acts"><button type="button" class="small primary gl-more" data-detail="${l.id}">자세히 보기</button><button type="button" class="small ghost" data-act="edit" data-id="${l.id}">수정</button><button type="button" class="small ghost" data-act="view" data-id="${l.id}">3D</button><button type="button" class="small danger" data-act="del" data-id="${l.id}">삭제</button></div>`;
+  const rows = new Map(L.map(l => [l.id, glanceRows(l, cur)]));
+  const sig = l => l.current ? '<span class="badge base">지금 집</span>' : l.reasons.length ? '<span class="badge fail">탈락</span>' : '<span class="badge pass">통과</span>';
+  const card = l => `<li class="${l.current ? 'cur' : ''}" data-card="${l.id}"><details${glOpen.has(l.id) ? ' open' : ''} data-glid="${l.id}"><summary>${head(l)}<span class="gl-line">실제 월 <b>${fmtMonthly(l.monthly)}</b> · 통근 ${fmtMin(l.commute)}</span>${sig(l)}</summary>
+      <dl>${rows.get(l.id).map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl></details>${acts(l)}</li>`;
+  const ok = L.filter(l => l.current || !l.reasons.length), out = L.filter(l => !l.current && l.reasons.length);
+  const html = !L.length ? '<p class="empty">매물을 등록하면 여기에서 나란히 비교해요. <button type="button" class="small primary" data-addform>+ 매물 등록</button></p>'
+    : `<div class="gl-table"><table><thead><tr><th scope="col"><span class="sr">항목</span></th>${L.map(l => `<th scope="col" class="${l.current ? 'cur' : ''}" data-card="${l.id}">${head(l)}</th>`).join('')}</tr></thead><tbody>`
+      + rows.get(L[0].id).map((r, i) => `<tr><th scope="row">${r[0]}</th>${L.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${rows.get(l.id)[i][1]}</td>`).join('')}</tr>`).join('')
+      + `<tr><th scope="row"><span class="sr">자세히</span></th>${L.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${acts(l)}</td>`).join('')}</tr></tbody></table></div>`
+      + `<ul class="gl-cards">${ok.map(card).join('')}</ul>`
+      + (out.length ? `<details class="gl-failed"${glOpen.has('_failed') ? ' open' : ''} data-glid="_failed"><summary>탈락 ${out.length}곳 보기</summary><ul class="gl-cards">${out.map(card).join('')}</ul></details>` : '');
   for (const el of document.querySelectorAll('[data-glance]')) el.innerHTML = html;
   for (const b of document.querySelectorAll('[data-gsort]')) b.setAttribute('aria-pressed', b.dataset.gsort === glSort);
 }
+document.addEventListener('toggle', e => { const id = e.target.dataset?.glid; if (id) e.target.open ? glOpen.add(id) : glOpen.delete(id); }, true);
+// 시트를 닫으면 방금 본 매물 카드(표는 그 열)를 잠깐 강조
+function flashCard(id) {
+  const els = [...document.querySelectorAll(`[data-glance] [data-card="${CSS.escape(id)}"]`)].filter(el => el.offsetParent);
+  if (!els.length) return;
+  els[0].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+  for (const el of els) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('flash'), 2000); }
+}
 // 시트·데스크톱 패널 맨 위: 조건 · 전입 · 주소 · 통근 · 원문 (①③④⑤⑦)
 const factsHtml = (l, cur) => glanceRows(l, cur).filter((r, i) => [0, 2, 3, 4, 6].includes(i)).map(r => `<p><span class="k">${r[0]}</span>${r[1]}</p>`).join('');
-// 배지는 3개까지만, 나머지는 '+N' (title 에 나머지 글자)
-function foldBadges(html, max = 3) {
-  const b = html.match(/<span class="badge[^"]*"[^>]*>[^<]*<\/span>/g) || [];
-  if (b.length <= max) return b.join('');
-  const rest = b.slice(max).map(x => x.replace(/<[^>]+>/g, '')).join(', ');
-  return b.slice(0, max).join('') + `<span class="badge more" title="${esc(rest)}" aria-label="배지 ${b.length - max}개 더: ${esc(rest)}">+${b.length - max}</span>`;
-}
 
 // ---------- 1 TYPE 라인업 ----------
 function listingLoan(l, box) {   // 매물 한 곳의 돈 계산 (휴대폰 시트 · 데스크톱 패널 공통)
   const buy = l.deal === '매매', region = buy ? (LOAN_RULES[l.loanRegion] ? l.loanRegion : guessRegion(l)) : null;
   box.innerHTML = loanBox(`l|${l.id}|${l.deposit}|${region}`, l.deposit, buy, region, l.id); paintLoans(box);
-}
-$('#typeLoanBtn').addEventListener('click', e => { const o = $('#typeLoan').hidden; $('#typeLoan').hidden = !o; e.currentTarget.setAttribute('aria-expanded', o); });
-function renderTypes(ev) {
-  const sel = ev.all.find(l => l.id === state.selectedId) ?? ev.all[0];
-  $('#typeList').innerHTML = ev.all.map(l => `<li class="${l.id === sel?.id ? 'on' : ''}"><button type="button" data-type="${l.id}" aria-pressed="${l.id === sel?.id}">
-      <span class="tcode">${typeCode(l)}</span>
-      <span class="tcost"><b>${l.monthly.toFixed(1)}</b><small>만원 / 월</small><span class="tcond">${cond(l)}${split(l) ? ` · ${split(l)}` : ''}</span><span class="badges">${foldBadges(dealBadge(l) + badge(l) + costTags(l) + commuteTags(l) + (l.moveIn ? '' : '<span class="badge unk">전입 미확인</span>'))}</span></span>
-      <span class="tmeta"><b>${esc(l.name)}</b>${esc(l.region)} · 방 ${l.rooms}</span>
-    </button></li>`).join('') || '<li class="empty">매물을 등록하면 TYPE이 생겨요.</li>';
-  if (!sel) { $('#type2d').innerHTML = ''; $('#typeCap').innerHTML = ''; $('#typeFacts').innerHTML = ''; $('#typeLoan').innerHTML = ''; return; }
-  listingLoan(sel, $('#typeLoan'));
-  const vs = vsCur(sel, ev.cur);
-  $('#typeFacts').innerHTML = factsHtml(sel, ev.cur) + `<p><span class="k">실제 월 부담</span>${fmtMonthly(sel.monthly)} / 월${split(sel) ? ` (${split(sel)})` : ''}</p><p class="formula">${formula(sel)}</p>` + (vs ? `<p class="vs">지금 집보다 ${vs}</p>` : '');
-  $('#typeCap').innerHTML = `<span><b>${typeCode(sel)}</b>${esc(sel.name)} · ${esc(sel.region)}</span><span>전용 ${sel.area}㎡ · 방 ${sel.rooms} · ${sel.plan ? '실제 평면도' : '면적 기준 대략 구조'}</span>`;
-  $('#type2d').innerHTML = sel.plan ? `<img src="${sel.plan.img}" alt="${esc(sel.name)} 평면도">` : schematic(sel, true);
 }
 // ---------- 휴대폰 바텀시트: 카드를 누르면 그 매물을 바로 보여준다. 내용은 render 의 selectedId 하나만 읽는다 ----------
 // 상단 메뉴바 실제 높이 → --nav-h (확대·글꼴로 높이가 바뀌어도 고정 패널이 메뉴바 아래에 붙게)
@@ -1807,7 +1755,7 @@ function hideSheet() {   // 실제로 닫기 (popstate 에서 부른다)
   setTimeout(() => { if (!sheet.open) $('#sheet').hidden = true; }, reducedMotion ? 0 : 260);
   document.documentElement.classList.remove('sheet-lock'); document.body.style.top = ''; window.scrollTo({ top: sheet.y, behavior: 'instant' });   // 부드러운 스크롤 없이 원래 자리로
   const after = sheet.after; sheet.after = null;
-  if (after) after(); else sheet.from?.isConnected ? sheet.from.focus({ preventScroll: true }) : document.querySelector(`[data-type="${state.selectedId}"]`)?.focus({ preventScroll: true });
+  if (after) after(); else { flashCard(state.selectedId); (sheet.from?.isConnected ? sheet.from : document.querySelector(`[data-glance] [data-card="${CSS.escape(state.selectedId)}"] [data-detail]:not([hidden])`) ?? document.querySelector(`[data-detail="${CSS.escape(state.selectedId)}"]`))?.focus({ preventScroll: true }); }
 }
 function closeSheet(after) {   // X·바깥·끌어내리기·Esc·버튼: 기록 한 칸 뒤로 → popstate 가 닫는다
   if (!sheet.open) return;
@@ -1816,7 +1764,6 @@ function closeSheet(after) {   // X·바깥·끌어내리기·Esc·버튼: 기�
 }
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';   // 뒤로 가기로 시트를 닫을 때 브라우저가 스크롤을 덮어쓰지 않게 (화면 전환 스크롤은 route 가 직접 한다)
 addEventListener('popstate', () => { if (sheet.open) hideSheet(); });
-mobileQ.addEventListener?.('change', e => { if (!e.matches && sheet.open) closeSheet(); });
 function stepSheet(d) {
   const all = evaluate(state).all, i = all.findIndex(l => l.id === state.selectedId), n = all[i + d];
   if (!n) return; state.selectedId = n.id; render();
@@ -1842,7 +1789,7 @@ $('#sheet').addEventListener('keydown', e => {
 (function dragToClose() {
   const panel = $('.sheet-panel'); let y0 = null, dy = 0, t0 = 0, pid = null;
   for (const h of [$('.sheet-grab'), $('.sheet-head')]) h.addEventListener('pointerdown', e => {
-    if (e.target.closest('button')) return;
+    if (e.target.closest('button') || !mobileQ.matches) return;   // PC 오른쪽 패널은 끌어서 닫지 않음 (✕ · 바깥 · Esc)
     y0 = e.clientY; dy = 0; t0 = performance.now(); pid = e.pointerId; try { h.setPointerCapture(pid); } catch (err) {}   // 끝난 포인터면 캡처 없이 진행
     $('#sheet').classList.add('dragging');
   });
@@ -1866,12 +1813,6 @@ $('#sheet').addEventListener('keydown', e => {
   });
   st.addEventListener('pointercancel', () => { x0 = null; });
 })();
-
-function setTypeTab(which) {
-  const is3d = which === '3d';
-  $('#tab2d').setAttribute('aria-selected', !is3d); $('#tab3d').setAttribute('aria-selected', is3d);
-  $('#type2d').hidden = is3d; $('#type3d').hidden = !is3d;
-}
 
 // ---------- 2 분석 리포트 ----------
 // '망원동 100-1 방3과' — top 과 같은 점수인 다른 매물들 + 과/와
@@ -1937,13 +1878,9 @@ function renderReport(ev) {
 // ---------- 3 시뮬레이터 ----------
 function renderSim(ev) {
   $('#simRank').innerHTML = ev.passed.map(l => `<li class="${l.rank === 1 ? 'top' : ''}"><span class="rk">${l.tie ? '<small>공동</small>' : ''}${l.rank}</span><span title="${esc(l.name)}">${esc(short(l.name, 18))} <span class="hint">${typeCode(l)}</span></span><span class="sc">${Math.round(l.score)}</span></li>`).join('')
-    || '<li class="empty" style="display:block">비교할 매물이 없어요.</li>';
+    || (ev.cands.length ? '<li class="empty" style="display:block">모든 후보 매물이 탈락 조건(보증금·월세·면적·예산 상한 등)에 걸려 순위를 매길 수 없어요. 아래 <b>자금과 직장</b>에서 상한을 조정하거나 비교 리포트에서 탈락 사유를 확인해 보세요.</li>' : '<li class="empty" style="display:block">비교할 매물이 없어요.</li>');
   const aw = avgWeights(state.people), sum = Object.values(aw).reduce((a, b) => a + b, 0);
   $('#avgW').innerHTML = (state.people.length === 1 ? '가중치 ' : `${state.people.length}명 평균 가중치 `) + CRITERIA.map(c => `<span>${c.label} <b>${+aw[c.k].toFixed(1)}</b> (${sum ? Math.round(aw[c.k] / sum * 100) : 25}%)</span>`).join('');
-  $('#manageList').innerHTML = ev.all.map(l => `<li><div class="info"><b>${esc(l.name)}</b>${typeCode(l)} · ${cond(l)} · 도보 ${walkTxt(l)} · 실제 월 ${l.monthly.toFixed(1)}만${split(l) ? ` (${split(l)})` : ''} ${dealBadge(l)}${badge(l)}${costTags(l)}${commuteTags(l)}${l.walk == null ? ' ' + walkTag(l) : ''}
-      ${l.reasons.length ? `<span class="why">${l.reasons.map(esc).join(', ')}</span>` : ''}${vsCur(l, ev.cur) ? `<span class="vs">지금 집보다 ${vsCur(l, ev.cur)}</span>` : ''}</div>
-    <div class="acts"><button class="small ghost" data-act="view" data-id="${l.id}">3D</button><button class="small ghost" data-act="edit" data-id="${l.id}">수정</button><button class="small danger" data-act="del" data-id="${l.id}">삭제</button></div></li>`).join('')
-    || '<li class="empty" style="display:block">아직 등록한 매물이 없어요.</li>';
 }
 function buildWeights() {
   const one = state.people.length === 1;
@@ -2079,24 +2016,11 @@ function renderLocation(ev) {
 }
 
 // ---------- 5 추천 ----------
-function renderFinal(ev) {
-  const P = ev.passed, top = P[0];
-  if (!top) { $('#finalPick').innerHTML = `<p class="pick">추천할 집이 아직 없어요<small>탈락 조건을 통과한 매물을 등록하면 여기에서 한 곳을 골라 드려요.</small></p><div></div>`; return; }
-  const rank = (k, desc) => rankOf(P, top, k, desc);
-  const aw = avgWeights(state.people);
-  const cand = [
-    { w: aw.price, r: rank('monthly'), t: `실제 월 부담 ${fmtMonthly(top.monthly)}(${cond(top)}), 통과한 ${P.length}곳 중 ${ord(rank('monthly'))} 적어요.` },
-    { w: aw.area, r: rank('area', true), t: `전용 ${top.area}㎡로 ${ord(rank('area', true))} 넓고, 퀸 침대가 ${(top.plan ? window.bedFitsPlan?.(top) : bedFitsBox(top)) === false ? '안 들어가요' : '들어가요'}.` },
-    { w: aw.commute, r: rank('commute'), t: `${state.settings.work || '직장'}까지 편도 ${fmtMin(top.commute)}, ${ord(rank('commute'))} 가까워요.` },
-    { w: aw.station, r: rank('walkS'), t: top.walk == null ? `${top.station || '역'}까지 도보 시간은 미확인이라 역세권은 평균으로 계산했어요.` : `${top.station || '역'}까지 걸어서 ${fmtMin(top.walk)}이에요.` },
-  ].sort((a, b) => a.r - b.r || b.w - a.w).slice(0, 2);
-  const last = P.length > 1 ? `${state.people.length === 1 ? `${state.people[0].name}의 기준으로` : `${state.people.length}명의 기준을 평균하면`} ${top.tie ? `${tieWith(P, top)} 적합도 ${Math.round(top.score)}점으로 동점이에요. 실제 월 부담이 더 낮아 먼저 추천했어요.` : `적합도 ${Math.round(top.score)}점, 2위 ${P[1].name}보다 ${Math.round(top.score - P[1].score)}점 높아요.`}`
-    : `탈락 조건을 통과한 유일한 집이에요.`;
-  const vs = vsCur(top, ev.cur), warn = [top.over ? `실제 월 부담이 상한 ${state.settings.budget}만원을 넘어요(예산 초과).` : '', top.fee == null ? '관리비는 미확인이라 0으로 계산했어요.' : ''].filter(Boolean).join(' ');
-  const cw = [top.longer ? `지금 집보다 통근이 편도 ${fmtMin(top.longer)}(하루 왕복 ${fmtMin(top.longer * 2)}) 길어요.` : '', top.overC ? `통근 ${fmtMin(top.commute)}로 상한 ${state.settings.commuteMax}분을 넘어요.` : ''].filter(Boolean).join(' ');
-  $('#finalPick').innerHTML = `<div><p class="pick ${top.name.length > 12 ? 'long' : ''}"><em title="${esc(top.name)}">${esc(top.name)}</em><small>${typeCode(top)} · ${esc(top.region)} · 전용 ${top.area}㎡ · 실제 월 ${costLine(top)}</small><span class="badges">${costTags(top)}${commuteTags(top)}</span></p>
-      <div class="row" style="margin-top:24px"><button type="button" class="primary" data-act="view" data-id="${top.id}">3D로 살펴보기</button><a class="btn ghost" href="#report">근거 다시 보기</a></div></div>
-    <ul class="why3">${[...cand.map(c => c.t), last, vs ? `지금 집(${curName(ev.cur.name)}) 대비 ${vs}.` : '', cw, warn].filter(Boolean).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+function renderTop(ev) {   // 홈: 적합도 상위 3곳 (누르면 그 자리에서 매물 시트)
+  const P = ev.passed.slice(0, 3);
+  $('#topList').innerHTML = P.map(l => `<a href="#listings" data-detail="${l.id}"><span class="gk">${l.tie ? '공동 ' : ''}${l.rank}위 ${esc(short(l.name, 16))}</span><span class="gv">적합도 ${Math.round(l.score)}점 · 실제 월 ${fmtMonthly(l.monthly)} · 통근 ${fmtMin(l.commute)}</span><span class="ga" aria-hidden="true">→</span></a>`).join('')
+    || `<p class="empty" style="margin-top:16px">${ev.cands.length ? '탈락 조건을 통과한 매물이 없어요. 전체 비교에서 탈락 사유를 확인해 보세요.' : '매물을 등록하면 적합도 순위가 여기에 나와요.'}</p>`;
+  $('#ebTop').textContent = ev.passed.length ? `Top ${P.length} · 통과 ${ev.passed.length}곳 중` : 'Top 3';
 }
 
 // ---------- 차트 ----------
@@ -2153,12 +2077,11 @@ function render() {
   ensureTypeLetters(state.listings);
   syncSubs(state);   // 청약 매물 조건(공급·보증금 비율)을 지금 판정·자금으로
   const ev = evaluate(state);
-  renderHero(ev); renderSubsNext(); renderGlance(ev); renderTypes(ev); renderSubs(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderFinal(ev); renderGoto(ev);
+  renderHero(ev); renderSubsNext(); renderGlance(ev); renderSubs(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderTop(ev);
   const areas = ev.all.map(l => l.area);
   const lo = Math.min(...areas), hi = Math.max(...areas);
-  $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'Type lineup';
+  $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'At a glance';
   $('#ebSim').textContent = `Criteria · ${state.people.length}명 기준`;
-  $('#ebFinal').textContent = `Recommendation · 통과 ${ev.passed.length}곳 중`;
   $('#sel3d').innerHTML = state.listings.map(l => `<option value="${l.id}" ${l.id === state.selectedId ? 'selected' : ''}>${typeCode(l)} · ${esc(l.name)}</option>`).join('');
   drawCharts(ev);
   const sel = state.listings.find(l => l.id === state.selectedId);
@@ -2233,7 +2156,7 @@ function syncDeal() {
 }
 form.deal.addEventListener('change', syncDeal);
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-function resetForm() { form.querySelectorAll('.ai-tag').forEach(t => t.remove()); form.reset(); form.id.value = ''; syncDeal(); $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
+function resetForm() { form.querySelectorAll('.ai-filled').forEach(el => el.classList.remove('ai-filled')); form.reset(); $('#h-form').textContent = '매물 등록'; $('#formMore').open = false; $('#lstMsg').textContent = ''; lstWhat(); form.id.value = ''; syncDeal(); $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
 form.addEventListener('submit', e => {
   e.preventDefault();
   const f = Object.fromEntries(new FormData(form));
@@ -2250,38 +2173,33 @@ form.addEventListener('submit', e => {
   if (i >= 0 && state.listings[i].sub) { const o = state.listings[i]; l.sub = { ...o.sub, auto: o.sub.auto !== false && o.deposit === l.deposit && o.rent === l.rent && o.fee === l.fee }; }
   if (i >= 0) { const old = state.listings[i]; if (old.plan) l.plan = old.plan; if (old.layout) l.layout = old.layout; if (old.loanRegion) l.loanRegion = old.loanRegion; l.tl = old.tl; state.listings[i] = l; } else state.listings.push(l);
   state.selectedId = l.id;
-  resetForm(); render();
+  resetForm(); render(); $('#formDlg').close(); go('listings'); setTimeout(() => flashCard(l.id), 60);   // 화면 전환 스크롤 뒤에
 });
-$('#cancelEdit').addEventListener('click', resetForm);
+$('#cancelEdit').addEventListener('click', () => { resetForm(); $('#formDlg').close(); });
+// 매물 등록 창: 휴대폰은 아래에서 올라오고, PC는 오른쪽 패널 (기본 <dialog>: Esc 로 닫힘, 뒤 화면은 못 누름)
+function openForm() { const d = $('#formDlg'); if (!d.open) d.showModal(); d.querySelector('.fdlg-body').scrollTop = 0; form.name.focus({ preventScroll: true }); }
+$('#formClose').addEventListener('click', () => $('#formDlg').close());
+$('#formDlg').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });   // 바깥(어두운 곳)을 누르면 닫기
 
 document.addEventListener('click', e => {
   const sc = e.target.closest('[data-scroll]');
   if (sc) { $(sc.dataset.scroll).scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' }); return; }
   const f = e.target.closest('a[data-focus]');
   if (f) {
-    e.preventDefault(); go(f.getAttribute('href').slice(1), f.dataset.focus);
+    e.preventDefault(); if ($('#formDlg').open) $('#formDlg').close();
+    const tg = $(f.dataset.focus); if (tg?.tagName === 'DETAILS') tg.open = true;   // 접힌 칸(AI 설정 등)은 펼쳐서
+    go(f.getAttribute('href').slice(1), f.dataset.focus);
     if (f.dataset.hl) { const tops = document.querySelectorAll('#simRank li.top'); tops.forEach(li => li.classList.add('flash')); setTimeout(() => tops.forEach(li => li.classList.remove('flash')), 2000); }
-    return;
-  }
-  const t = e.target.closest('[data-type]');
-  if (t) {
-    state.selectedId = t.dataset.type; render();
-    if (mobileQ.matches) openSheet(t);
-    else {   // 데스크톱: 패널이 바뀐 걸 바로 보이게
-      const pn = $('.type-panel'); pn.classList.add('changed'); clearTimeout(pn._t); pn._t = setTimeout(() => pn.classList.remove('changed'), 700);
-      if (pn.getBoundingClientRect().bottom < 80 || pn.getBoundingClientRect().top > innerHeight) pn.scrollIntoView({ block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
-    }
     return;
   }
   const gs = e.target.closest('[data-gsort]');
   if (gs) { glSort = gs.dataset.gsort; renderGlance(evaluate(state)); return; }
   const dt = e.target.closest('[data-detail]');
-  if (dt) {   // 자세히 보기: 휴대폰은 바텀시트, 데스크톱은 매물 화면의 고정 패널
-    state.selectedId = dt.dataset.detail; render();
-    if (mobileQ.matches) openSheet(dt);
-    else { go('listings', '#type'); const pn = $('.type-panel'); pn.classList.add('changed'); clearTimeout(pn._t); pn._t = setTimeout(() => pn.classList.remove('changed'), 700); }
+  if (dt) {   // 자세히 보기: 휴대폰은 아래에서, PC는 오른쪽에서 여는 같은 매물 시트 (화면은 그대로)
+    e.preventDefault(); state.selectedId = dt.dataset.detail; render(); openSheet(dt);
     return;
   }
+  if (e.target.closest('[data-addform]')) { e.preventDefault(); resetForm(); openForm(); return; }
   const lc = e.target.closest('[data-loc]');
   if (lc) { locId = lc.dataset.loc; renderLocation(evaluate(state)); return; }
   const b = e.target.closest('button[data-act]'); if (!b) return;
@@ -2299,8 +2217,10 @@ function startEdit(id) {
     form.deal.value = l.deal || '월세'; form.moveIn.value = l.moveIn ?? ''; form.floorNo.value = l.floorNo || ''; form.route.value = l.route || ''; form.url.value = l.url || '';
     form.loanYears.value = l.loanYears || 30; form.repay.value = l.repay || 'amort'; syncDeal();
     form.floor.value = l.basement ? '반지하' : '지상'; form.loan.value = l.loanOk ? '가능' : '불가'; form.usage.value = l.usage;
-    $('#submitBtn').textContent = '수정 저장'; $('#cancelEdit').hidden = false;
-    go('listings', '#manage'); form.name.focus({ preventScroll: true });
+    $('#submitBtn').textContent = '수정 저장'; $('#cancelEdit').hidden = false; $('#h-form').textContent = '매물 수정 · ' + l.name;
+    form.querySelectorAll('.ai-filled').forEach(el => el.classList.remove('ai-filled'));
+    $('#formMore').open = [...$('#formMore').querySelectorAll('input:not([type=hidden]):not([name=loanYears]), select')].some(el => el.type === 'checkbox' ? el.checked : el.tagName === 'SELECT' ? el.selectedIndex > 0 : el.value.trim());   // 더 입력하기 칸에 값이 있으면 펼쳐 둔다
+    openForm();
   }
 }
 $('#sel3d').addEventListener('change', e => { state.selectedId = e.target.value; render(); });
@@ -2489,7 +2409,7 @@ function renderSubs(ev) {
         <dl><dt>보증금</dt><dd>${won(o.deposit)}</dd><dt>월세</dt><dd>월 ${won(o.rent)}</dd><dt>실제 한 달 부담</dt><dd>${won(o.monthly)}</dd><dt>계약금</dt><dd>${won(contract)} (보증금의 ${n.contractPct}%)</dd></dl>
         <p class="formula">${formula({ deal: '월세', deposit: o.deposit, rent: o.rent, fee: o.fee, monthly: o.monthly })}</p>
         ${over.map(t => `<p class="over">${t}</p>`).join('')}
-        ${loanBox(`sub|${key}|${o.supply}|${o.i}`, o.deposit, false)}
+        <details class="easy-more" data-glid="sub-loan|${key}"${glOpen.has(`sub-loan|${key}`) ? ' open' : ''}><summary>보증금 대출 · 내 돈 계산기 열기</summary>${loanBox(`sub|${key}|${o.supply}|${o.i}`, o.deposit, false)}</details>
         ${subDemo ? '<p class="hint">예시 가족 결과라 비교 매물로 넣을 수 없어요.</p>' : l ? `<div class="act"><span class="badge pass">비교에 넣었어요</span><button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button></div>`
           : `<div class="commute-find"><label>회사 주소 <span class="unit">한 번 넣으면 기억해요</span><input data-workaddr maxlength="80" placeholder="예: 서울 영등포구 여의대로 108" value="${esc(S.workAddr ?? '')}"></label>
              <button type="button" class="ghost" data-kakao="${esc(n.addr)}" ${S.workAddr ? '' : 'disabled'}>카카오맵에서 통근 시간 보기 ↗</button><span class="hint" data-kakaomsg role="status"></span>
@@ -2513,7 +2433,8 @@ function renderSubs(ev) {
   const nav = multi ? `<nav class="sub-list" aria-label="공고 목록">${metas.map((m, i) => { const nx = nextOf(m.n), dd = nx && ddayOf(nx, t);
       return `<button type="button" class="sub-pick" data-nsel="${m.n.id}" aria-current="${i === si}"><b>${esc(m.n.short)}</b><span class="hint">${esc(m.n.region)} · ${esc(m.n.kind)}</span><span class="sig-mini ${m.sig[0]}">${esc(m.sig[1])}</span>${dd ? `<span class="dd">${dd.txt} ${esc(nx.label.replace(/\s*\(.*\)$/, ''))}</span>` : ''}</button>`; }).join('')}
       <button type="button" class="ghost small" data-addn>+ 공고 추가</button></nav>` : '';
-  $('#subJudge').innerHTML = !show ? '' : `<div class="sub-layout${multi ? ' multi' : ''}">${nav}<div class="sub-main">${htmls[si] || ''}</div></div><p class="hint sub-note">참고용 예비 판정이에요. 실제 자격·순위는 모집공고문 원본과 사업 주체의 심사로 정해져요.</p>`;
+  const tabs = `<div class="tabs sub-tabs" role="tablist" aria-label="신청 유형 선택"><button type="button" role="tab" data-subtab="newlywed" aria-selected="${tier === 'newlywed'}">신혼부부 기준</button><button type="button" role="tab" data-subtab="youth" aria-selected="${tier === 'youth'}">청년(미혼) 기준</button></div>`;
+  $('#subJudge').innerHTML = !show ? '' : tabs + `<div class="sub-layout${multi ? ' multi' : ''}">${nav}<div class="sub-main">${htmls[si] || ''}</div></div><p class="hint sub-note">참고용 예비 판정이에요. 실제 자격·순위는 모집공고문 원본과 사업 주체의 심사로 정해져요.</p>`;
   const added = state.listings.filter(l => l.sub), both = new Set(added.map(l => state.subs.notices.find(n => n.id === l.sub.notice)?.types.find(x => x.id === l.sub.type)?.tier)).size > 1;
   paintLoans($('#subJudge'));
   if (both && show && !subDemo) $('#subJudge').insertAdjacentHTML('afterbegin', '<p class="badge warn" style="margin-top:12px">신혼부부와 청년 주택형을 모두 비교에 넣었어요. 실제 신청은 한 사람이 한 건만 할 수 있어요.</p>');
@@ -2699,17 +2620,19 @@ async function aiRead(kind, payload, signal) {   // kind 'notice'(payload = PDF 
 const aiErrText = r => ({ cancel: '취소했어요.', timeout: '1분 안에 읽지 못했어요. 다시 해 보거나 직접 붙여넣기로 할 수 있어요.', 429: '오늘 AI 사용량이 다 찼어요. 직접 붙여넣기로 할 수 있어요.',
   0: 'AI에 연결하지 못했어요. 인터넷을 확인하거나 직접 붙여넣기로 할 수 있어요.', 403: 'Gemini 키가 맞지 않아요. AI 설정에서 확인하거나 직접 붙여넣기로 할 수 있어요.',
   413: '너무 커요. PDF는 5MB, 글은 5,000자까지 보낼 수 있어요.', 503: '지금은 AI 읽기가 꺼져 있어요. 직접 붙여넣기로 해 주세요.' })[r] || 'AI가 읽지 못했어요. 직접 붙여넣기로 할 수 있어요.';
-// 보내기 전 안내 → 버튼을 눌러야 보낸다 · 1분 지나면 끊고, 읽는 중엔 취소
-function aiAsk(box, kind, payload, what, done) {
+// 버튼을 눌러야 보낸다 · 1분 지나면 끊고, 읽는 중엔 취소 · 끝나면(성공·실패·취소) '읽는 중' 문구를 바꾼다
+async function aiRun(box, kind, payload, done) {
   const q = x => box.querySelector(x), go = q('[data-go]'), stop = q('[data-stop]'), msg = q('[data-msg]');
-  box.hidden = false; q('[data-what]').textContent = what; msg.textContent = ''; go.hidden = false; stop.hidden = true;
-  go.onclick = async () => {
-    const ac = new AbortController(), timer = setTimeout(() => ac.abort('timeout'), 60000);
-    go.hidden = true; stop.hidden = false; stop.onclick = () => ac.abort('cancel'); msg.textContent = '읽는 중… (최대 1분)';
-    try { const t = await aiRead(kind, payload, ac.signal); box.hidden = true; done(t); }
-    catch (e) { go.hidden = false; const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r); if (r === 503) showSteps(); }
-    finally { clearTimeout(timer); stop.hidden = true; }
-  };
+  const ac = new AbortController(), timer = setTimeout(() => ac.abort('timeout'), 60000);
+  go.hidden = true; stop.hidden = false; stop.onclick = () => ac.abort('cancel'); msg.textContent = '읽는 중… (최대 1분)';
+  try { const t = await aiRead(kind, payload, ac.signal); msg.textContent = ''; done(t); }
+  catch (e) { const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r); if (r === 503) showSteps(); }
+  finally { clearTimeout(timer); stop.hidden = true; go.hidden = false; }
+}
+// 공고 PDF: 파일을 고르면 보낼 내용 안내 → 'AI로 읽기'
+function aiAsk(box, kind, payload, what, done) {
+  box.hidden = false; box.querySelector('[data-what]').textContent = what; box.querySelector('[data-msg]').textContent = '';
+  box.querySelector('[data-go]').onclick = () => aiRun(box, kind, payload, t => { box.hidden = true; done(t); });
 }
 // 공고: AI 결과도 붙여넣기 칸과 같은 검사(noticeProblems)를 거친다
 let subManual = false;
@@ -2745,22 +2668,24 @@ function aiListing(x) {
   return o;
 }
 function fillAi(o) {
-  form.querySelectorAll('.ai-tag').forEach(t => t.remove());
+  form.querySelectorAll('.ai-filled').forEach(el => el.classList.remove('ai-filled'));
   if (o.deal) { form.deal.value = o.deal; syncDeal(); }
-  for (const [k, v] of Object.entries(o)) { form[k].value = v; form[k].insertAdjacentHTML('beforebegin', '<span class="ai-tag">AI가 채움</span>'); }
+  for (const [k, v] of Object.entries(o)) { form[k].value = v; form[k].classList.add('ai-filled'); }
+  if (Object.keys(o).some(k => form[k].closest('#formMore'))) $('#formMore').open = true;   // 더 입력하기 안 칸을 채웠으면 펼쳐서 보이게
   return Object.keys(o).length;
 }
-form.addEventListener('input', e => { const t = e.target.previousElementSibling; if (t?.classList.contains('ai-tag')) t.remove(); });   // 사람이 고치면 표시 지움
-$('#lstText').addEventListener('input', () => { $('#lstSend').hidden = true; $('#lstMsg').textContent = ''; });
+form.addEventListener('input', e => e.target.classList?.remove('ai-filled'));   // 사람이 고치면 표시 지움
+const lstWhat = () => { const n = $('#lstText').value.trim().length; $('#lstSend [data-what]').textContent = n ? `붙여넣은 매물 글 ${n.toLocaleString()}자` : '붙여넣은 매물 글'; };
+$('#lstText').addEventListener('input', () => { lstWhat(); $('#lstMsg').textContent = ''; });
 $('#lstGo').addEventListener('click', () => {
   const v = $('#lstText').value.trim(), m = $('#lstMsg');
   if (!v) { m.textContent = '매물 설명 글을 먼저 붙여넣어 주세요.'; return; }
   if (!aiReady()) { m.textContent = 'AI 설정에 Gemini 키를 넣으면 쓸 수 있어요. 지금은 아래 칸에 직접 적어 주세요.'; return; }
   m.textContent = '';
-  aiAsk($('#lstSend'), 'listing', v.slice(0, 5000), `붙여넣은 매물 글 ${v.length.toLocaleString()}자`, t => {
+  aiRun($('#lstSend'), 'listing', v.slice(0, 5000), t => {
     let x = null; try { x = JSON.parse(t); } catch (e) {}
     const c = fillAi(aiListing(x));
-    m.textContent = c ? `${c}칸을 채웠어요. 확인하고 이름·통근 시간을 적은 뒤 '매물 추가'를 눌러 주세요.` : '글에서 채울 값을 찾지 못했어요. 아래 칸에 직접 적어 주세요.';
+    m.textContent = c ? `AI가 ${c}칸을 채웠어요. 색이 다른 칸을 확인하고, 이름·통근을 적은 뒤 '매물 추가'를 눌러 주세요.` : '글에서 채울 값을 찾지 못했어요. 아래 칸에 직접 적어 주세요.';
   });
 });
 // AI 설정: 내 키
@@ -2871,8 +2796,6 @@ $('#resetBtn').addEventListener('click', e => {
   if (confirmTap(e.currentTarget, '한 번 더 누르면 초기화')) replaceState(migrate(structuredClone(DEFAULT)), '예시 데이터로 초기화했어요.');
 });
 try { const m = sessionStorage.getItem('suitable-io-msg'); if (m) { $('#ioMsg').textContent = m; sessionStorage.removeItem('suitable-io-msg'); } } catch (e) {}
-$('#tab2d').addEventListener('click', () => setTypeTab('2d'));
-$('#tab3d').addEventListener('click', () => setTypeTab('3d'));
 
 // 입장 연출: 첫 방문 때만 (스크린샷·움직임 줄이기면 생략). 누르거나 키를 누르면 바로 건너뜀
 (function intro() {
@@ -4371,8 +4294,7 @@ function showcase(host, { dist, height }) {
   };
 }
 const heroShow = showcase(document.getElementById('heroCanvas'), { dist: 2.1, height: 2.0 });
-const typeShow = showcase(document.getElementById('type3d'), { dist: 1.1, height: 0.95 });
-window.updateShowcase = (hero, sel) => { heroShow?.set(hero); typeShow?.set(sel); };
+window.updateShowcase = hero => { heroShow?.set(hero); };
 
 // 평면도 매물에 퀸 침대(1.5×2.0m)가 놓일 자리가 있나: 인식한 벽·설비·집 바깥을 피해 어디든 (결과는 평면도 버전별로 기억)
 const bedCache = new Map();

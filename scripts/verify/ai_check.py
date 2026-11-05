@@ -42,6 +42,7 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
   plan = [{ text: JSON.stringify(notice.notice) }]; await pick(pdfBlob);
   ok('PDF 올림: "이 내용만 Gemini로 보내요" 안내 · 아직 안 보냄', vis(q('#subSend')) && /이 내용만 Gemini로 보내요: notice_example\.pdf/.test(q('#subSend').innerText) && /구글 제품 개선/.test(q('#subSend').innerText) && calls.length === 0, calls.length);
   q('#subSend [data-go]').click(); await W(900);
+  ok('공고 PDF: 버튼 "AI로 읽기" · 끝나면 "읽는 중" 문구 지움', q('#subSend [data-go]').textContent === 'AI로 읽기' && q('#subSend [data-msg]').textContent === '', q('#subSend [data-msg]').textContent);
   let c = calls[0], parts = c && c.body.contents[0].parts;
   ok('보낸 것: 지시문 + PDF(inline_data) 뿐 · JSON 형식 지정', calls.length === 1 && parts.length === 2 && parts[1].inline_data.mime_type === 'application/pdf' && parts[1].inline_data.data.startsWith('JVBER')
     && c.body.generationConfig.responseMimeType === 'application/json' && c.body.generationConfig.responseSchema.required.includes('types') && /gemini-3\.6-flash/.test(c.url), c && c.url.split('/').pop());
@@ -77,24 +78,24 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
   // ---- 매물 글 → 폼 채우기
   fw.location.hash = 'listings'; await W(500);
   const n0 = fw.eval('state.listings.length');
-  ok('매물 글 칸: 매물 등록 위 · AI 설정 바로가기 (매물 글·공고 추가하기)', !!(q('.ai-paste').compareDocumentPosition(q('#h-form')) & 4) && !!q('.ai-paste a[data-focus="#aiSet"]') && !!q('#subAdd a[data-focus="#aiSet"]'), '');
+  q('[data-addform]').click(); await W(200);   // v25: 매물 등록 창
+  ok('매물 글 칸: 등록 창 맨 위(필수 칸보다 위) · 보내기 안내 처음부터 · 버튼 "AI로 읽기" 하나 · AI 설정 바로가기', q('#formDlg').open && !!(q('.ai-paste').compareDocumentPosition(q('#form')) & 4) && vis(q('#lstSend')) && /이 내용만 Gemini로 보내요/.test(q('#lstSend').textContent) && q('#lstGo').textContent === 'AI로 읽기' && q('.ai-paste').querySelectorAll('button:not([hidden])').length === 1 && !!q('.ai-paste a[data-focus="#aiSet"]') && !!q('#subAdd a[data-focus="#aiSet"]'), '');
   const asG = e => { const g = { ...e }; if ('floor' in e) { g.basement = e.floor === '반지하'; delete g.floor; } return g; };
   for (const [k, it] of texts.entries()) {
     fw.eval('resetForm()'); const t = q('#lstText'); t.value = it.text; t.dispatchEvent(new fw.Event('input'));
     calls = []; plan = [{ text: JSON.stringify(k === 0 ? { ...asG(it.expect), rooms: 99, deposit: -5 } : asG(it.expect)) }];
-    q('#lstGo').click(); await W(100);
-    const sentBefore = calls.length; q('#lstSend [data-go]').click(); await W(500);
+    const sentBefore = calls.length; q('#lstGo').click(); await W(500);
     const F = fw.eval('form'), got = {}; for (const key of Object.keys(it.expect)) got[key] = F[key].value;
     const want = { ...it.expect }; if (k === 0) { delete want.rooms; delete want.deposit; }
-    const same = Object.entries(want).every(([key, v]) => String(got[key]) === String(v)), tags = F.querySelectorAll('.ai-tag').length;
-    ok(`가상 매물 글 ${k + 1}: 안내 뒤 보냄 · 글만 보냄 · 칸 ${Object.keys(want).length}개 채움 + 'AI가 채움' ${tags}개` + (k === 0 ? ' · 범위 밖(방 99·보증금 -5)은 버림' : ''),
-      sentBefore === 0 && calls.length === 1 && calls[0].body.contents[0].parts[1].text === it.text && !!calls[0].body.generationConfig.responseSchema.properties.walk && same && tags === Object.keys(want).length
+    const same = Object.entries(want).every(([key, v]) => String(got[key]) === String(v)), tags = F.querySelectorAll('.ai-filled').length;
+    ok(`가상 매물 글 ${k + 1}: 누르면 보냄 · 글만 보냄 · 칸 ${Object.keys(want).length}개 채움 + 테두리 표시 ${tags}칸 · "AI가 N칸을 채웠어요" · 읽는 중 문구 지움` + (k === 0 ? ' · 범위 밖(방 99·보증금 -5)은 버림' : ''),
+      sentBefore === 0 && calls.length === 1 && q('#lstMsg').textContent.startsWith(`AI가 ${Object.keys(want).length}칸을 채웠어요`) && q('#lstSend [data-msg]').textContent === '' && !F.querySelector('.ai-tag') && calls[0].body.contents[0].parts[1].text === it.text && !!calls[0].body.generationConfig.responseSchema.properties.walk && same && tags === Object.keys(want).length
       && (k > 0 || (F.rooms.value === '' && F.deposit.value === '')), JSON.stringify(got));
   }
   ok('채우기만 하고 저장 안 함', fw.eval('state.listings.length') === n0, fw.eval('state.listings.length'));
   const F = fw.eval('form'); F.area.value = 34; F.area.dispatchEvent(new fw.Event('input', { bubbles: true }));
-  ok('사람이 고친 칸은 "AI가 채움" 지움', !F.area.previousElementSibling?.classList.contains('ai-tag') && F.querySelectorAll('.ai-tag').length === Object.keys(texts[2].expect).length - 1, '');
-  fw.eval('resetForm()'); ok('폼 비우면 표시도 지움', F.querySelectorAll('.ai-tag').length === 0, '');
+  ok('사람이 고친 칸은 테두리 표시 지움', !F.area.classList.contains('ai-filled') && F.querySelectorAll('.ai-filled').length === Object.keys(texts[2].expect).length - 1, '');
+  fw.eval('resetForm()'); ok('폼 비우면 표시도 지움', F.querySelectorAll('.ai-filled').length === 0 && q('#lstMsg').textContent === '', '');
   // ---- 키는 저장 데이터·내보내기와 따로
   fw.eval('save()');
   ok('키는 newlywed-home-v1 밖 (내보내기에 안 들어감)', !/TEST-ONLY-0000/.test(fw.localStorage.getItem('newlywed-home-v1')) && !/TEST-ONLY-0000/.test(fw.eval('JSON.stringify(state)')), '');
@@ -102,11 +103,11 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
   q('#aiKeyDel').click();
   if (!WK) {
     ok('키 지우면 다시 직접 붙여넣기', !fw.localStorage.getItem('suitable-gemini-key') && !vis(q('#subAiRow')) && /공용 AI 서버가 없어요/.test(q('#aiState').textContent), q('#aiState').textContent);
-    const t = q('#lstText'); t.value = '투룸'; q('#lstGo').click(); ok('키 없음: 매물 글 → 직접 적기 안내', /AI 설정에 Gemini 키를 넣으면/.test(q('#lstMsg').textContent) && !vis(q('#lstSend')), q('#lstMsg').textContent);
+    const t = q('#lstText'); t.value = '투룸'; calls = []; q('#lstGo').click(); await W(200); ok('키 없음: 매물 글 → 직접 적기 안내 (안 보냄)', /AI 설정에 Gemini 키를 넣으면/.test(q('#lstMsg').textContent) && calls.length === 0, q('#lstMsg').textContent);
   } else {
     ok('키 지우면 공용 Worker 로', !fw.localStorage.getItem('suitable-gemini-key') && /공용 AI 서버로 읽어요/.test(q('#aiState').textContent), q('#aiState').textContent);
     const t = q('#lstText'); t.value = texts[1].text; t.dispatchEvent(new fw.Event('input')); fw.eval('resetForm()');
-    wplan = [{ text: JSON.stringify({ deal: '전세', deposit: 21000 }) }]; q('#lstGo').click(); await W(100); q('#lstSend [data-go]').click(); await W(500);
+    wplan = [{ text: JSON.stringify({ deal: '전세', deposit: 21000 }) }]; q('#lstGo').click(); await W(500);
     ok('Worker 경로: /listing 에 글만 (키·지시문 안 보냄) → 칸 채움', wcalls.length === 1 && wcalls[0].url === WK + '/listing' && wcalls[0].body === texts[1].text && !JSON.stringify(wcalls[0].headers).includes('goog') && fw.eval('form').deposit.value === '21000', wcalls[0] && wcalls[0].url);
     fw.location.hash = 'subs'; await W(400); reopen(); wcalls = []; wplan = [{ status: 503 }]; await pick(pdfBlob); q('#subSend [data-go]').click(); await W(600);
     ok('Worker 꺼짐(503: 키 없음·AI_ENABLED=false) → 안내 + 직접 붙여넣기 단계', wcalls.length === 1 && wcalls[0].url === WK + '/notice' && /^JVBER/.test(wcalls[0].body) && /지금은 AI 읽기가 꺼져 있어요/.test(sendMsg()) && vis(q('#subSteps')), sendMsg());

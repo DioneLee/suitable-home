@@ -51,8 +51,8 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   let s = sub(), es = evSub();
   ok('56형 → 특공 50% 자동 (20,000/73, 관리비 14.8)', s && s.sub.supply === 'special' && s.sub.i === 2 && s.deposit === 20000 && s.rent === 73 && s.fee === 14.8, s && JSON.stringify([s.sub, s.deposit, s.rent, s.fee]));
   ok('실제 월 부담 125.3 = 73 + 14.8 + 15,000×3%÷12', Math.abs(es.monthly - 125.3) < 1e-6, es.monthly);
-  fw.location.hash = 'home'; await W(500);
-  const gl = d.querySelector('#glanceHome .gl-table').innerText;
+  fw.location.hash = 'listings'; await W(500);   // v25: 한눈에 비교는 매물 화면에만
+  const gl = d.querySelector('#glanceList .gl-table').innerText;
   ok('한눈에 비교: 청약 가능 배지', /청약 가능 · 신혼특공 · 소득 3순위/.test(gl) && /보증금 2억 \/ 73/.test(gl), '');
   fw.location.hash = 'subs'; await W(400);
   // 소득 720 → 특공 불가 → 일반 가격 50%
@@ -161,9 +161,10 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   ok('자녀 수 0 입력 → 태아 체크 풀림', fw.eval('state.subs.me.nw.fetus') === false && fw.eval('state.subs.me.nw.kids') === 0, fw.eval('JSON.stringify(state.subs.me.nw)'));
   // v22: 데스크톱 매물 패널에도 돈 계산 · 순위 칸 4.4em
   fw.eval("state.selectedId = state.listings[0].id; render();"); await W(200);
-  d.querySelector('#typeLoanBtn').click();
-  { const tl = !d.querySelector('#typeLoan').hidden && d.querySelector('#typeLoan .loan'), li = d.querySelector('.simrank li');
-    ok('v22 데스크톱 매물 패널(.type-panel) "돈 계산" 누르면 계산기 · 순위 첫 칸 4.4em', tl && tl.querySelector('[data-loanpct]') && (!li || getComputedStyle(li).gridTemplateColumns.split(' ')[0] === parseFloat(getComputedStyle(li).fontSize) * 4.4 + 'px'), [!!tl, li && getComputedStyle(li).gridTemplateColumns].join(' ')); }
+  d.querySelector('#glanceList .gl-table [data-detail]').click(); await W(500);   // v25: PC 도 매물 시트(오른쪽 패널)에 돈 계산
+  { const tl = !d.querySelector('#sheet').hidden && d.querySelector('#shLoan .loan'), li = d.querySelector('.simrank li');
+    d.querySelector('[data-sheet-close]').click(); await W(500);
+    ok('v25 PC 매물 시트(오른쪽 패널)에 돈 계산 · 순위 첫 칸 4.4em', tl && tl.querySelector('[data-loanpct]') && (!li || getComputedStyle(li).gridTemplateColumns.split(' ')[0] === parseFloat(getComputedStyle(li).fontSize) * 4.4 + 'px'), [!!tl, li && getComputedStyle(li).gridTemplateColumns].join(' ')); }
   // 공고 둘: 왼쪽 목록 · 새로 넣은 공고가 골라짐 · 눌러서 바꾸기 · 제목 띠
   const head = () => d.querySelector('#subJudge .sub-main .sub-head h3')?.textContent, picks = () => [...d.querySelectorAll('#subJudge .sub-pick')];
   ok('공고 2개 → 목록 2장 · 새 공고가 골라져 제목 띠에 표시', picks().length === 2 && head() === '붙여넣기 시험' && picks()[1].getAttribute('aria-current') === 'true' && d.querySelectorAll('#subJudge .sub-main .easy-card').length === 1, head());
@@ -232,6 +233,8 @@ async function frame(w) { const f = document.createElement('iframe'); f.style.cs
   { const fm = d.querySelector('#subJudge .fit-home .formula')?.textContent || '', ft = d.querySelector('footer').textContent;
     ok('공모전: 청약 카드 계산식 · 결과 아래 "참고용 예비 판정" · 맨 아래 출처·면책', /^계산: [\d.]+ = 월세 [\d.]+ \+ 관리비 [\d.]+ \+ /.test(fm) && /참고용 예비 판정/.test(d.querySelector('#subJudge .sub-note')?.textContent || '') && /공고 출처: 마이홈포털·LH 공공데이터 API, SH·서울 청년안심주택\(원문 링크\)/.test(ft) && /법적·금융적 효력이 없습니다/.test(ft), fm); }
   // 대출 계산기 (청약 = 빌릴 비율 80% 기본, 매매 = 지역 LTV)
+  { const fd = d.querySelector('#subJudge .fit-home .loan').closest('details');   // v25: 돈 계산은 접혀서 시작 → 펼쳐서 본다
+    ok('v25 청약 돈 계산은 접혀서 시작 · 판정 위에 신혼부부/청년 탭', fd && !fd.open && d.querySelectorAll('#subJudge .sub-tabs [data-subtab]').length === 2, ''); fd.open = true; }
   const lbx = d.querySelector('#subJudge .fit-home .loan'), lmsg = () => lbx.querySelector('.loan-msg').textContent;
   const m0 = lmsg(); const rg = lbx.querySelector('[data-loanpct]'); rg.value = 50; rg.dispatchEvent(new fw.Event('input', { bubbles: true }));
   ok('청약 돈 계산: 보증금 2억 · 내 돈 5천 → 80% 채움 · 50%면 5천 모자람(빨강)', /부족한 1억 5,000만원을 빌려서 채울 수 있어요/.test(m0) && /50%로는 5,000만원이 더 모자라요/.test(lmsg()) && lbx.querySelector('.loan-msg').classList.contains('bad') && /모자란 돈 5,000만원/.test(lbx.innerText), m0 + ' / ' + lmsg());

@@ -32,8 +32,13 @@
   - 검사 `node scripts/verify/worker_check.mjs`(14) · `python scripts/verify/ai_check.py`(32, 가짜 Gemini) · 예시 `samples/notice_example.pdf`(`scripts/make_sample_pdf.py`) · `samples/listing_texts.json`
   - 배포됨 `https://suitable-home-ai.demolee.workers.dev` (Cloudflare 계정 demolee, secret GEMINI_API_KEY = AI Studio 'Default Gemini Project' 무료 등급) · 실제 공고 PDF·매물 글 읽기 확인
 
+- v25 화면 길이 정리 (2026-11-05): 홈은 숫자 카드 + 적합도 상위 3곳 · 매물은 한눈에 비교 하나(카드마다 자세히·수정·3D·삭제, 휴대폰 카드 접힘, 탈락 N곳 접기) · 자세히 = 매물 시트(휴대폰 아래 · PC 오른쪽 560px) · 매물 등록은 창(필수 9칸 + 더 입력하기) · 리포트 탭 `#report/cost|space|commute|fit|location` · 맨 위로 · AI 읽기 버튼 하나 + 채운 칸 테두리
+  - 설계·항목 목록·길이 표 `docs/design/화면길이정리.md` · 길이 재기 `python scripts/verify/length_check.py [--page 파일]` (가상 11곳 `scripts/verify/seed_v25_11.json`)
+  - 휴대폰 매물 16.7 → 2.6화면, 홈 11 → 2, 리포트 9.9 → 2.6(가장 긴 탭) (가상 11곳)
+
 ## 다음에 할 것 / 남은 것
 
+- [ ] 3D 집 보기 2단 배치 (PC: 왼쪽 3D 고정 · 오른쪽 가구 추가 + 접힌 도면 보정) — v25에서 다음 차례로 미룸
 - [ ] 실제 우리 상황을 청약 화면에 입력해 판정 확인 (접수 11.12 전)
 - [ ] 분양 공고(가점·생애최초·중도금)는 실제 분양 공고가 생기면 공고 JSON `kind: '분양'`으로 추가
 
@@ -57,7 +62,8 @@
 
 ```bash
 python -m http.server 8766 --bind localhost        # 레포 루트에서, 테스트 전용 주소
-python scripts/verify/v8_check.py                  # v8 자동 검사 (seed_v8.json)
+python scripts/verify/v8_check.py ; python scripts/verify/v10_check.py   # 한눈에 비교·시트 / 청약 자동 검사
+python scripts/verify/length_check.py              # 화면별 세로 길이 (예시 3곳 · 가상 11곳)
 python scripts/verify/ai_check.py ; node scripts/verify/worker_check.mjs ; python scripts/sync_ai_spec.py --check   # AI 읽기
 python scripts/verify/screenshot.py after_v8_ index.html home,listings,report --seed scripts/verify/seed_v8.json
 python scripts/verify/ana_shots.py sample          # 도면 분석 스크린샷

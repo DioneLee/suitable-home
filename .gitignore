@@ -7,3 +7,7 @@ __pycache__/
 local-data/
 # 개인 Claude 설정 · 회사 정보 · 남이 만든 스킬 (공개 저장소에 올리지 않는다)
 setup/
+# Worker 로컬 키 (절대 커밋하지 않는다)
+.dev.vars
+worker/.wrangler/
+worker/node_modules/

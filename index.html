@@ -137,6 +137,13 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .sub-add .links { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); margin-top: var(--s1); }
 .sub-add textarea { display: block; width: 100%; margin: var(--s1) 0; font: 14px/1.6 ui-monospace, monospace; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 12px; }
 .sub-paste { min-height: 160px; }
+.ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); margin: var(--s2) 0; }
+.ai-send { margin: var(--s2) 0; padding: var(--s2); border: 1px solid var(--line); border-left: 6px solid var(--accent); border-radius: var(--r2); }
+.ai-send p { margin: 0 0 4px; }
+.ai-tag { display: inline-block; margin-left: 6px; padding: 0 8px; border: 1px solid var(--accent); border-radius: var(--pill); color: var(--accent); font-size: 12px; font-weight: 600; }
+.ai-paste { padding-bottom: var(--s3); margin-bottom: var(--s3); border-bottom: 1px solid var(--line); }
+.ai-paste textarea { display: block; width: 100%; margin: var(--s1) 0; font: 16px/1.6 var(--sans); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 12px; }
+.ai-key label { margin-top: var(--s2); max-width: 32em; }
 .sub-errs { margin: 0; padding-left: 20px; color: var(--fail); } .sub-errs:empty { display: none; }
 .demo-banner { margin-top: var(--s3); padding: var(--s3); border: 1px dashed var(--accent); border-radius: var(--r2); }
 .demo-banner p { margin: 0 0 var(--s2); font: 600 20px/1.5 var(--sans); color: var(--accent); }
@@ -695,6 +702,15 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
   <section class="block" id="manageSec" aria-labelledby="h-form">
     <div class="wrap">
       <div class="tool" id="manage" style="scroll-margin-top:72px">
+        <div class="ai-paste">
+          <h3>매물 글 붙여넣기 <span class="unit">(선택)</span></h3>
+          <p class="hint">직방·네이버 매물 설명을 붙여넣으면 AI가 아래 칸을 채워요. 글에 없는 값은 비워 두고, 저장은 확인한 뒤 '매물 추가'를 눌러야 돼요. <a href="#listings" data-focus="#aiSet">AI 설정</a></p>
+          <textarea id="lstText" rows="4" maxlength="5000" placeholder="예: 투룸 보증금 3000 / 월세 70, 관리비 8만, 전용 42㎡, 3층/5층, 망원역 도보 6분, 전입신고 가능" aria-label="매물 설명 글"></textarea>
+          <div class="row"><button type="button" class="ghost" id="lstGo">칸 채우기</button><span class="msg" id="lstMsg" role="status"></span></div>
+          <div class="ai-send" id="lstSend" hidden><p>이 내용만 Gemini로 보내요: <b data-what></b></p>
+          <p class="unit">무료 등급은 구글 제품 개선에 쓰일 수 있어요. 소득·자산·지금 집·직장·가족 정보는 보내지 않아요.</p>
+          <div class="row"><button type="button" class="primary" data-go>Gemini로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
+        </div>
         <h3 id="h-form">매물 등록</h3>
         <p class="hint">금액은 만원 단위로 적어 주세요. 예: 1억 2천 → 12000</p>
         <form id="form" style="margin-top:16px">
@@ -741,6 +757,13 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
           <span class="msg" id="ioMsg" role="status"></span>
         </div>
       </div>
+      <div class="tool" id="aiSet" style="scroll-margin-top:72px">
+        <h3>AI 설정</h3>
+        <p class="hint">공고 PDF 읽기와 매물 글 칸 채우기에 Google Gemini를 써요. AI는 읽기만 하고, 자격 판정은 이 앱의 규칙이, 저장은 내가 해요.</p>
+        <p class="hint" id="aiState"></p>
+        <form class="ai-key" id="aiKeyForm"><label>내 Gemini 키 <span class="unit">(선택 · 이 기기에만 저장 · 내보내기 파일에 안 들어가요)</span><input id="aiKey" type="password" autocomplete="off" spellcheck="false" maxlength="100"></label>
+          <div class="row"><button class="primary" id="aiKeySave">키 저장</button><button type="button" class="ghost" id="aiKeyDel">키 지우기</button><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">키 받기 ↗</a><span class="msg" id="aiKeyMsg" role="status"></span></div></form>
+      </div>
 
     </div>
   </section>
@@ -765,7 +788,13 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <p class="msg" id="subMsg" role="status"></p>
       <div class="tool sub-add" id="subAdd" hidden>
         <h3>공고 추가하기</h3>
-        <ol class="sub-steps">
+        <div class="ai-row" id="subAiRow"><label class="filebtn">공고 PDF로 자동 읽기<input type="file" id="subPdf" accept="application/pdf,.pdf"></label>
+          <button type="button" class="ghost" id="subManual">직접 붙여넣기로 하기</button><a href="#listings" data-focus="#aiSet">AI 설정</a></div>
+        <p class="hint" id="subAiOff">AI 설정에 Gemini 키를 넣으면 PDF를 올리기만 해도 읽어 줘요. 지금은 아래 순서대로 직접 붙여넣어 주세요. <a href="#listings" data-focus="#aiSet">AI 설정</a></p>
+        <div class="ai-send" id="subSend" hidden><p>이 내용만 Gemini로 보내요: <b data-what></b></p>
+          <p class="unit">무료 등급은 구글 제품 개선에 쓰일 수 있어요. 소득·자산·지금 집·직장·가족 정보는 보내지 않아요.</p>
+          <div class="row"><button type="button" class="primary" data-go>Gemini로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
+        <ol class="sub-steps" id="subSteps">
           <li><b>공고문 PDF를 받아요.</b>
             <span class="links"><a href="https://soco.seoul.go.kr/youth/main/main.do" target="_blank" rel="noopener noreferrer">청년안심주택 ↗</a><a href="https://www.i-sh.co.kr" target="_blank" rel="noopener noreferrer">SH 서울주택도시공사 ↗</a><a href="https://apply.lh.or.kr" target="_blank" rel="noopener noreferrer">LH 청약플러스 ↗</a></span></li>
           <li><b>아래 문장을 복사해서 Claude나 Gemini에 PDF와 함께 붙여넣어요.</b>
@@ -1066,7 +1095,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
   </section>
 </div>
 </main>
-<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요.
+<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요. AI 읽기를 쓸 때만 공고문·매물 글을 Google Gemini로 보내요.
   <p>공고 출처: 마이홈포털·LH 공공데이터 API, SH·서울 청년안심주택(원문 링크)</p>
   <p>본 서비스에서 제공하는 실제 월 부담·대출(LTV) 계산 및 청약 자격 판정은 의사결정을 돕기 위한 참고용 시뮬레이션이며 법적·금융적 효력이 없습니다. 실제 청약 신청 및 부동산 계약 전에는 반드시 모집공고문 원본과 금융기관을 통해 최종 확인하시기 바랍니다.</p></div></footer>
 <div class="sheet" id="sheet" hidden>
@@ -1114,6 +1143,9 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 <script>
 // ---------- 데이터 ----------
 const KEY = 'newlywed-home-v1';
+const AI_WORKER = 'https://suitable-home-ai.demolee.workers.dev';   // 배포한 Cloudflare Worker 주소 (worker/README.md). 비우면 '내 Gemini 키' → 없으면 직접 붙여넣기
+const AI_MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'];   // 기본 · 실패하면 한 번만 더 (2026-11-05 공식 문서 정식 모델, worker/src/index.js 와 같게)
+const AI_KEY = 'suitable-gemini-key';   // 내 키는 저장 데이터(KEY)와 따로, 이 기기에만 (내보내기에 안 들어감)
 const CRITERIA = [
   { k: 'price',   label: '가격',   lower: true,  get: l => l.monthly },
   { k: 'area',    label: '면적',   lower: false, get: l => l.area },
@@ -1443,6 +1475,8 @@ function ensureTypeLetters(listings) {
   eq(monthlyCost(base, { myCash: 5000, rate: 3 }), 75, '월 부담: 60 + 6000×3%÷12');
   eq(monthlyCost({ ...base, deposit: 3000 }, { myCash: 5000, rate: 3 }), 60, '내 돈이 더 많으면 이자 0');
   console.assert(reasons(base).length === 0, '정상 매물 통과');
+  { const a = aiListing({ deal: '전세', deposit: 21000, rent: 50, rooms: 99, area: '59', basement: true, usage: '기타', walk: 7, station: ' 망원역 ', moveIn: null });
+    console.assert(JSON.stringify(a) === '{"deal":"전세","deposit":21000,"floor":"반지하","station":"망원역","walk":7}', 'AI 매물 값: 범위·보기 밖·없는 값은 버림', a); }
   console.assert(reasons({ ...base, basement: true, loanOk: false, usage: '업무용', area: 39, deposit: 13001, rent: 96 }).length === 6, '탈락 사유 6개');
   // v8 거래 유형 손계산 (내 돈 5000, 연이율 3%, 주담대 4%)
   const S8 = { myCash: 5000, rate: 3, mortRate: 4 };
@@ -2199,7 +2233,7 @@ function syncDeal() {
 }
 form.deal.addEventListener('change', syncDeal);
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-function resetForm() { form.reset(); form.id.value = ''; syncDeal(); $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
+function resetForm() { form.querySelectorAll('.ai-tag').forEach(t => t.remove()); form.reset(); form.id.value = ''; syncDeal(); $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
 form.addEventListener('submit', e => {
   e.preventDefault();
   const f = Object.fromEntries(new FormData(form));
@@ -2578,6 +2612,7 @@ function renderFeed() {
 }
 const setFeed = x => { subFeed = normFeed(x); renderFeed(); };
 fetch('feed/notices.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(setFeed).catch(() => {});
+// ==== AI_SPEC 시작 (worker/src/spec.js 와 같아야 함 · 고친 뒤 python scripts/sync_ai_spec.py) ====
 const SUB_PROMPT = `첨부한 임대주택 입주자 모집공고문을 읽고, 아래 형식의 JSON 하나만 돌려줘. 설명 문장 없이 JSON만.
 - 금액은 모두 만원 단위 숫자, 날짜는 'YYYY-MM-DD', 모르는 값은 null.
 - kind 는 항상 "임대". tier 는 신혼부부면 "newlywed", 청년이면 "youth".
@@ -2592,6 +2627,30 @@ const SUB_PROMPT = `첨부한 임대주택 입주자 모집공고문을 읽고, 
   "youth":{"special":{"age":[19,39],"single":true,"homeless":"본인","incomeMax":120,"incomeRanks":[100,110,120],"asset":25100,"car":4542},"general":{"age":[19,39],"single":true,"homeless":"본인","car":4542}}},
  "types":[{"id":"56","tier":"newlywed","area":47.37,"rooms":2,"fee":14.8,"units":{"special":69,"general":273},"prices":{"special":[[12000,102],[16000,88],[20000,73]],"general":[[14300,121],[19000,104],[23800,86]]}}],
  "notes":["알아 둘 점"]}`;
+const LISTING_PROMPT = `아래 매물 설명 글에서 값만 뽑아 JSON 하나로 돌려줘. 설명 문장 없이 JSON만.
+- 글에 없는 값은 반드시 null. 짐작하거나 지어내지 마.
+- 금액은 만원 단위 숫자 (1억 2천 → 12000, '3000/70' → deposit 3000, rent 70). 전세·매매면 deposit 에 전세금·매매가를 넣고 rent 는 null.
+- area 는 전용면적 ㎡ (평만 있으면 null), rooms 는 방 개수.
+- floorNo 는 '해당층/총층' (예: '3/5'). basement 는 반지하·지하층이면 true, 지상층이 분명하면 false.
+- usage 는 업무용 오피스텔이면 '업무용', 주거용이면 '주거용'. moveIn 은 전입신고, loan 은 전세대출 가능 여부.
+- station 은 가까운 역 이름, walk 는 역까지 걸어서 몇 분.`;
+const S_N = { type: 'NUMBER', nullable: true }, S_I = { type: 'INTEGER', nullable: true }, S_S = { type: 'STRING', nullable: true }, S_NA = { type: 'ARRAY', items: { type: 'NUMBER' } };
+const S_E = a => ({ type: 'STRING', nullable: true, enum: a });
+const S_RULE = { type: 'OBJECT', nullable: true, properties: { age: S_NA, marriageDays: S_N, preMarried: { type: 'BOOLEAN' }, single: { type: 'BOOLEAN' }, homeless: S_E(['세대', '본인']),
+  incomeMax: S_N, incomeRanks: S_NA, asset: S_N, car: S_N } };
+const S_TIER = { type: 'OBJECT', nullable: true, properties: { special: S_RULE, general: S_RULE } }, S_PAIRS = { type: 'ARRAY', items: S_NA };
+const NOTICE_SCHEMA = { type: 'OBJECT', required: ['kind', 'name', 'noticeDate', 'incomeBase', 'rules', 'types'], properties: {
+  id: { type: 'STRING' }, kind: { type: 'STRING', enum: ['임대'] }, name: { type: 'STRING' }, short: S_S, addr: S_S, city: S_S, region: S_S, station: S_S, noticeDate: { type: 'STRING' }, url: S_S, summary: S_S,
+  cite: { type: 'OBJECT', nullable: true, properties: { rules: S_S } },
+  schedule: { type: 'ARRAY', items: { type: 'OBJECT', properties: { key: { type: 'STRING' }, label: { type: 'STRING' }, from: { type: 'STRING' }, to: { type: 'STRING' } } } },
+  ratios: S_NA, contractPct: S_N, parking: S_N, incomeBase: S_NA, incomeExtra: S_N,
+  rules: { type: 'OBJECT', properties: { newlywed: S_TIER, youth: S_TIER } },
+  types: { type: 'ARRAY', items: { type: 'OBJECT', properties: { id: { type: 'STRING' }, tier: { type: 'STRING', enum: ['newlywed', 'youth'] }, area: { type: 'NUMBER' }, rooms: S_N, fee: S_N,
+    units: { type: 'OBJECT', properties: { special: S_N, general: S_N } }, prices: { type: 'OBJECT', properties: { special: S_PAIRS, general: S_PAIRS } } } } },
+  notes: { type: 'ARRAY', items: { type: 'STRING' } } } };
+const LISTING_SCHEMA = { type: 'OBJECT', properties: { deal: S_E(['월세', '전세', '매매']), deposit: S_N, rent: S_N, fee: S_N, area: S_N, rooms: S_I, floorNo: S_S, basement: { type: 'BOOLEAN', nullable: true },
+  usage: S_E(['주거용', '업무용']), station: S_S, walk: S_I, moveIn: S_E(['가능', '불가']), loan: S_E(['가능', '불가']) } };
+// ==== AI_SPEC 끝 ====
 $('#subPrompt').value = SUB_PROMPT;
 $('#subAddBtn').addEventListener('click', () => { const a = $('#subAdd'); a.hidden = !a.hidden; $('#subAddBtn').setAttribute('aria-expanded', !a.hidden); if (!a.hidden) a.scrollIntoView({ block: 'start' }); });
 $('#subCopy').addEventListener('click', async () => {
@@ -2616,6 +2675,102 @@ $('#subPaste').addEventListener('input', e => {
   const p = noticeProblems(x); if (p.length) { out.innerHTML = p.map(t => `<li>${esc(t)}</li>`).join(''); return; }
   out.innerHTML = ''; subDemo = false; if (addNotice(x, '공고를 넣었어요')) { e.target.value = ''; $('#subAdd').hidden = true; $('#subAddBtn').setAttribute('aria-expanded', 'false'); }
 });
+// ---------- AI 읽기 (Gemini): 공고 PDF · 매물 글에서 값만 읽는다. 자격 판정은 위 규칙 코드가, 저장은 사람이 한다 ----------
+const aiKey = () => { try { return localStorage.getItem(AI_KEY) || ''; } catch (e) { return ''; } };
+const aiReady = () => !!(aiKey() || AI_WORKER);
+const aiFail = st => Object.assign(new Error('ai'), { status: st });
+async function aiRead(kind, payload, signal) {   // kind 'notice'(payload = PDF base64) | 'listing'(payload = 글) → Gemini 가 돌려준 JSON 글자
+  const key = aiKey();
+  if (!key) {   // 공용 Worker: 종류와 내용만 보낸다 (지시문은 Worker 안에)
+    let r; try { r = await fetch(`${AI_WORKER}/${kind}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: payload, signal }); } catch (e) { if (signal.aborted) throw e; throw aiFail(0); }
+    if (!r.ok) throw aiFail(r.status); const t = (await r.json())?.text; if (!t) throw aiFail(502); return t;
+  }
+  const [prompt, schema, part] = kind === 'notice' ? [SUB_PROMPT, NOTICE_SCHEMA, { inline_data: { mime_type: 'application/pdf', data: payload } }] : [LISTING_PROMPT, LISTING_SCHEMA, { text: payload }];
+  const body = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }, part] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema } });
+  let last = 0;
+  for (const m of AI_MODELS) {
+    let r; try { r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body, signal }); }
+    catch (e) { if (signal.aborted) throw e; last = 0; continue; }
+    if (!r.ok) { last = r.status === 400 && /API_KEY/.test(await r.text()) ? 403 : r.status; if (last === 403) break; continue; }
+    const t = (await r.json())?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join(''); if (t) return t; last = 502;
+  }
+  throw aiFail(last);
+}
+const aiErrText = r => ({ cancel: '취소했어요.', timeout: '1분 안에 읽지 못했어요. 다시 해 보거나 직접 붙여넣기로 할 수 있어요.', 429: '오늘 AI 사용량이 다 찼어요. 직접 붙여넣기로 할 수 있어요.',
+  0: 'AI에 연결하지 못했어요. 인터넷을 확인하거나 직접 붙여넣기로 할 수 있어요.', 403: 'Gemini 키가 맞지 않아요. AI 설정에서 확인하거나 직접 붙여넣기로 할 수 있어요.',
+  413: '너무 커요. PDF는 5MB, 글은 5,000자까지 보낼 수 있어요.', 503: '지금은 AI 읽기가 꺼져 있어요. 직접 붙여넣기로 해 주세요.' })[r] || 'AI가 읽지 못했어요. 직접 붙여넣기로 할 수 있어요.';
+// 보내기 전 안내 → 버튼을 눌러야 보낸다 · 1분 지나면 끊고, 읽는 중엔 취소
+function aiAsk(box, kind, payload, what, done) {
+  const q = x => box.querySelector(x), go = q('[data-go]'), stop = q('[data-stop]'), msg = q('[data-msg]');
+  box.hidden = false; q('[data-what]').textContent = what; msg.textContent = ''; go.hidden = false; stop.hidden = true;
+  go.onclick = async () => {
+    const ac = new AbortController(), timer = setTimeout(() => ac.abort('timeout'), 60000);
+    go.hidden = true; stop.hidden = false; stop.onclick = () => ac.abort('cancel'); msg.textContent = '읽는 중… (최대 1분)';
+    try { const t = await aiRead(kind, payload, ac.signal); box.hidden = true; done(t); }
+    catch (e) { go.hidden = false; const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r); if (r === 503) showSteps(); }
+    finally { clearTimeout(timer); stop.hidden = true; }
+  };
+}
+// 공고: AI 결과도 붙여넣기 칸과 같은 검사(noticeProblems)를 거친다
+let subManual = false;
+function showSteps() { subManual = true; $('#subSteps').hidden = false; }
+function syncAi() {
+  const on = aiReady(), k = aiKey();
+  $('#subAiRow').hidden = !on; $('#subAiOff').hidden = on; $('#subSteps').hidden = on && !subManual; if (!on) $('#subSend').hidden = true;
+  $('#aiState').textContent = k ? `내 키(…${k.slice(-4)})로 Gemini에 바로 보내요.` : AI_WORKER ? '공용 AI 서버로 읽어요. 내 키를 넣으면 내 키를 먼저 써요.'
+    : '아직 공용 AI 서버가 없어요. 내 키를 넣으면 AI 읽기를 쓸 수 있고, 없으면 직접 붙여넣기로 해요.';
+}
+$('#subManual').addEventListener('click', () => { showSteps(); $('#subSteps').scrollIntoView({ block: 'nearest' }); });
+$('#subPdf').addEventListener('change', e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return; const mb = (f.size / 1048576).toFixed(1);
+  if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { $('#subMsg').textContent = 'PDF 파일만 읽을 수 있어요.'; return; }
+  if (f.size > 5 * 1048576) { $('#subMsg').textContent = `파일이 ${mb}MB예요. AI로는 5MB까지 보낼 수 있어요. 직접 붙여넣기로 해 주세요.`; showSteps(); return; }
+  const rd = new FileReader();
+  rd.onload = () => aiAsk($('#subSend'), 'notice', String(rd.result).split(',')[1], `${f.name} (${mb}MB)`, t => {
+    const p = $('#subPaste'); p.value = t; p.dispatchEvent(new Event('input'));
+    if ($('#subPasteErr').innerHTML) { showSteps(); $('#subMsg').textContent = 'AI가 읽은 공고에 빠진 곳이 있어요. 아래 3번 칸에서 확인해 주세요.'; }
+  });
+  rd.readAsDataURL(f);
+});
+// 매물 글: 뽑은 값은 범위·보기를 다시 걸러 폼에 채우기만 한다 (저장은 '매물 추가')
+function aiListing(x) {
+  const o = {}; if (!x || typeof x !== 'object') return o;
+  const n = (v, lo, hi) => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : null, int = (v, lo, hi) => Number.isInteger(v) ? n(v, lo, hi) : null;
+  const pick = (v, a) => a.includes(v) ? v : null, txt = (v, len) => typeof v === 'string' && v.trim() ? v.trim().slice(0, len) : null;
+  const put = (k, v) => { if (v != null) o[k] = v; };
+  put('deal', pick(x.deal, ['월세', '전세', '매매'])); put('deposit', n(x.deposit, 0, 1e6)); if (o.deal !== '전세' && o.deal !== '매매') put('rent', n(x.rent, 0, 1000));
+  put('fee', n(x.fee, 0, 300)); put('area', n(x.area, 1, 500)); put('rooms', int(x.rooms, 1, 6)); put('floorNo', txt(x.floorNo, 10));
+  put('floor', x.basement === true ? '반지하' : x.basement === false ? '지상' : null); put('usage', pick(x.usage, ['주거용', '업무용']));
+  put('station', txt(x.station, 20)); put('walk', int(x.walk, 0, 120)); put('moveIn', pick(x.moveIn, ['가능', '불가'])); put('loan', pick(x.loan, ['가능', '불가']));
+  return o;
+}
+function fillAi(o) {
+  form.querySelectorAll('.ai-tag').forEach(t => t.remove());
+  if (o.deal) { form.deal.value = o.deal; syncDeal(); }
+  for (const [k, v] of Object.entries(o)) { form[k].value = v; form[k].insertAdjacentHTML('beforebegin', '<span class="ai-tag">AI가 채움</span>'); }
+  return Object.keys(o).length;
+}
+form.addEventListener('input', e => { const t = e.target.previousElementSibling; if (t?.classList.contains('ai-tag')) t.remove(); });   // 사람이 고치면 표시 지움
+$('#lstText').addEventListener('input', () => { $('#lstSend').hidden = true; $('#lstMsg').textContent = ''; });
+$('#lstGo').addEventListener('click', () => {
+  const v = $('#lstText').value.trim(), m = $('#lstMsg');
+  if (!v) { m.textContent = '매물 설명 글을 먼저 붙여넣어 주세요.'; return; }
+  if (!aiReady()) { m.textContent = 'AI 설정에 Gemini 키를 넣으면 쓸 수 있어요. 지금은 아래 칸에 직접 적어 주세요.'; return; }
+  m.textContent = '';
+  aiAsk($('#lstSend'), 'listing', v.slice(0, 5000), `붙여넣은 매물 글 ${v.length.toLocaleString()}자`, t => {
+    let x = null; try { x = JSON.parse(t); } catch (e) {}
+    const c = fillAi(aiListing(x));
+    m.textContent = c ? `${c}칸을 채웠어요. 확인하고 이름·통근 시간을 적은 뒤 '매물 추가'를 눌러 주세요.` : '글에서 채울 값을 찾지 못했어요. 아래 칸에 직접 적어 주세요.';
+  });
+});
+// AI 설정: 내 키
+$('#aiKeyForm').addEventListener('submit', e => {
+  e.preventDefault(); const v = $('#aiKey').value.trim(); if (!v) { $('#aiKeyMsg').textContent = '키를 넣어 주세요.'; return; }
+  try { localStorage.setItem(AI_KEY, v); $('#aiKey').value = ''; $('#aiKeyMsg').textContent = '저장했어요.'; } catch (e) { $('#aiKeyMsg').textContent = '이 브라우저에 저장하지 못했어요.'; }
+  syncAi();
+});
+$('#aiKeyDel').addEventListener('click', () => { try { localStorage.removeItem(AI_KEY); } catch (e) {} $('#aiKeyMsg').textContent = '지웠어요.'; syncAi(); });
+syncAi();
 $('#subFile').addEventListener('change', async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   try { addNotice(JSON.parse(await f.text()), `${f.name} 불러옴`); } catch (err) { $('#subMsg').textContent = 'JSON 파일을 읽지 못했어요.'; }

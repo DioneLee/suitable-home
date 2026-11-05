@@ -1,0 +1,19 @@
+name = "suitable-home-ai"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# 요청 내용을 남기지 않도록 로그·관측 끔
+[observability]
+enabled = false
+
+[vars]
+AI_ENABLED = "true"   # "false" 로 바꾸고 다시 deploy 하면 바로 거절 → 화면은 직접 붙여넣기로 넘어감
+
+# Gemini 는 홍콩 등에서 온 요청을 막는다 → Gemini 호출은 미국 서부(wnam)에 고정한 Durable Object 에서 (무료 플랜: SQLite 방식)
+[[durable_objects.bindings]]
+name = "GEMINI"
+class_name = "GeminiCaller"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GeminiCaller"]

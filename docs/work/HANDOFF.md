@@ -27,6 +27,11 @@
   - 올리기: `scripts/push-feed.ps1` (작업 스케줄러 `suitable-home-feed-push`, 매일 08:30) — notices.json 만 경로 지정 커밋 후 push, 실패 시 pull/force 없이 로그만
     - 로그 `local-data\push-feed.log` (git 제외). 끄려면 작업 스케줄러에서 해당 작업 사용 안 함
 
+- v24 AI 읽기 (2026-11-05): 공고 PDF → Gemini → 공고 JSON (기존 검사·판정 그대로) · 매물 글 → 폼 채우기('AI가 채움') · AI 설정(내 키, localStorage `suitable-gemini-key`)
+  - 설계 `docs/design/AI읽기.md` · Worker `worker/` (배포는 사용자, `worker/README.md`) · 지시문은 index.html AI_SPEC 블록 → `python scripts/sync_ai_spec.py`
+  - 검사 `node scripts/verify/worker_check.mjs`(14) · `python scripts/verify/ai_check.py`(32, 가짜 Gemini) · 예시 `samples/notice_example.pdf`(`scripts/make_sample_pdf.py`) · `samples/listing_texts.json`
+  - 배포됨 `https://suitable-home-ai.demolee.workers.dev` (Cloudflare 계정 demolee, secret GEMINI_API_KEY = AI Studio 'Default Gemini Project' 무료 등급) · 실제 공고 PDF·매물 글 읽기 확인
+
 ## 다음에 할 것 / 남은 것
 
 - [ ] 실제 우리 상황을 청약 화면에 입력해 판정 확인 (접수 11.12 전)
@@ -53,6 +58,7 @@
 ```bash
 python -m http.server 8766 --bind localhost        # 레포 루트에서, 테스트 전용 주소
 python scripts/verify/v8_check.py                  # v8 자동 검사 (seed_v8.json)
+python scripts/verify/ai_check.py ; node scripts/verify/worker_check.mjs ; python scripts/sync_ai_spec.py --check   # AI 읽기
 python scripts/verify/screenshot.py after_v8_ index.html home,listings,report --seed scripts/verify/seed_v8.json
 python scripts/verify/ana_shots.py sample          # 도면 분석 스크린샷
 ```

@@ -2338,7 +2338,7 @@ function loanBox(key, need, buy, region, lid) {
     <ul class="loan-legend"></ul>
     <label>${buy ? '대출 비율(LTV)' : '빌릴 비율'} <span class="rng"><input type="range" min="0" max="90" step="5" value="${pct}" data-loanpct aria-label="${buy ? '대출 비율' : '빌릴 비율'}"><output>${pct}%</output></span></label>
     <p class="loan-msg"></p>
-    <p class="hint">${buy ? `예상이에요. 실제 한도는 소득(DSR)·은행에 따라 달라요 · ${LOAN_RULES.asOf}` : '은행 전세대출은 보통 보증금의 80%까지예요. 가족 등에게 빌리는 돈도 여기서 같이 봐요.'}</p></div>`;
+    <p class="hint">${buy ? `예상이에요. 실제 한도는 소득(DSR)·은행에 따라 달라요 · ${LOAN_RULES.asOf}` : '은행 전세대출은 보통 보증금의 80%까지예요.'}</p></div>`;
 }
 function paintLoan(box) {
   const buy = !!box.dataset.buy, rule = buy ? LOAN_RULES[box.dataset.region] : null, pct = +box.querySelector('[data-loanpct]').value, r = loanCalc(+box.dataset.need, state.settings.myCash || 0, pct, rule);

@@ -35,14 +35,17 @@ async function frame(w, hash) {
   const home = d.querySelector('#glanceList'), list = home;
   const heads = () => [...home.querySelectorAll('.gl-table thead th .gl-name b')].map(b => b.textContent);
   ok('지금 집 맨 왼쪽', /지금 집/.test(heads()[0]) && home.querySelector('.gl-table thead th.cur'), heads()[0]);
-  const orders = { price: 'm2,m3,m1,j1,b1', monthly: 'j1,m2,m1,m3,b1', commute: 'b1,j1,m2,m1,m3', area: 'b1,j1,m3,m1,m2' };
+  // v27: 탈락(m3)은 표에서 빼고 '탈락 N곳 보기'에만
+  ok('PC 표에 탈락 매물 없음 · 탈락 보기에 있음', !home.querySelector('.gl-table [data-card="m3"]') && home.querySelector('.gl-failed [data-card="m3"]') && /탈락 1곳 보기/.test(home.querySelector('.gl-failed summary').textContent), '');
+  ok("탈락 카드에 '전입신고 불가'", home.querySelector('.gl-failed [data-card="m3"]').textContent.includes('전입신고 불가'), '');
+  const orders = { price: 'm2,m1,j1,b1', monthly: 'j1,m2,m1,b1', commute: 'b1,j1,m2,m1', area: 'b1,j1,m1,m2' };
   for (const [k, v] of Object.entries(orders)) {
     home.querySelector(`[data-gsort="${k}"]`).click(); await W(100);
     const ids = [...home.querySelectorAll('.gl-table td [data-detail]')].map(b => b.dataset.detail).slice(1).join(',');
     ok(`정렬 ${k}`, ids === v, ids);
   }
   const tx = home.querySelector('.gl-table').innerText;
-  for (const t of ['월세', '보증금 1억 3,000 / 50', '전세', '2억', '매매', '3억 2,500', '전입신고 불가', '전입신고 미확인', '원문 링크 없음', '11월 1일 저장', '경로 미입력', '3/5층', '지금 집보다 −35.0만원'])
+  for (const t of ['월세', '보증금 1억 3,000 / 50', '전세', '2억', '매매', '3억 2,500', '전입신고 미확인', '원문 링크 없음', '11월 1일 저장', '경로 미입력', '3/5층', '지금 집보다 −35.0만원'])
     ok(`표에 '${t}'`, tx.includes(t), '');
   const ext = [...home.querySelectorAll('.gl-table a[target="_blank"]')];
   ok('외부 링크 모두 새 창 + noopener', ext.length && ext.every(a => /noopener/.test(a.rel)), ext.length);
@@ -72,7 +75,7 @@ async function frame(w, hash) {
   ok('닫으면 방금 본 매물 강조', d.querySelector('#sheet').hidden && d.querySelector('.gl-table th[data-card="j1"]').classList.contains('flash'), '');
   ok('매물 메뉴 맨 위에 한눈에 비교 (매물 타입 칸 없음)', list.closest('.view').firstElementChild === list && !d.querySelector('#type') && !d.querySelector('#manageList'), '');
   const acts = [...home.querySelectorAll('.gl-table td [data-detail]')].map(b => [...b.parentElement.querySelectorAll('button')].map(x => x.textContent).join('/'));
-  ok('표 매물마다 자세히·수정·3D·삭제', acts.length === ev.all.length && acts.every(a => a === '자세히 보기/수정/3D/삭제'), acts[0]);
+  ok('표 매물마다 자세히·수정·3D·삭제', acts.length === ev.all.length - ev.all.filter(l => !l.current && l.reasons.length).length && acts.every(a => a === '자세히 보기/수정/3D/삭제'), acts[0]);
   fw.location.hash = 'report'; await W(800);
   ok('순위표 조건', [...d.querySelectorAll('#rankTable .cond')].length === ev.passed.length, d.querySelector('#rankTable .cond')?.textContent);
   ok('리포트 결론 조건', /\(전세 2억/.test(d.querySelector('#c1').textContent), d.querySelector('#c1').textContent.slice(0, 80));

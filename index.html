@@ -123,7 +123,7 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .gl-failed { margin-top: var(--s2); } .gl-failed > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; color: var(--muted); }
 [data-card].flash { animation: rowFlash 2s ease-out; box-shadow: inset 0 0 0 2px var(--accent); }
 @media (prefers-reduced-motion: reduce) { [data-card].flash { animation: none; } }
-@media (max-width: 767.98px) { .gl-sort { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding: 2px 16px; } .gl-sort::-webkit-scrollbar { display: none; } .gl-sort > * { flex: none; } }
+@media (max-width: 767.98px) { .gl-sort { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding: 2px 16px; } .gl-sort::-webkit-scrollbar { display: none; } .gl-sort > * { flex: none; } .gl-sort { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); } }
 /* 등록 창: 휴대폰 아래에서 · PC 오른쪽 패널 */
 .fdlg { padding: 0; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; max-width: 100%; margin: auto 0 0; max-height: 92dvh; border-radius: var(--r2) var(--r2) 0 0; display: none; flex-direction: column; }
 .fdlg[open] { display: flex; }
@@ -155,7 +155,7 @@ details.ch-foot > p { margin-top: 4px; }
 .totop { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 25; background: var(--bg); border-color: var(--line); box-shadow: 0 4px 16px rgba(0, 0, 0, .35); }
 @media (max-width: 767.98px) { .totop { bottom: calc(var(--tabbar-h, 64px) + 12px + env(safe-area-inset-bottom, 0px)); } }
 .sheet-lock .totop { display: none; }
-@media (min-width: 768px) { .gl-cards { display: none; } }
+@media (min-width: 768px) { .gl-cards { display: none; } .gl-failed .gl-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } }   /* PC 도 탈락 매물은 표에서 빼고 여기 카드로 */
 @media (max-width: 767.98px) { .gl-table { display: none; } }
 .subs-next { display: block; margin: var(--s3) 0; padding: 12px var(--s2); border: 1px solid var(--line); border-radius: var(--r2); color: var(--ink); text-decoration: none; font-size: 14px; }
 .subs-next.soon { border-color: var(--warn); } .subs-next b { color: var(--accent); margin-right: 6px; }
@@ -654,7 +654,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
   <section class="block glance" id="glanceList" aria-labelledby="h-glanceList">
     <div class="wrap">
       <p class="eyebrow" id="ebType">At a glance</p>
-      <div class="gl-head"><h2 class="h2" id="h-glanceList">한눈에 비교</h2><button type="button" class="primary" data-addform>+ 매물 등록</button></div>
+      <div class="gl-head"><h2 class="h2" id="h-glanceList">한눈에 비교</h2></div>
       <p class="lead">계약 조건 · 전입신고 · 주소 · 통근 · 원문을 매물마다 나란히 봐요. 평면도·3D·계산식은 "자세히 보기"에서.</p>
       <div class="gl-sort" role="group" aria-label="정렬"><span class="hint">정렬</span>
         <button type="button" class="small ghost" data-gsort="price">금액 낮은 순</button><button type="button" class="small ghost" data-gsort="monthly">실제 월 부담 낮은 순</button><button type="button" class="small ghost" data-gsort="commute">통근 짧은 순</button><button type="button" class="small ghost" data-gsort="area">넓은 순</button></div>
@@ -1622,6 +1622,10 @@ function go(view, focus) {
   if (location.hash === '#' + view) route(); else location.hash = view;
 }
 addEventListener('hashchange', route);
+// 시트가 열린 채 메뉴(지금 화면 포함)를 누르면 시트부터 닫는다 (같은 주소면 hashchange 가 안 나서)
+document.addEventListener('click', e => { const a = sheet.open && e.target.closest('[data-nav]'); if (a && document.querySelector('.view:not([hidden])')?.dataset.view === a.dataset.nav) { e.preventDefault(); closeSheet(); } });   // 다른 메뉴는 주소가 바뀌며 popstate 가 닫는다
+// 입력칸 단위(만원·㎡·분): 이름에 붙어 '보증금만원'으로 읽히지 않게, 이름에서 빼고 설명으로
+document.querySelectorAll('.in > i').forEach((u, k) => { u.id ||= `unit${k}`; u.setAttribute('aria-hidden', 'true'); u.previousElementSibling?.setAttribute('aria-describedby', u.id); });
 // 긴 화면: 한 화면 넘게 내리면 오른쪽 아래 '맨 위로'
 addEventListener('scroll', () => { const b = $('#toTop'), on = scrollY > innerHeight; if (b.hidden === on) b.hidden = !on; }, { passive: true });
 $('#toTop').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' }); document.querySelector('.view:not([hidden]) h1, .view:not([hidden]) .h2')?.closest('section, header')?.querySelector('a, button')?.focus({ preventScroll: true }); });
@@ -1699,10 +1703,11 @@ function renderGlance(ev) {
   const card = l => `<li class="${l.current ? 'cur' : ''}" data-card="${l.id}"><details${glOpen.has(l.id) ? ' open' : ''} data-glid="${l.id}"><summary>${head(l)}<span class="gl-line">실제 월 <b>${fmtMonthly(l.monthly)}</b> · 통근 ${fmtMin(l.commute)}</span>${sig(l)}</summary>
       <dl>${rows.get(l.id).map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl></details>${acts(l)}</li>`;
   const ok = L.filter(l => l.current || !l.reasons.length), out = L.filter(l => !l.current && l.reasons.length);
+  const T = ok;   // 표(PC)도 카드처럼 통과·지금 집만, 탈락은 '탈락 N곳 보기'에만
   const html = !L.length ? '<p class="empty">매물을 등록하면 여기에서 나란히 비교해요. <button type="button" class="small primary" data-addform>+ 매물 등록</button></p>'
-    : `<div class="gl-table"><table><thead><tr><th scope="col"><span class="sr">항목</span></th>${L.map(l => `<th scope="col" class="${l.current ? 'cur' : ''}" data-card="${l.id}">${head(l)}</th>`).join('')}</tr></thead><tbody>`
-      + rows.get(L[0].id).map((r, i) => `<tr><th scope="row">${r[0]}</th>${L.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${rows.get(l.id)[i][1]}</td>`).join('')}</tr>`).join('')
-      + `<tr><th scope="row"><span class="sr">자세히</span></th>${L.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${acts(l)}</td>`).join('')}</tr></tbody></table></div>`
+    : (T.length ? `<div class="gl-table"><table><thead><tr><th scope="col"><span class="sr">항목</span></th>${T.map(l => `<th scope="col" class="${l.current ? 'cur' : ''}" data-card="${l.id}">${head(l)}</th>`).join('')}</tr></thead><tbody>`
+      + rows.get(T[0].id).map((r, i) => `<tr><th scope="row">${r[0]}</th>${T.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${rows.get(l.id)[i][1]}</td>`).join('')}</tr>`).join('')
+      + `<tr><th scope="row"><span class="sr">자세히</span></th>${T.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${acts(l)}</td>`).join('')}</tr></tbody></table></div>` : '<p class="empty gl-none">탈락 조건을 통과한 매물이 없어요. 아래에서 탈락 사유를 확인해 보세요.</p>')
       + `<ul class="gl-cards">${ok.map(card).join('')}</ul>`
       + (out.length ? `<details class="gl-failed"${glOpen.has('_failed') ? ' open' : ''} data-glid="_failed"><summary>탈락 ${out.length}곳 보기</summary><ul class="gl-cards">${out.map(card).join('')}</ul></details>` : '');
   for (const el of document.querySelectorAll('[data-glance]')) el.innerHTML = html;
@@ -1711,7 +1716,13 @@ function renderGlance(ev) {
 document.addEventListener('toggle', e => { const id = e.target.dataset?.glid; if (id) e.target.open ? glOpen.add(id) : glOpen.delete(id); }, true);
 // 시트를 닫으면 방금 본 매물 카드(표는 그 열)를 잠깐 강조
 function flashCard(id) {
-  const els = [...document.querySelectorAll(`[data-glance] [data-card="${CSS.escape(id)}"]`)].filter(el => el.offsetParent);
+  const all = [...document.querySelectorAll(`[data-glance] [data-card="${CSS.escape(id)}"]`)];
+  const vis = el => el.checkVisibility ? el.checkVisibility() : !!el.offsetParent;   // 닫힌 details 안은 offsetParent 가 남아 있어 checkVisibility 로 본다
+  let els = all.filter(vis);
+  if (!els.length) {   // 탈락 매물은 '탈락 N곳 보기' 안에 접혀 있다 → 펼치고 다시 찾기
+    for (const el of all) { const gf = el.closest('details.gl-failed'); if (gf && !gf.open) { gf.open = true; glOpen.add('_failed'); } }
+    els = all.filter(vis);
+  }
   if (!els.length) return;
   els[0].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
   for (const el of els) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('flash'), 2000); }
@@ -1735,7 +1746,7 @@ function renderSheet(ev) {
   if (!l) return closeSheet();
   $('#shType').textContent = typeCode(l); $('#shTitle').textContent = l.name; $('#shRegion').textContent = `${l.region || '지역 미입력'} · 전용 ${l.area}㎡ · 방 ${l.rooms}`;
   $('#shPrev').disabled = i <= 0; $('#shNext').disabled = i >= all.length - 1;
-  $('#shPos').textContent = `${i + 1} / ${all.length} · ${sheet.tab === '2d' ? '좌우로 밀거나 ‹ › 로 넘겨요' : '3D 는 끌어서 돌리고, ‹ › 로 넘겨요'}`;
+  $('#shPos').textContent = `${i + 1} / ${all.length} · ${sheet.tab === '2d' ? (mobileQ.matches ? '좌우로 밀거나 ‹ › 로 넘겨요' : '‹ › 로 넘겨요') : '3D 는 끌어서 돌리고, ‹ › 로 넘겨요'}`;
   $('#sh2d').innerHTML = l.plan ? `<img src="${l.plan.img}" alt="${esc(l.name)} 평면도">` : schematic(l, true);
   $('#shNote').textContent = l.plan ? '올린 평면도 기준 실제 구조예요.' : '평면도가 없어 전용면적·방 개수로 그린 대략 구조예요.';
   $('#shCost').textContent = l.monthly.toFixed(1); $('#shCond').textContent = cond(l) + (split(l) ? ` · ${split(l)}` : '');
@@ -2035,6 +2046,7 @@ function renderTop(ev) {   // 홈: 적합도 상위 3곳 (누르면 그 자리�
   $('#topList').innerHTML = P.map(l => `<a href="#listings" data-detail="${l.id}"><span class="gk">${l.tie ? '공동 ' : ''}${l.rank}위 ${esc(short(l.name, 16))}</span><span class="gv">적합도 ${Math.round(l.score)}점 · 실제 월 ${fmtMonthly(l.monthly)} · 통근 ${fmtMin(l.commute)}</span><span class="ga" aria-hidden="true">→</span></a>`).join('')
     || `<p class="empty" style="margin-top:16px">${ev.cands.length ? '탈락 조건을 통과한 매물이 없어요. 전체 비교에서 탈락 사유를 확인해 보세요.' : '매물을 등록하면 적합도 순위가 여기에 나와요.'}</p>`;
   $('#ebTop').textContent = ev.passed.length ? `Top ${P.length} · 통과 ${ev.passed.length}곳 중` : 'Top 3';
+  const ttl = `적합도 상위 ${P.length || 3}곳`; $('#h-homeTop').textContent = ttl; $('#topList').setAttribute('aria-label', ttl); $('#heroStats').closest('header').querySelector('[data-scroll="#homeTop"]').setAttribute('aria-label', `${ttl}으로 내려가기`);
 }
 
 // ---------- 차트 ----------
@@ -2187,7 +2199,7 @@ form.addEventListener('submit', e => {
   if (i >= 0 && state.listings[i].sub) { const o = state.listings[i]; l.sub = { ...o.sub, auto: o.sub.auto !== false && o.deposit === l.deposit && o.rent === l.rent && o.fee === l.fee }; }
   if (i >= 0) { const old = state.listings[i]; if (old.plan) l.plan = old.plan; if (old.layout) l.layout = old.layout; if (old.loanRegion) l.loanRegion = old.loanRegion; l.tl = old.tl; state.listings[i] = l; } else state.listings.push(l);
   state.selectedId = l.id;
-  resetForm(); render(); $('#formDlg').close(); go('listings'); setTimeout(() => flashCard(l.id), 60);   // 화면 전환 스크롤 뒤에
+  $('#lstText').value = ''; resetForm(); render(); $('#formDlg').close(); go('listings'); setTimeout(() => flashCard(l.id), 60);   // 화면 전환 스크롤 뒤에
 });
 $('#cancelEdit').addEventListener('click', () => { resetForm(); $('#formDlg').close(); });
 // 매물 등록 창: 휴대폰은 아래에서 올라오고, PC는 오른쪽 패널 (기본 <dialog>: Esc 로 닫힘, 뒤 화면은 못 누름)
@@ -2618,7 +2630,8 @@ async function aiRead(kind, payload, signal) {   // kind 'notice'(payload = PDF 
   const key = aiKey();
   if (!key) {   // 공용 Worker: 종류와 내용만 보낸다 (지시문은 Worker 안에)
     let r; try { r = await fetch(`${AI_WORKER}/${kind}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: payload, signal }); } catch (e) { if (signal.aborted) throw e; throw aiFail(0); }
-    if (!r.ok) throw aiFail(r.status); const t = (await r.json())?.text; if (!t) throw aiFail(502); return t;
+    if (!r.ok) { const why = r.status === 502 ? (await r.json().catch(() => null))?.why : null; throw aiFail(Array.isArray(why) && why.some(w => / 503 /.test(w)) ? 'busy' : r.status); }   // Worker 는 Gemini 503(붐빔)을 502 + why 로 돌려준다
+    const t = (await r.json())?.text; if (!t) throw aiFail(502); return t;
   }
   const [prompt, schema, part] = kind === 'notice' ? [SUB_PROMPT, NOTICE_SCHEMA, { inline_data: { mime_type: 'application/pdf', data: payload } }] : [LISTING_PROMPT, LISTING_SCHEMA, { text: payload }];
   const body = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }, part] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema } });
@@ -2626,12 +2639,12 @@ async function aiRead(kind, payload, signal) {   // kind 'notice'(payload = PDF 
   for (const m of AI_MODELS) {
     let r; try { r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body, signal }); }
     catch (e) { if (signal.aborted) throw e; last = 0; continue; }
-    if (!r.ok) { last = r.status === 400 && /API_KEY/.test(await r.text()) ? 403 : r.status; if (last === 403) break; continue; }
+    if (!r.ok) { last = r.status === 400 && /API_KEY/.test(await r.text()) ? 403 : r.status === 503 ? 'busy' : r.status; if (last === 403) break; continue; }
     const t = (await r.json())?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join(''); if (t) return t; last = 502;
   }
   throw aiFail(last);
 }
-const aiErrText = r => ({ cancel: '취소했어요.', timeout: '1분 안에 읽지 못했어요. 다시 해 보거나 직접 붙여넣기로 할 수 있어요.', 429: '오늘 AI 사용량이 다 찼어요. 직접 붙여넣기로 할 수 있어요.',
+const aiErrText = r => ({ cancel: '취소했어요.', busy: 'AI 서버가 지금 붐벼요. 잠시 후 다시 누르거나 직접 붙여넣기로 할 수 있어요.', timeout: '1분 안에 읽지 못했어요. 다시 해 보거나 직접 붙여넣기로 할 수 있어요.', 429: '오늘 AI 사용량이 다 찼어요. 직접 붙여넣기로 할 수 있어요.',
   0: 'AI에 연결하지 못했어요. 인터넷을 확인하거나 직접 붙여넣기로 할 수 있어요.', 403: 'Gemini 키가 맞지 않아요. AI 설정에서 확인하거나 직접 붙여넣기로 할 수 있어요.',
   413: '너무 커요. PDF는 5MB, 글은 5,000자까지 보낼 수 있어요.', 503: '지금은 AI 읽기가 꺼져 있어요. 직접 붙여넣기로 해 주세요.' })[r] || 'AI가 읽지 못했어요. 직접 붙여넣기로 할 수 있어요.';
 // 버튼을 눌러야 보낸다 · 1분 지나면 끊고, 읽는 중엔 취소 · 끝나면(성공·실패·취소) '읽는 중' 문구를 바꾼다
@@ -2639,8 +2652,13 @@ async function aiRun(box, kind, payload, done) {
   const q = x => box.querySelector(x), go = q('[data-go]'), stop = q('[data-stop]'), msg = q('[data-msg]');
   const ac = new AbortController(), timer = setTimeout(() => ac.abort('timeout'), 60000);
   go.hidden = true; stop.hidden = false; stop.onclick = () => ac.abort('cancel'); msg.textContent = '읽는 중… (최대 1분)';
-  try { const t = await aiRead(kind, payload, ac.signal); msg.textContent = ''; done(t); }
-  catch (e) { const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r); if (r === 503) showSteps(); }
+  try {
+    let t; try { t = await aiRead(kind, payload, ac.signal); }
+    catch (e) { if (e.status !== 'busy' || ac.signal.aborted) throw e; await new Promise(r => setTimeout(r, 2000)); if (ac.signal.aborted) throw e; t = await aiRead(kind, payload, ac.signal); }   // 붐비면 2초 뒤 한 번 더
+    msg.textContent = ''; done(t);
+  }
+  catch (e) { const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r); if (r === 503) showSteps();
+    if (r === 'busy') { const b = document.createElement('button'); b.type = 'button'; b.className = 'small ghost'; b.textContent = '다시 시도'; b.onclick = () => aiRun(box, kind, payload, done); msg.append(' ', b); } }
   finally { clearTimeout(timer); stop.hidden = true; go.hidden = false; }
 }
 // 공고 PDF: 파일을 고르면 보낼 내용 안내 → 'AI로 읽기'
@@ -4139,8 +4157,8 @@ addEventListener('popstate', () => { if ($('#zoomView') && !$('#zoomView').hidde
 // G. 방향 미확인: 수정 폼의 방향 칸으로 바로
 $('#anaFacing').addEventListener('click', e => {
   if (!e.target.closest('#anaFacingBtn') || !cur) return;
-  startEdit(cur.id);
-  setTimeout(() => { const f = document.querySelector('#form [name=facing]'); f.scrollIntoView({ block: 'center', behavior: 'instant' }); f.focus({ preventScroll: true }); }, 700);
+  startEdit(cur.id); $('#formMore').open = true;   // 방향은 '더 입력하기' 안에 있다
+  setTimeout(() => { const f = document.querySelector('#form [name=facing]'); f.scrollIntoView({ block: 'center', behavior: 'instant' }); f.focus({ preventScroll: true }); }, 60);
 });
 const anaTool = () => document.querySelector('input[name=anaTool]:checked').value;
 document.querySelectorAll('input[name=anaTool]').forEach(r => r.addEventListener('change', () => {

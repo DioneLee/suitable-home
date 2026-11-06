@@ -36,6 +36,9 @@
   - 설계·항목 목록·길이 표 `docs/design/화면길이정리.md` · 길이 재기 `python scripts/verify/length_check.py [--page 파일]` (가상 11곳 `scripts/verify/seed_v25_11.json`)
   - v26 3D 집 보기 2단(PC 왼쪽 3D 고정 · 오른쪽 가구 추가 + 접힌 도면 보정)
   - 휴대폰 매물 16.7 → 2.6화면, 홈 11 → 2, 리포트 9.9 → 2.6(가장 긴 탭) (가상 11곳)
+  - v27 (2026-11-06): 청약을 새 사이트 **청약 체크**(`../cheongyak-check`, 주소 예정 `dionelee.github.io/cheongyak-check/`)로 분리. 여기 청약 탭은 **2027-01-20(공모전 심사)까지 그대로** 두고 맨 위 안내 한 줄(`#subsMoved`)만 추가 · 백업 `index_v27_backup.html`
+    - 판정 코드가 두 곳에 있음 → 청약 판정을 고치면 `cheongyak-check/scripts/verify/check.py`(판정 동등성)까지 돌리기
+    - `push-feed.ps1`·jev-harness 공고 감시는 이 저장소용으로만 당분간 유지 (새 사이트는 GitHub Actions)
 
 ## 다음에 할 것 / 남은 것
 

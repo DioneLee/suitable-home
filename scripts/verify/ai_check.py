@@ -59,8 +59,8 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
   reopen();
   calls = []; plan = [{ status: 429 }, { status: 429 }]; await pick(pdfBlob); q('#subSend [data-go]').click(); await W(900);
   ok('429 → "오늘 AI 사용량이 다 찼어요…" (두 번만)', calls.length === 2 && /오늘 AI 사용량이 다 찼어요\. 직접 붙여넣기로 할 수 있어요/.test(sendMsg()), sendMsg());
-  calls = []; plan = [{ net: 1 }, { net: 1 }]; q('#subSend [data-go]').click(); await W(600);
-  ok('네트워크 오류 → 쉬운 말', /AI에 연결하지 못했어요/.test(sendMsg()), sendMsg());
+  calls = []; plan = [{ net: 1 }, { net: 1 }, { net: 1 }, { net: 1 }]; q('#subSend [data-go]').click(); await W(2800);   // 연결 실패는 2초 뒤 한 번 더
+  ok('네트워크 오류 → 2초 뒤 한 번 더 (모델 2개 × 2번) → 쉬운 말', calls.length === 4 && /AI에 연결하지 못했어요/.test(sendMsg()), calls.length + ' · ' + sendMsg());
   calls = []; plan = [{ status: 400, msg: 'API_KEY_INVALID' }]; q('#subSend [data-go]').click(); await W(600);
   ok('키 틀림 → 다시 안 부르고 안내', calls.length === 1 && /Gemini 키가 맞지 않아요/.test(sendMsg()), sendMsg());
   // 읽는 중… 취소

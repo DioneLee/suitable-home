@@ -63,6 +63,8 @@ const fill = (d, v) => { const F = d.querySelector('#form'); for (const [k, x] o
   q('.nav [data-addform]').click(); await W(300);
   let gcalls = 0, mode = 503; const realFetch = fw.fetch;
   fw.fetch = async (url, o) => { if (!/generativelanguage|workers\.dev/.test(url)) return realFetch(url, o); gcalls++;
+    if (mode === 'net' || (mode === 'net1' && gcalls === 1)) throw new TypeError('Failed to fetch');   // 연결 실패
+    if (mode === 'net1') return new Response(JSON.stringify({ text: JSON.stringify({ deal: '월세', deposit: 3000, rent: 70 }) }), { status: 200 });   // 공용 Worker 응답
     if (mode === 'ok') return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ deal: '월세', deposit: 3000, rent: 70 }) }] } }] }), { status: 200 });
     if (mode === 'w502') return new Response(JSON.stringify({ error: 'gemini', why: ['gemini-2.5-flash 503 UNAVAILABLE The model is overloaded'] }), { status: 502 });
     return new Response(JSON.stringify({ error: { status: 'X' } }), { status: mode }); };
@@ -78,6 +80,10 @@ const fill = (d, v) => { const F = d.querySelector('#form'); for (const [k, x] o
   fw.localStorage.removeItem('suitable-gemini-key'); fw.eval('syncAi()');
   mode = 'w502'; gcalls = 0; q('#lstGo').click(); await W(4000);
   ok('1. 공용 Worker 502(why 503) → 2번 시도 → 붐빔 문구', gcalls === 2 && /붐벼요/.test(lmsg().textContent), `calls ${gcalls} · ${lmsg().textContent}`);
+  mode = 'net'; gcalls = 0; q('#lstGo').click(); await W(4000);
+  ok('1. 연결 실패 → 2초 뒤 한 번 더 (2번 시도) → 연결 문구', gcalls === 2 && !/붐벼요/.test(lmsg().textContent) && lmsg().textContent.length > 0, `calls ${gcalls} · ${lmsg().textContent}`);
+  mode = 'net1'; gcalls = 0; q('#form [name=deposit]').value = ''; q('#lstGo').click(); await W(4000);
+  ok('1. 연결 실패 한 번 → 다시 해서 성공하면 칸 채움', gcalls === 2 && q('#form [name=deposit]').value === '3000', `calls ${gcalls} · ${q('#lstMsg').textContent}`);
   mode = 503; gcalls = 0; q('#lstGo').click(); await W(4000);
   ok('1. 공용 Worker 503(AI 꺼짐) → 기존 문구 · 재시도 없음', gcalls === 1 && /AI 읽기가 꺼져 있어요/.test(lmsg().textContent), `calls ${gcalls} · ${lmsg().textContent}`);
   fw.fetch = realFetch; q('#cancelEdit').click(); d.querySelector('#formDlg').close();

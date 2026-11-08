@@ -2655,7 +2655,7 @@ async function aiRun(box, kind, payload, done) {
   go.hidden = true; stop.hidden = false; stop.onclick = () => ac.abort('cancel'); msg.textContent = '읽는 중… (최대 1분)';
   try {
     let t; try { t = await aiRead(kind, payload, ac.signal); }
-    catch (e) { if (e.status !== 'busy' || ac.signal.aborted) throw e; await new Promise(r => setTimeout(r, 2000)); if (ac.signal.aborted) throw e; t = await aiRead(kind, payload, ac.signal); }   // 붐비면 2초 뒤 한 번 더
+    catch (e) { if ((e.status !== 'busy' && e.status !== 0) || ac.signal.aborted) throw e; await new Promise(r => setTimeout(r, 2000)); if (ac.signal.aborted) throw e; t = await aiRead(kind, payload, ac.signal); }   // 붐비거나 연결이 안 되면 2초 뒤 한 번 더 (1분 시간 초과·429 는 다시 안 함)
     msg.textContent = ''; done(t);
   }
   catch (e) { const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r); if (r === 503) showSteps();

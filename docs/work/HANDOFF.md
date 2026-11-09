@@ -21,7 +21,7 @@
 - v14 쉬운 청약 화면 (2026-11-04): 예시 공고 체험(예시 가족, 저장 안 함) · 공고 추가 3단계(복사용 문장 + 붙여넣기 검사) · 질문 7단계 · 신호등 결과 카드 · 고급 설정에 JSON. 판정 계산 그대로
   - 백업 `index_v14_backup.html` · 검사 `v10_check.py` 69항목(v21) · 스크린샷 `screenshots/after_subs_easy_*` (결과 = seed_v10, 예시 가족 = seed_v8 + 예시 버튼, 질문 = wizard)
 
-- 공고 피드 자동화 (2026-11-04): `feed/notices.json` = 사이트 '새로 올라온 공고'
+- (2026-11-09 끝냄) 공고 피드 자동화 (2026-11-04): `feed/notices.json` = 사이트 '새로 올라온 공고' — 2026-11-09 작업 스케줄러 `suitable-home-feed-push` 사용 안 함(작업은 남김) · jev-harness 의 notices.json 쓰기 뺌(감시·디스코드는 그대로, 백업 그 폴더 `data/backup-2026-11-09/`) · `feed/notices.json`·`samples/feed_example.json` 삭제. 아래는 예전 기록
   - 수집: jev-harness `npm run watch` (작업 스케줄러 `jev-housing-watch`, 매시간 :16) — SH 게시판·청년안심주택·마이홈포털 API·LH 분양임대공고문 API 합쳐서 씀
     - 위치 `C:\Users\LEE\.aside\u\0\sessions\2026-09-22_XLpnL10juHpcnhZn\artifacts\jev-harness` (`src/feed.js`, `src/sources/*.js`, 인증키는 그 폴더 `.env` 의 `DATA_GO_KR_KEY` — 절대 저장소·로그에 쓰지 않기)
   - 올리기: `scripts/push-feed.ps1` (작업 스케줄러 `suitable-home-feed-push`, 매일 08:30) — notices.json 만 경로 지정 커밋 후 push, 실패 시 pull/force 없이 로그만
@@ -43,7 +43,7 @@
     - 청약 매물(l.sub)은 마지막 판정을 `l.sub.no` 로 한 번 저장(탈락은 "청약 체크에서 확인한 결과: 자격 없음") · 보증금·월세 그대로 · `newlywed-home-v1.subs` 는 지우지 않음
     - 판정 함수는 2027-01-20 까지만 남김 · 설계 `docs/design/청약분리.md` · 백업 `index_v28_backup.html`
     - 위 '판정 동등성' 검사는 끝남 (청약 체크 check.py 에서 뺌)
-    - 남은 순서: `suitable-home-feed-push` 끄기(사용자 확인) → jev-harness `writeFeed`·`--feed` 빼기 → `feed/notices.json`·`samples/feed_example.json` 지우기
+    - 2026-11-09 끝: `suitable-home-feed-push` 사용 안 함 → jev-harness `writeFeed`·`--feed` 뺌 → `feed/notices.json`·`samples/feed_example.json` 삭제
 
 ## 다음에 할 것 / 남은 것
 

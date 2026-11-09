@@ -150,39 +150,13 @@ details.tool.fold[open] > summary { margin-bottom: var(--s2); }
 #report:has(#ch4[hidden]):has(#ch3[hidden]):has(#ch2[hidden]):has(#ch1[hidden]) { padding-bottom: 0; }
 details.ch-foot > summary { cursor: pointer; color: var(--muted); font-size: 13px; min-height: 36px; display: flex; align-items: center; }
 details.ch-foot > p { margin-top: 4px; }
-.sub-tabs { margin: var(--s2) 0; }
 /* 맨 위로 */
 .totop { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 25; background: var(--bg); border-color: var(--line); box-shadow: 0 4px 16px rgba(0, 0, 0, .35); }
 @media (max-width: 767.98px) { .totop { bottom: calc(var(--tabbar-h, 64px) + 12px + env(safe-area-inset-bottom, 0px)); } }
 .sheet-lock .totop { display: none; }
 @media (min-width: 768px) { .gl-cards { display: none; } .gl-failed .gl-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } }   /* PC 도 탈락 매물은 표에서 빼고 여기 카드로 */
 @media (max-width: 767.98px) { .gl-table { display: none; } }
-.subs-next { display: block; margin: var(--s3) 0; padding: 12px var(--s2); border: 1px solid var(--line); border-radius: var(--r2); color: var(--ink); text-decoration: none; font-size: 14px; }
-.subs-next.soon { border-color: var(--warn); } .subs-next b { color: var(--accent); margin-right: 6px; }
-.sub-sched { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; font-size: 14px; }
-.sub-sched li { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.sub-sched .dd { min-width: 64px; font-weight: 600; color: var(--accent); } .sub-sched .dd.soon { color: var(--warn); } .sub-sched .dd.past { color: var(--muted); font-weight: 400; }
-.sub-card { border-top: 1px solid var(--line); padding: var(--s2) 0; margin-top: var(--s2); }
 /* v14 쉬운 청약 화면: 본문 16px · 줄 간격 1.6 */
-.subs-easy { font-size: 16px; line-height: 1.6; }
-.subs-easy .hint, .subs-easy .unit, .subs-easy .qm span, .subs-easy .sub-judge ul, .subs-easy table.rank td, .subs-easy .sub-card .notes, .subs-easy .wiz-more summary, .subs-easy .wiz-pick button span { font-size: 16px; }
-.wiz-nav-r { display: flex; gap: var(--s1); }
-.sub-go { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); margin-top: var(--s3); }
-.sub-go span { color: var(--muted); font-weight: 600; }
-.sub-go a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--pill); color: var(--ink); text-decoration: none; }
-@media (hover: hover) { .sub-go a:hover { border-color: var(--accent); color: var(--accent); } }
-.sub-feed { margin-top: var(--s3); padding: var(--s2) var(--s3); border: 1px solid var(--line); border-left: 6px solid var(--sage); border-radius: var(--r2); }
-.sub-feed h3 { margin: 0 0 var(--s1); font: 600 18px/1.4 var(--sans); } .sub-feed h3 small { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; display: inline-block; } .sub-feed h3 small .d { white-space: nowrap; }
-.sub-feed ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
-.sub-feed li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.sub-feed li:last-child { border-bottom: 0; }
-.sub-feed .org { font-weight: 700; color: var(--accent); flex: 0 0 7.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .sub-feed .more { margin-top: var(--s1); } .sub-feed .dd { font-weight: 700; color: var(--warn); } .sub-feed .new { color: var(--pass); font-weight: 700; } @media (min-width: 768px) { .sub-feed .new { order: 1; } .sub-feed li .hint, .sub-feed li .dd { order: 2; } }
-.sub-start { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s3); }
-.sub-start .big { min-height: 56px; padding: 0 var(--s3); font-size: 17px; }
-.sub-add .sub-steps { margin: 0; padding-left: 22px; display: grid; gap: var(--s3); }
-.sub-add .links { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); margin-top: var(--s1); }
-.sub-add textarea { display: block; width: 100%; margin: var(--s1) 0; font: 14px/1.6 ui-monospace, monospace; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 12px; }
-.sub-paste { min-height: 160px; }
 .ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); margin: var(--s2) 0; }
 .ai-send { margin: var(--s2) 0; padding: var(--s2); border: 1px solid var(--line); border-left: 6px solid var(--accent); border-radius: var(--r2); }
 .ai-send p { margin: 0 0 4px; }
@@ -190,48 +164,17 @@ details.ch-foot > p { margin-top: 4px; }
 .ai-paste { padding-bottom: var(--s3); margin-bottom: var(--s3); border-bottom: 1px solid var(--line); }
 .ai-paste textarea { display: block; width: 100%; margin: var(--s1) 0; font: 16px/1.6 var(--sans); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 12px; }
 .ai-key label { margin-top: var(--s2); max-width: 32em; }
-.sub-errs { margin: 0; padding-left: 20px; color: var(--fail); } .sub-errs:empty { display: none; }
 .demo-banner { margin-top: var(--s3); padding: var(--s3); border: 1px dashed var(--accent); border-radius: var(--r2); }
 .demo-banner p { margin: 0 0 var(--s2); font: 600 20px/1.5 var(--sans); color: var(--accent); }
-.wiz { margin-top: var(--s3); }
-.wiz-count { margin: 0; font-weight: 600; }
-.wiz-bar { height: 6px; background: var(--line); border-radius: 3px; margin: var(--s1) 0 var(--s2); overflow: hidden; }
-.wiz-bar i { display: block; height: 100%; background: var(--accent); transition: width 200ms var(--ease); }
-.wiz-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--s2); }
-.wiz-chips button { min-height: 44px; padding: 0 14px; font-size: 15px; border-color: var(--line); }
-.wiz-chips button[aria-current="step"] { border-color: var(--accent); color: var(--accent); }
-.wiz-step { border: 0; padding: 0; margin: 0; display: grid; gap: var(--s2); }
-.wiz-step legend { font: 600 22px/1.4 var(--sans); margin-bottom: var(--s2); padding: 0; }
-.wiz-step label:not(.check) { display: grid; gap: 6px; font-weight: 500; }
-.wiz-step output { color: var(--accent); font-weight: 600; min-height: 1.6em; }
-.wiz-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--s2); }
-.wiz-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--s2); }
-.wiz-pick button { display: grid; justify-content: start; justify-items: start; gap: 4px; min-height: 96px; padding: var(--s2); text-align: left; border-radius: var(--r2); border-color: var(--line); line-height: 1.5; }
-.wiz-pick button b { font-size: 18px; } .wiz-pick button span { color: var(--muted); font-size: 14px; font-weight: 400; }
-.wiz-pick button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.wiz-more summary { cursor: pointer; color: var(--muted); font-size: 14px; min-height: 44px; display: flex; align-items: center; }
-.wiz-nav { display: flex; justify-content: space-between; gap: var(--s2); margin-top: var(--s3); }
 .qm { display: inline-block; vertical-align: middle; }
 .qm summary { list-style: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--muted); border-radius: 50%; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
 .qm summary::-webkit-details-marker { display: none; }
 .qm[open] summary { color: var(--accent); border-color: var(--accent); }
 .qm span { display: block; margin-top: 6px; padding: 8px 12px; border-left: 2px solid var(--accent); color: var(--ink); font-size: 14px; font-weight: 400; max-width: 32em; }
 .easy-card { margin-top: var(--s3); padding: var(--s3); border: 1px solid var(--line); border-radius: var(--r2); }
-.sub-head { margin: calc(-1 * var(--s3)) calc(-1 * var(--s3)) var(--s3); padding: var(--s3); border-left: 6px solid var(--accent); border-radius: var(--r2) var(--r2) 0 0; background: color-mix(in srgb, var(--accent) 16%, transparent); border-bottom: 1px solid var(--line); }
-.sub-kind { display: inline-block; margin: 0 0 6px; padding: 2px 10px; border-radius: var(--pill); background: var(--accent); color: var(--on-accent); font: 600 14px/1.6 var(--sans); }
-.sub-head h3 { margin: 0; font: 600 26px/1.35 var(--sans); color: var(--ink); }
-.sub-meta { margin: 6px 0 0; color: var(--ink); opacity: .85; }
-.sub-layout.multi { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--s3); align-items: start; }
-.sub-list { display: grid; gap: var(--s1); position: sticky; top: 80px; margin-top: var(--s3); }
-.sub-pick { display: grid; gap: 2px; justify-items: start; text-align: left; min-height: 0; padding: 12px 14px; border-radius: var(--r2); border: 1px solid var(--line); border-left: 4px solid var(--line); line-height: 1.5; font-size: 16px; }
-.sub-pick b { font-size: 17px; } .sub-pick .dd { color: var(--accent); font-size: 14px; font-weight: 600; }
-.sub-pick[aria-current="true"] { border-color: var(--accent); border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .sig-mini { font-size: 14px; font-weight: 600; } .sig-mini::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: currentColor; margin-right: 6px; }
 .sig-mini.ok { color: var(--pass); } .sig-mini.unk { color: var(--warn); } .sig-mini.no { color: var(--fail); }
 @media (max-width: 767.98px) {
-  .sub-layout.multi { display: block; }
-  .sub-list { position: static; display: flex; overflow-x: auto; gap: var(--s1); padding-bottom: 6px; scroll-snap-type: x mandatory; }
-  .sub-pick { flex: 0 0 72%; scroll-snap-align: start; } .sub-list [data-addn] { flex: none; align-self: center; }
 }
 .sig { display: flex; align-items: center; gap: 12px; font: 600 24px/1.3 var(--sans); margin: 0 0 var(--s2); }
 .sig::before { content: ''; flex: none; width: 20px; height: 20px; border-radius: 50%; background: currentColor; }
@@ -269,21 +212,6 @@ details.ch-foot > p { margin-top: 4px; }
 .easy-links { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); margin-top: var(--s2); }
 .linkbtn { min-height: 44px; padding: 0; border: 0; background: none; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-size: 15px; }
 @media (hover: hover) { .linkbtn:hover { background: none; color: var(--ink); } }
-.is-demo input[type=radio], .is-demo [data-tadd], .is-demo [data-tdel], .is-demo [data-oauto] { display: none; }
-.sub-adv { margin-top: var(--s4); } .sub-adv > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--muted); }
-.sub-card h4 { font: 600 16px/1.4 var(--sans); margin: 0 0 4px; }
-.sub-card .notes { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
-.sub-card textarea { width: 100%; min-height: 320px; font: 12px/1.5 ui-monospace, monospace; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 8px; box-sizing: border-box; }
-.sub-judge { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--s2); margin-top: 12px; }
-.sub-judge > div { border: 1px solid var(--line); border-radius: var(--r2); padding: var(--s2); }
-.sub-judge ul { list-style: none; padding: 0; margin: 8px 0 0; font-size: 13px; display: grid; gap: 4px; }
-.sub-judge li::before { content: attr(data-mark); display: inline-block; width: 18px; font-weight: 700; }
-.sub-judge li.ok::before { color: var(--pass); } .sub-judge li.no { color: var(--fail); } .sub-judge li.unk { color: var(--muted); }
-.sub-fs { border: 0; padding: 0; margin: var(--s3) 0 0; } .sub-fs legend { font-weight: 600; margin-bottom: 8px; }
-.sub-type { margin-top: var(--s3); padding-top: var(--s2); border-top: 1px solid var(--line); }
-.sub-type-head { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s2); align-items: center; justify-content: space-between; }
-.sub-type-head p { margin: 0; }
-.sub-card input[type="radio"] { width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; accent-color: var(--accent); }
 .facts-mini { display: grid; gap: 6px; padding: var(--s2) var(--s3); border-top: 1px solid var(--line); font-size: 14px; }
 .facts-mini .formula, .fit-home .formula { color: var(--muted); font-size: 12px; }
 .sheet .facts-mini { padding: 12px 0; border-top: 0; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
@@ -609,7 +537,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
     <a class="brand" href="#home">Suitable Home</a>
     <a class="lnk" href="#home" data-nav="home">홈</a>
     <a class="lnk" href="#listings" data-nav="listings">매물</a>
-    <a class="lnk" href="#subs" data-nav="subs">청약</a>
+    <a class="lnk" href="https://dionelee.github.io/cheongyak-check/" target="_blank" rel="noopener noreferrer">청약 체크 ↗</a>
     <a class="lnk" href="#report" data-nav="report">비교 리포트</a>
     <a class="lnk" href="#criteria" data-nav="criteria">우리 기준</a>
     <a class="lnk" href="#studio" data-nav="studio">3D 집 보기</a>
@@ -639,7 +567,6 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
     <button type="button" class="scrollbtn" data-scroll="#homeTop" aria-label="적합도 상위 3곳으로 내려가기">↓</button>
   </header>
 
-  <div class="wrap"><a class="subs-next" id="subsNext" href="#subs" hidden></a></div>
   <section class="block" id="homeTop" aria-labelledby="h-homeTop">
     <div class="wrap">
       <p class="eyebrow" id="ebTop">Top 3</p>
@@ -673,113 +600,11 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
         </div>
       </details>
       <details class="tool fold" id="aiSet" style="scroll-margin-top:72px"><summary><b>AI 설정</b> <span class="hint">Google Gemini 키</span></summary>
-        <p class="hint">공고 PDF 읽기와 매물 글 칸 채우기에 Google Gemini를 써요. AI는 읽기만 하고, 자격 판정은 이 앱의 규칙이, 저장은 내가 해요.</p>
+        <p class="hint">매물 글 칸 채우기에 Google Gemini를 써요. AI는 읽기만 하고, 저장은 내가 해요.</p>
         <p class="hint" id="aiState"></p>
         <form class="ai-key" id="aiKeyForm"><label>내 Gemini 키 <span class="unit">(선택 · 이 기기에만 저장 · 내보내기 파일에 안 들어가요)</span><input id="aiKey" type="password" autocomplete="off" spellcheck="false" maxlength="100"></label>
           <div class="row"><button class="primary" id="aiKeySave">키 저장</button><button type="button" class="ghost" id="aiKeyDel">키 지우기</button><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">키 받기 ↗</a><span class="msg" id="aiKeyMsg" role="status"></span></div></form>
       </details>
-    </div>
-  </section>
-</div>
-
-<div class="view" data-view="subs" hidden>
-  <section class="block" id="subsSec" aria-labelledby="h-subs">
-    <div class="wrap subs-easy">
-      <a class="subs-next" id="subsMoved" href="https://dionelee.github.io/cheongyak-check/" target="_blank" rel="noopener noreferrer"><b>새 사이트</b>청약 전용 앱(새 사이트)이 따로 열렸어요 → 바로 가기 ↗</a>   <!-- 2027-01-20 까지 아래 청약 기능은 그대로 둔다 (공모전 심사) -->
-      <p class="eyebrow">Subscription</p>
-      <h2 class="h2" id="h-subs">청약</h2>
-      <p class="lead">공고를 넣고 몇 가지 질문에 답하면, 신청할 수 있는지와 우리에게 맞는 집을 알려 줘요.</p>
-      <nav class="sub-go" aria-label="공고 보러 가기"><span>공고 보러 가기</span>
-        <a href="https://apply.lh.or.kr" target="_blank" rel="noopener noreferrer">LH 청약플러스 ↗</a>
-        <a href="https://www.i-sh.co.kr" target="_blank" rel="noopener noreferrer">SH 인터넷청약 ↗</a>
-        <a href="https://soco.seoul.go.kr/youth/main/main.do" target="_blank" rel="noopener noreferrer">서울 청년안심주택 ↗</a>
-        <a href="https://www.myhome.go.kr" target="_blank" rel="noopener noreferrer">마이홈포털 ↗</a></nav>
-      <div class="sub-feed" id="subFeed" hidden></div>
-      <div class="sub-start">
-        <button type="button" class="primary big" id="subSample">예시 공고로 체험하기</button>
-        <button type="button" class="ghost big" id="subAddBtn" aria-expanded="false" aria-controls="subAdd">공고 추가하기</button>
-      </div>
-      <p class="msg" id="subMsg" role="status"></p>
-      <div class="tool sub-add" id="subAdd" hidden>
-        <h3>공고 추가하기</h3>
-        <div class="ai-row" id="subAiRow"><label class="filebtn">공고 PDF로 자동 읽기<input type="file" id="subPdf" accept="application/pdf,.pdf"></label>
-          <button type="button" class="ghost" id="subManual">직접 붙여넣기로 하기</button><a href="#listings" data-focus="#aiSet">AI 설정</a></div>
-        <p class="hint" id="subAiOff">AI 설정에 Gemini 키를 넣으면 PDF를 올리기만 해도 읽어 줘요. 지금은 아래 순서대로 직접 붙여넣어 주세요. <a href="#listings" data-focus="#aiSet">AI 설정</a></p>
-        <div class="ai-send" id="subSend" hidden><p>이 내용만 Gemini로 보내요: <b data-what></b></p>
-          <p class="unit">무료 등급은 구글 제품 개선에 쓰일 수 있어요. 소득·자산·지금 집·직장·가족 정보는 보내지 않아요.</p>
-          <div class="row"><button type="button" class="primary" data-go>AI로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
-        <ol class="sub-steps" id="subSteps">
-          <li><b>공고문 PDF를 받아요.</b>
-            <span class="links"><a href="https://soco.seoul.go.kr/youth/main/main.do" target="_blank" rel="noopener noreferrer">청년안심주택 ↗</a><a href="https://www.i-sh.co.kr" target="_blank" rel="noopener noreferrer">SH 서울주택도시공사 ↗</a><a href="https://apply.lh.or.kr" target="_blank" rel="noopener noreferrer">LH 청약플러스 ↗</a></span></li>
-          <li><b>아래 문장을 복사해서 Claude나 Gemini에 PDF와 함께 붙여넣어요.</b>
-            <textarea id="subPrompt" class="sub-prompt" readonly rows="5" aria-label="AI에 붙여넣을 문장"></textarea>
-            <button type="button" class="ghost" id="subCopy">문장 복사하기</button></li>
-          <li><b>AI가 돌려준 내용을 그대로 여기에 붙여넣어요.</b>
-            <textarea id="subPaste" class="sub-paste" rows="6" spellcheck="false" placeholder="여기에 붙여넣으면 바로 검사해요" aria-label="AI가 돌려준 공고 내용"></textarea>
-            <ul class="sub-errs" id="subPasteErr" role="alert"></ul></li>
-        </ol>
-      </div>
-      <div id="subDemo"></div>
-      <div class="tool wiz" id="subWiz" hidden>
-        <div class="wiz-top"><p class="wiz-count" id="wizCount"></p><div class="wiz-bar" role="progressbar" aria-label="질문 진행" aria-valuemin="1" aria-valuemax="7" id="wizBar"><i></i></div>
-          <nav class="wiz-chips" aria-label="질문 바로 가기" id="wizChips"></nav></div>
-        <form id="subMe" onsubmit="return false">
-          <fieldset class="wiz-step" data-step="0"><legend>누가 신청하나요?</legend>
-            <div class="wiz-pick">
-              <button type="button" data-wtier="newlywed"><b>신혼부부예요</b><span>결혼했거나 결혼할 예정인 부부</span></button>
-              <button type="button" data-wtier="youth"><b>혼자예요 (청년)</b><span>만 19~39세 미혼</span></button>
-            </div></fieldset>
-          <fieldset class="wiz-step" data-step="1" hidden><legend>생년월일을 알려 주세요</legend>
-            <label><span data-tier-panel="newlywed"><span data-pname="0">사람 1</span> </span>생년월일<input type="date" data-me="a.birth"><output data-age="a.birth"></output></label>
-            <label data-tier-panel="newlywed"><span data-pname="1">사람 2</span> 생년월일<input type="date" data-me="b.birth"><output data-age="b.birth"></output></label>
-            <label data-tier-panel="newlywed">부부 중 신청할 사람 <span class="unit">한 명만 신청해요</span><select data-me="nw.appl"><option value="a" data-pname="0">사람 1</option><option value="b" data-pname="1">사람 2</option></select></label></fieldset>
-          <fieldset class="wiz-step" data-step="2" hidden><legend>결혼</legend>
-            <div data-tier-panel="newlywed">
-              <label>혼인신고일<input type="date" data-me="nw.married"><output data-wed></output></label>
-              <label class="check"><input type="checkbox" data-me="nw.pre"> 아직 혼인신고 전이에요 (결혼 예정)</label>
-              <div class="wiz-row"><label>자녀 수 <span class="unit">태아 포함</span> <details class="qm"><summary aria-label="가구원 수 설명">?</summary><span>등본에 같이 올라 있는 사람 수예요. 부부 2명에 자녀·태아를 더해요.</span></details><input type="number" inputmode="numeric" min="0" step="1" data-me="nw.kids"></label>
-              <label class="check"><input type="checkbox" data-me="nw.fetus"> 아기를 가졌어요 <span class="unit">체크하면 위 자녀 수에 +1 자동 반영 (이미 넣었으면 체크 후 자녀 수를 1 줄여 주세요)</span></label></div></div>
-            <div data-tier-panel="youth">
-              <label>결혼하지 않았나요?<select data-me="yt.single" data-kind="bool"><option value="">고르세요</option><option value="1">네, 미혼이에요</option><option value="0">아니요, 결혼했어요</option></select></label>
-              <p class="hint" data-yt-wed hidden>신혼부부 질문에 혼인신고일(또는 결혼 예정)이 있어서 기혼으로 봐요. 결혼하면 청년 공급은 신청할 수 없어요.</p></div></fieldset>
-          <fieldset class="wiz-step" data-step="3" hidden><legend>집이 있나요?</legend>
-            <label data-tier-panel="newlywed">우리 세대 모두 집이 없나요? <details class="qm"><summary aria-label="무주택세대구성원 설명">?</summary><span>주민등록등본에 같이 올라 있는 가족 모두가 집이 없다는 뜻이에요.</span></details><select data-me="nw.homeless" data-kind="bool"><option value="">잘 모르겠어요</option><option value="1">네, 모두 집이 없어요</option><option value="0">아니요, 집이 있어요</option></select></label>
-            <p class="hint" data-tier-panel="newlywed">등본에 같이 올라 있는 가족 모두 집이 없어야 해요.</p>
-            <label data-tier-panel="youth">내 이름으로 된 집이 없나요?<select data-me="yt.homeless" data-kind="bool"><option value="">잘 모르겠어요</option><option value="1">네, 없어요</option><option value="0">아니요, 있어요</option></select></label></fieldset>
-          <fieldset class="wiz-step" data-step="4" hidden><legend>소득</legend>
-            <p class="hint">연봉(세전)을 넣으면 월평균으로 바꿔요. 단위는 만원이에요.</p>
-            <div class="wiz-row"><label><span data-tier-panel="newlywed"><span data-pname="0">사람 1</span> </span>연봉 <span class="unit">만원/년 · 세전</span><input type="number" inputmode="decimal" min="0" step="any" data-year-for="a.income" placeholder="예: 4200"><output data-won="a.income" data-per="월"></output></label>
-              <label data-tier-panel="newlywed"><span data-pname="1">사람 2</span> 연봉 <span class="unit">만원/년 · 세전</span><input type="number" inputmode="decimal" min="0" step="any" data-year-for="b.income" placeholder="예: 3600"><output data-won="b.income" data-per="월"></output></label></div>
-            <details class="wiz-more"><summary>월평균으로 직접 넣기</summary><div class="wiz-row">
-              <label><span data-tier-panel="newlywed"><span data-pname="0">사람 1</span> </span>월평균소득 <span class="unit">만원</span><input type="number" inputmode="decimal" min="0" step="any" data-me="a.income"></label>
-              <label data-tier-panel="newlywed"><span data-pname="1">사람 2</span> 월평균소득 <span class="unit">만원</span><input type="number" inputmode="decimal" min="0" step="any" data-me="b.income"></label></div></details>
-            <label data-tier-panel="newlywed">같은 세대 다른 가족의 월소득 합계 <span class="unit">만원 · 없으면 비워 두세요</span><input type="number" inputmode="decimal" min="0" step="any" data-me="nw.others"></label>
-            <div data-tier-panel="youth">
-              <label>세대 구분 <details class="qm"><summary aria-label="가구원 수 설명">?</summary><span>등본에 같이 올라 있는 사람 수예요. 부부 2명에 자녀·태아를 더해요.</span></details><select data-me="yt.house"><option value="alone">혼자 사는 세대주예요</option><option value="family">가족과 같은 세대예요</option><option value="none">소득이 없어요 (부모님 소득으로)</option></select></label>
-              <div class="wiz-row"><label>세대원 수 <span class="unit">가족과 같은 세대일 때</span><input type="number" inputmode="numeric" min="1" step="1" data-me="yt.hh"></label>
-              <label>세대 월소득 합계 <span class="unit">만원 · 가족과 같은 세대일 때</span><input type="number" inputmode="decimal" min="0" step="any" data-me="yt.hhIncome"></label>
-              <label>부모님 월소득 합계 <span class="unit">만원 · 소득이 없을 때</span><input type="number" inputmode="decimal" min="0" step="any" data-me="yt.parents"></label></div></div>
-            <div class="hint">소득이 낮을수록 특별공급에서 먼저 뽑혀요. <details class="qm"><summary aria-label="소득 순위 설명">?</summary><span>특별공급에서 소득이 낮을수록 먼저 뽑혀요. 기준의 100% 이하 1순위, 110% 이하 2순위, 120% 이하 3순위예요.</span></details></div></fieldset>
-          <fieldset class="wiz-step" data-step="5" hidden><legend>자산과 자동차</legend>
-            <label><span data-tier-panel="newlywed">세대</span><span data-tier-panel="youth">내</span> 총자산 <span class="unit">만원 · 예금·전세보증금·자동차 등에서 빚을 뺀 금액</span><input type="number" inputmode="decimal" min="0" step="any" data-me="nw.asset" data-tier-panel="newlywed"><input type="number" inputmode="decimal" min="0" step="any" data-me="yt.asset" data-tier-panel="youth"><output data-won-tier="asset"></output></label>
-            <label class="check"><input type="checkbox" data-unk="asset"> 잘 모르겠어요 (확인 필요로 볼게요)</label>
-            <label class="check"><input type="checkbox" data-me="hasCar"> 자동차가 있어요 <span class="unit">주차 정기권을 관리비에 더해요</span></label>
-            <label data-car>자동차가액 <span class="unit">만원 · 비우면 확인 필요</span><input type="number" inputmode="decimal" min="0" step="any" data-me="car"><output data-won="car"></output></label></fieldset>
-          <fieldset class="wiz-step" data-step="6" hidden><legend>사는 곳과 직장</legend>
-            <div class="hint">특별공급은 사는 곳이나 직장이 가까울수록 먼저 뽑혀요. <details class="qm"><summary aria-label="지역 순위 설명">?</summary><span>사는 곳이나 직장이 그 단지가 있는 구면 1순위, 서울이면 2순위, 그 밖이면 3순위예요.</span></details></div>
-            <div class="wiz-row"><label>사는 곳 시·도<select data-me="live.city"><option value="">고르세요</option><option>서울</option><option>부산</option><option>대구</option><option>인천</option><option>광주</option><option>대전</option><option>울산</option><option>세종</option><option>경기</option><option>강원</option><option>충북</option><option>충남</option><option>전북</option><option>전남</option><option>경북</option><option>경남</option><option>제주</option></select></label>
-              <label data-gu="live">구<select data-me="live.gu" data-gu-sel><option value="">고르세요</option></select><input data-me="live.gu" data-gu-txt maxlength="12" placeholder="예: 의왕시" hidden aria-label="사는 곳 시·군·구"></label></div>
-            <div class="wiz-row"><label>직장·학교 시·도<select data-me="work.city"><option value="">고르세요</option><option>서울</option><option>부산</option><option>대구</option><option>인천</option><option>광주</option><option>대전</option><option>울산</option><option>세종</option><option>경기</option><option>강원</option><option>충북</option><option>충남</option><option>전북</option><option>전남</option><option>경북</option><option>경남</option><option>제주</option></select></label>
-              <label data-gu="work">구<select data-me="work.gu" data-gu-sel><option value="">고르세요</option></select><input data-me="work.gu" data-gu-txt maxlength="12" placeholder="예: 의왕시" hidden aria-label="직장·학교 시·군·구"></label></div></fieldset>
-        </form>
-        <div class="wiz-nav"><button type="button" class="ghost" id="wizPrev">이전</button><span class="wiz-nav-r"><button type="button" class="ghost" id="wizShow" hidden>결과 보기</button><button type="button" class="primary" id="wizNext">다음</button></span></div>
-      </div>
-      <div id="subJudge"></div>
-      <details class="tool sub-adv" id="subAdv"><summary>고급 설정</summary>
-        <div class="io-row"><label class="filebtn ghost">공고 JSON 파일 불러오기<input type="file" id="subFile" accept="application/json,.json"></label></div>
-        <div id="subNotices"></div>
-      </details>
-      <template id="subQm"><i data-qm="sp"><details class="qm"><summary aria-label="특별공급 설명">?</summary><span>신혼부부·청년처럼 조건이 맞는 사람만 따로 뽑는 몫이에요. 소득·자산 기준이 있고 순위대로 뽑아요.</span></details></i><i data-qm="ge"><details class="qm"><summary aria-label="일반공급 설명">?</summary><span>조건(나이·무주택 등)만 맞으면 누구나 신청하는 몫이에요. 추첨으로 뽑아요.</span></details></i><i data-qm="hl"><details class="qm"><summary aria-label="무주택세대구성원 설명">?</summary><span>주민등록등본에 같이 올라 있는 가족 모두가 집이 없다는 뜻이에요.</span></details></i><i data-qm="hh"><details class="qm"><summary aria-label="가구원 수 설명">?</summary><span>등본에 같이 올라 있는 사람 수예요. 부부 2명에 자녀·태아를 더해요.</span></details></i><i data-qm="ri"><details class="qm"><summary aria-label="소득 순위 설명">?</summary><span>특별공급에서 소득이 낮을수록 먼저 뽑혀요. 기준의 100% 이하 1순위, 110% 이하 2순위, 120% 이하 3순위예요.</span></details></i><i data-qm="rr"><details class="qm"><summary aria-label="지역 순위 설명">?</summary><span>사는 곳이나 직장이 그 단지가 있는 구면 1순위, 서울이면 2순위, 그 밖이면 3순위예요.</span></details></i></template>
     </div>
   </section>
 </div>
@@ -1013,7 +838,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
   </section>
 </div>
 </main>
-<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요. AI 읽기를 쓸 때만 공고문·매물 글을 Google Gemini로 보내요.
+<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요. AI 읽기를 쓸 때만 매물 글을 Google Gemini로 보내요.
   <p>공고 출처: 마이홈포털·LH 공공데이터 API, SH·서울 청년안심주택(원문 링크)</p>
   <p>본 서비스에서 제공하는 실제 월 부담·대출(LTV) 계산 및 청약 자격 판정은 의사결정을 돕기 위한 참고용 시뮬레이션이며 법적·금융적 효력이 없습니다. 실제 청약 신청 및 부동산 계약 전에는 반드시 모집공고문 원본과 금융기관을 통해 최종 확인하시기 바랍니다.</p></div></footer>
 <dialog class="fdlg" id="formDlg" aria-labelledby="h-form">
@@ -1105,7 +930,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 <nav class="tabbar" aria-label="메뉴">
   <a href="#home" data-nav="home">홈</a>
   <a href="#listings" data-nav="listings">매물</a>
-  <a href="#subs" data-nav="subs">청약</a>
+  <a href="https://dionelee.github.io/cheongyak-check/" target="_blank" rel="noopener noreferrer">청약 체크 ↗</a>
   <a href="#report" data-nav="report">리포트</a>
   <a href="#criteria" data-nav="criteria">우리 기준</a>
   <a href="#studio" data-nav="studio">3D</a>
@@ -1232,7 +1057,7 @@ function costParts(l, s) {
 }
 const monthlyCost = (l, s) => costParts(l, s).monthly;
 
-// ---------- 청약 (임대 공고 v10): 공고 JSON 의 기준값 vs 우리 상황 → 예비 판정 ----------
+// ---------- 청약 (임대 공고 v10): 공고 JSON 의 기준값 vs 우리 상황 → 예비 판정 · 2027-01-20 까지만 남김 (freezeSubs 참고) ----------
 function subMe() {   // 우리 상황 기본값 (날짜는 'YYYY-MM-DD', 금액 만원, 비면 null = 미입력)
   return { a: { birth: '', income: null }, b: { birth: '', income: null }, hasCar: false, car: null, live: { city: '', gu: '' }, work: { city: '', gu: '' },
     nw: { appl: 'a', married: '', pre: false, homeless: null, others: 0, kids: 0, fetus: false, asset: null },
@@ -1311,17 +1136,10 @@ function normNotice(x) {
       notes: (n.notes || []).map(str), commute: num(n.commute), walk: num(n.walk) };
   } catch (e) { return null; }
 }
-// 청약 매물: 공고와 연결된 '월세' 매물의 조건을 지금 판정·자금으로 맞춘다 (auto 면 다시 고르고, 직접 고른 건 그대로)
-function syncSubs(st) {
-  for (const l of st.listings) {
-    if (!l.sub) continue;
-    const n = st.subs.notices.find(x => x.id === l.sub.notice), t = n?.types.find(x => x.id === l.sub.type); if (!t) continue;
-    const o = l.sub.auto !== false ? pickOption(n, t, st.subs.me, st.settings) : optionsOf(n, t, st.subs.me, st.settings).find(x => x.supply === l.sub.supply && x.i === l.sub.i);
-    if (!o) continue;
-    Object.assign(l, { deal: '월세', deposit: o.deposit, rent: o.rent, fee: o.fee }); l.sub.supply = o.supply; l.sub.i = o.i;
-    if (n.commute != null) l.commute = n.commute;
-  }
-}
+// 청약 매물(l.sub): 청약은 청약 체크(새 사이트)로 옮겼다 (2026-11-09). 보증금·월세는 마지막으로 맞춘 값 그대로 두고,
+// 판정은 처음 한 번만 계산해 l.sub.no 에 저장한다 (true = 두 공급 모두 자격 없음 → 계속 탈락). newlywed-home-v1 의 subs 는 지우지 않는다
+// ponytail: 아래 판정 함수(subMe~subInfo)는 이 한 번의 계산과 selfTest 에만 쓴다 → 2027-01-20(공모전 심사 끝) 뒤에 l.sub.no 만 남기고 지워도 됨
+function freezeSubs(st) { for (const l of st.listings) if (l.sub && typeof l.sub.no !== 'boolean') l.sub.no = !!(st.subs && subInfo(l, st)?.no); }
 function subInfo(l, st) {
   const n = st.subs?.notices.find(x => x.id === l.sub.notice), t = n?.types.find(x => x.id === l.sub.type); if (!t) return null;
   const me = st.subs.me, sp = elig(n, me, t.tier, 'special'), ge = elig(n, me, t.tier, 'general'), cur = l.sub.supply === 'special' ? sp : ge;
@@ -1362,12 +1180,12 @@ function evaluate(st) {
   const curL = st.listings.find(l => l.current);
   const all = st.listings.map(l => {
     const cp = costParts(l, s), monthly = cp.monthly, over = !l.current && overBudget(monthly, s), r = l.current ? [] : reasons(l, s);
-    const si = l.sub && st.subs ? subInfo(l, st) : null; if (si?.no && !l.current) r.push('청약 자격 없음');   // 두 공급 모두 불가
+    if (l.sub?.no && !l.current) r.push('청약 체크에서 확인한 결과: 자격 없음');   // 저장해 둔 마지막 판정 (freezeSubs)
     if (over && s.budgetFail) r.push(`실제 월 부담 ${monthly.toFixed(1)}만 (상한 ${s.budget}만 초과)`);
     const overC = !l.current && s.commuteMax != null && l.commute > s.commuteMax;   // 통근 상한
     if (overC && s.commuteFail) r.push(`통근 ${fmtMin(l.commute)} (상한 ${s.commuteMax}분 초과)`);
     const longer = !l.current && curL && s.commuteWarn && l.commute > curL.commute ? l.commute - curL.commute : 0;   // 지금 집보다 긴 통근(분)
-    return { ...l, si, monthly, interest: cp.interest, principal: cp.principal, over: over && !s.budgetFail, overC: overC && !s.commuteFail, longer, reasons: r };
+    return { ...l, monthly, interest: cp.interest, principal: cp.principal, over: over && !s.budgetFail, overC: overC && !s.commuteFail, longer, reasons: r };
   });
   const cur = all.find(l => l.current) ?? null, cands = all.filter(l => !l.current);   // 지금 집: 순위·정규화에서 빼고 기준선으로
   const passed = cands.filter(l => !l.reasons.length), known = passed.filter(l => l.walk != null);
@@ -1601,9 +1419,9 @@ function schematic(l, labels) {
 }
 
 // ---------- 화면 전환: 메뉴별로 한 화면만 보인다 (주소 끝 #home, #listings, #report, #criteria, #studio) ----------
-const VIEWS = { home: '', listings: '매물', subs: '청약', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기' };
+const VIEWS = { home: '', listings: '매물', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기' };
 const RP = ['cost', 'space', 'commute', 'fit', 'location'];
-const OLD = { top: 'home', type: 'listings', manage: 'listings', sim: 'criteria', location: 'report', final: 'home', goto: 'home' };   // 예전 한 페이지 주소
+const OLD = { top: 'home', type: 'listings', manage: 'listings', sim: 'criteria', location: 'report', final: 'home', goto: 'home', subs: 'home' };   // #subs: 청약은 청약 체크로 옮김   // 예전 한 페이지 주소
 let pendingFocus = null;
 function route() {
   const [h, sub] = location.hash.slice(1).split('/'), v = SHOT ? (SHOT[2] in VIEWS ? SHOT[2] : 'home') : h in VIEWS ? h : OLD[h] ?? 'home';
@@ -1669,13 +1487,8 @@ const mapUrl = l => `https://map.naver.com/p/search/${encodeURIComponent([l.regi
 const md = ymd => { const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(ymd || ''); return m ? `${+m[1]}월 ${+m[2]}일` : ''; };
 const sg1 = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1);
 const moveBadge = l => l.moveIn === '가능' ? '<span class="badge pass">전입신고 가능</span>' : l.moveIn === '불가' ? '<span class="badge fail">전입신고 불가</span>' : '<span class="badge unk">전입신고 미확인</span>';
-// 청약 매물 배지: '청약 가능 · 신혼특공 · 소득 3순위' / 확인 필요 / 자격 없음 + 계약금 부족
-const SUP_SHORT = { newlywed: { special: '신혼특공', general: '신혼일반' }, youth: { special: '청년특공', general: '청년일반' } };
-function subBadge(l) {
-  const si = l.si, c = si.cur, nm = SUP_SHORT[si.t.tier][l.sub.supply];
-  const b = si.no ? '<span class="badge fail">청약 자격 없음</span>' : c.st === 'no' ? `<span class="badge fail">선택한 조합은 ${nm} 자격 불가</span>` : c.st === 'ok' ? `<span class="badge pass">청약 가능 · ${nm}${c.rankI ? ` · 소득 ${c.rankI}순위` : ''}</span>` : `<span class="badge unk">청약 확인 필요 · ${nm}</span>`;
-  return b + (si.short ? `<span class="badge warn">계약금 ${fmtMan(si.contract)} > 내 돈</span>` : '');
-}
+// 청약 매물 배지: 마지막 판정이 자격 없음이면 탈락 배지, 아니면 청약 체크로 가는 링크
+const subBadge = l => l.sub.no ? '<span class="badge fail">청약 체크에서 확인한 결과: 자격 없음</span>' : '<a class="badge unk" href="https://dionelee.github.io/cheongyak-check/" target="_blank" rel="noopener noreferrer">청약 체크에서 확인 ↗</a>';
 const loanBadge = l => l.loanOk ? '<span class="badge pass">대출 가능</span>' : '<span class="badge fail">대출 불가</span>';
 // 매물 한 곳의 항목 ①~⑧ (표·카드·시트·패널이 같이 쓴다)
 function glanceRows(l, cur) {
@@ -1684,7 +1497,7 @@ function glanceRows(l, cur) {
   return [
     ['조건', `${dealBadge(l)}<b class="gl-amt">${d === '월세' ? '보증금 ' : ''}${fmtWon(l.deposit)}${d === '월세' ? ` / ${l.rent}` : ''}</b><span class="gl-sub">${d === '매매' ? `대출 ${l.loanYears || 30}년 · ${l.repay === 'interest' ? '이자만' : '원리금균등'} · ` : ''}관리비 ${l.fee == null ? '미확인' : l.fee + '만'}</span>`],
     ['실제 월 부담', `<b>${fmtMonthly(l.monthly)}</b> / 월${split(l) ? `<span class="gl-sub">${split(l)}</span>` : ''}${dm != null ? `<span class="gl-sub ${dm > 0.05 ? 'up' : dm < -0.05 ? 'down' : ''}">지금 집보다 ${Math.abs(dm) < 0.05 ? '같음' : sg1(dm) + '만원'}${l.fee == null ? ' (관리비 미확인)' : ''}</span>` : isCur ? '<span class="gl-sub">기준</span>' : ''}`],
-    ['전입 · 대출', `<span class="badges">${moveBadge(l)}${loanBadge(l)}${l.si ? subBadge(l) : ''}</span>`],
+    ['전입 · 대출', `<span class="badges">${moveBadge(l)}${loanBadge(l)}${l.sub ? subBadge(l) : ''}</span>`],
     ['주소', q ? `<a href="${mapUrl(l)}" target="_blank" rel="noopener noreferrer" title="네이버지도에서 검색 (새 창)">${esc(q)} ↗</a>` : '<span class="gl-sub">주소 미입력</span>'],
     ['통근', `편도 <b>${fmtMin(l.commute)}</b>${dc ? ` <span class="gl-sub ${dc > 0 ? 'up' : 'down'}" style="display:inline">(${dc > 0 ? '+' : '−'}${Math.abs(dc)}분)</span>` : ''}<span class="gl-sub">${l.route ? esc(l.route) : '경로 미입력'}</span>`],
     ['면적 · 층', `전용 ${l.area}㎡ · 방 ${l.rooms}${l.basement ? ' · 반지하' : ''}${l.floorNo ? ` · ${esc(l.floorNo)}층` : ''}`],
@@ -2102,9 +1915,9 @@ function drawCharts(ev) {
 function render() {
   if (!state.listings.some(l => l.id === state.selectedId)) state.selectedId = state.listings[0]?.id ?? null;
   ensureTypeLetters(state.listings);
-  syncSubs(state);   // 청약 매물 조건(공급·보증금 비율)을 지금 판정·자금으로
+  freezeSubs(state);   // 청약 매물: 마지막 판정을 한 번만 저장
   const ev = evaluate(state);
-  renderHero(ev); renderSubsNext(); renderGlance(ev); renderSubs(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderTop(ev);
+  renderHero(ev); renderGlance(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderTop(ev);
   const areas = ev.all.map(l => l.area);
   const lo = Math.min(...areas), hi = Math.max(...areas);
   $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'At a glance';
@@ -2253,50 +2066,9 @@ function startEdit(id) {
 $('#sel3d').addEventListener('change', e => { state.selectedId = e.target.value; render(); });
 
 
-// ---------- 청약 화면 ----------
-const todayYmd = () => window.__today || (d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)(new Date());   // 검증용으로 __today 를 바꿀 수 있다
-const md2 = v => { const d = new Date(v + 'T00:00'); return `${d.getMonth() + 1}.${d.getDate()}(${'일월화수목금토'[d.getDay()]})`; };
-const span2 = e => md2(e.from) + (e.from !== e.to ? `~${md2(e.to)}` : '');
-function ddayOf(e, t) { if (t < e.from) { const n = daysBetween(t, e.from); return { txt: `D-${n}`, soon: n <= 3 }; } if (t <= e.to) return { txt: e.from === e.to ? 'D-day' : '진행 중', soon: true }; return { txt: '지남', past: true }; }
-const upcoming = () => { const t = todayYmd(); return state.subs.notices.flatMap(n => n.schedule.filter(e => e.to >= t).map(e => ({ n, e }))).sort((a, b) => a.e.from.localeCompare(b.e.from)); };
-function renderSubsNext() {
-  const u = upcoming()[0], a = $('#subsNext'); a.hidden = !u; if (!u) return;
-  const d = ddayOf(u.e, todayYmd()); a.classList.toggle('soon', !!d.soon);
-  a.innerHTML = `<b>${d.txt}</b>${esc(u.n.short)} · ${esc(u.e.label)} ${span2(u.e)} <span class="hint">→ 청약 보기</span>`;
-}
-// ics: 하루 종일 일정 (DTEND 는 다음 날)
-function icsOf(n) {
-  const d = v => v.replace(/-/g, ''), next = v => new Date(Date.parse(v) + 864e5).toISOString().slice(0, 10).replace(/-/g, '');
-  const e = v => String(v).replace(/[\\,;]/g, m => '\\' + m).replace(/\n/g, '\\n'), stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SUITABLE HOME//KO', 'CALSCALE:GREGORIAN',
-    ...n.schedule.flatMap(x => ['BEGIN:VEVENT', `UID:${n.id}-${x.key}@suitable-home`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d(x.from)}`, `DTEND;VALUE=DATE:${next(x.to)}`, `SUMMARY:${e(`${n.short} ${x.label}`)}`, `DESCRIPTION:${e(n.url)}`, 'END:VEVENT']),
-    'END:VCALENDAR'].join('\r\n') + '\r\n';
-}
-let subEdit = null, noticesKey = '', subPre = {}, subDemo = false, wizOpen = false;   // subDemo: 예시 가족으로 보는 중 (저장 안 함) · wizOpen: 질문 화면 열림
-const WIZ_N = 7, WIZ_NAME = ['누가', '생년월일', '결혼', '집', '소득', '자산·자동차', '사는 곳'];
+// 서울 구 이름 (대출 계산기 지역 추정)
 const SEOUL_GU = ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'];
-// 예시 가족 (가짜 값 · 화면에만 쓰고 state 에 넣지 않는다)
-const demoMe = tier => fillDefaults(subMe(), { a: { birth: '1992-05-01', income: 350 }, b: { birth: '1993-02-01', income: 300 }, live: { city: '서울', gu: '동작구' }, work: { city: '서울', gu: '영등포구' },
-  nw: { married: tier === 'youth' ? '' : '2024-06-01', homeless: true, asset: 20000 }, yt: { single: true, homeless: true, house: 'alone', asset: 9000 } });
-const ro = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00, j = c >= 0 && c < 11172 ? c % 28 : 0; return w + (j && j !== 8 ? '으로' : '로'); };   // 청년으로 · 신혼부부로
-// 통근 길찾기: 카카오맵은 좌표가 있어야 출발·도착이 채워진다 (/link/by/traffic/이름,위도,경도/이름,위도,경도)
-const kakaoDir = (a, A, b, B) => `https://map.kakao.com/link/by/traffic/${encodeURIComponent(a.replace(/,/g, ' '))},${A[0]},${A[1]}/${encodeURIComponent(b.replace(/,/g, ' '))},${B[0]},${B[1]}`;
-const googleDir = (a, b) => `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(a)}&destination=${encodeURIComponent(b)}&travelmode=transit`;   // 좌표를 못 찾았을 때 (글자 주소로 열림)
-// 주소 → 좌표: 이미 찾은 건 state.geo 에서, 아니면 OpenStreetMap 에 묻는다. 못 찾으면 뒤 낱말을 하나씩 빼고 다시 (번지 → 길 이름 → 구)
-async function geoFind(q) {
-  if (geoOf(q)) return geoOf(q);
-  const w = q.split(/\s+/).filter(Boolean);
-  for (let k = w.length; k >= Math.min(2, w.length); k--) {
-    const t = w.slice(0, k).join(' '); if (geoOf(t)) return (state.geo[q] = geoOf(t));
-    try {
-      const r = await fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({ q: t, format: 'jsonv2', limit: 1, countrycodes: 'kr', 'accept-language': 'ko' }), { signal: AbortSignal.timeout(4000) });
-      const j = r.ok ? await r.json() : [];
-      if (j[0]) { state.geo[q] = [+(+j[0].lat).toFixed(5), +(+j[0].lon).toFixed(5)]; save(); return state.geo[q]; }
-    } catch (e) { return null; }
-    await new Promise(res => setTimeout(res, 1100));   // Nominatim: 1초에 1건 이하
-  }
-  return null;
-}
+const won = v => { const t = fmtWon(Math.round(v * 10) / 10); return /억$/.test(t) ? t + '원' : t + '만원'; };   // 23800 → '2억 3,800만원'
 // ---------- 대출 계산기: 보여 주기만 (판정·실제 월 부담 계산과 무관) ----------
 // 매매 = LTV(지역별 상한) · 월세·전세·청약 = 보증금 중 빌릴 비율(은행·가족 등 누구에게든)
 const LOAN_RULES = { asOf: '2026년 10월 안내 기준', dep: 80,
@@ -2342,224 +2114,6 @@ document.addEventListener('change', e => {   // 지역 고르기 (매물에 저�
   const box = sel.closest('.loan'); delete loanPct[box.dataset.loan]; box.dataset.region = sel.value; box.querySelector('[data-loanpct]').value = LOAN_RULES[sel.value].ltv;
   if (l) { l.loanRegion = sel.value; save(); } paintLoan(box);
 });
-const won = v => { const t = fmtWon(Math.round(v * 10) / 10); return /억$/.test(t) ? t + '원' : t + '만원'; };   // 23800 → '2억 3,800만원'
-const gap = v => v < 1 ? (Math.round(v * 100) / 100).toLocaleString() : Math.round(v).toLocaleString();   // 차이 금액: 1만원 미만이면 소수 둘째 자리
-const mdLong = v => { const d = new Date(v + 'T00:00'); return `${d.getMonth() + 1}월 ${d.getDate()}일(${'일월화수목금토'[d.getDay()]})`; };
-const qmH = k => document.querySelector('#subQm')?.content.querySelector(`[data-qm="${k}"]`)?.innerHTML || '';
-// 판정 항목 → 쉬운 말 (불가 이유 · 비어 있는 칸 이름과 그 질문 번호)
-const MISS = { age: ['생년월일', 1], pre: ['결혼', 2], birth: ['생년월일', 1], married: ['혼인신고일', 2], single: ['결혼 여부', 2], homeless: ['집이 있는지', 3], income: ['소득', 4], asset: ['자산', 5], car: ['자동차가액', 5] };
-function whyNo(c) {
-  switch (c.k) {
-    case 'age': return `신청자 나이(만 ${c.v}세)가 기준(만 ${c.lo}~${c.hi}세)을 벗어나서`;
-    case 'married': return `혼인한 지 ${c.v.toLocaleString()}일이 지나 기준(${c.lim.toLocaleString()}일 이내)을 넘어서`;
-    case 'pre': return '결혼 예정(예비신혼부부)은 받지 않아서';
-    case 'single': return '결혼하면 청년 공급은 신청할 수 없어서';
-    case 'homeless': return `${c.who === '본인' ? '내 이름으로' : '우리 세대에'} 집이 있어서`;
-    case 'income': return `${c.who} 소득이 기준보다 월 ${gap(c.v - c.lim)}만원 많아서`;
-    case 'asset': return `자산이 기준보다 ${won(c.v - c.lim)} 많아서`;
-    case 'car': return `자동차가액이 기준보다 ${won(c.v - c.lim)} 많아서`;
-    default: return c.t;
-  }
-}
-function whyLine(e, sup, spOk) {   // → { t: 문장, step: 고칠 질문 번호 }
-  const nm = sup === 'special' ? '특별공급' : '일반공급(추첨)';
-  if (!e) return null;
-  if (e.st === 'ok') return { t: sup === 'special' ? `특별공급을 신청할 수 있어요.${e.rankI ? ` 소득 ${e.rankI}순위${e.rankR ? `, 지역 ${e.rankR}순위(${RANK_R[e.rankR]})` : ''}예요.` : ''}` : `일반공급(추첨)${spOk ? '도' : '은'} 신청할 수 있어요.` };
-  if (e.st === 'no') { const c = e.checks.find(c => c.st === false); return { t: `${whyNo(c)} ${nm}은 어려워요.`, step: MISS[c.k]?.[1] }; }
-  const um = e.checks.filter(c => c.st == null), miss = [...new Set(um.map(c => MISS[c.k]?.[0]).filter(Boolean))];
-  return { t: `${miss.join(', ')}${miss.length ? '을(를) 알려 주시면' : '확인되면'} ${nm} 여부를 알 수 있어요.`, step: MISS[um[0]?.k]?.[1] };
-}   // subPre: 넣기 전에 고른 조합 'notice|type' → { supply, i } (저장 안 함)
-const TIER_KO = { newlywed: '신혼부부', youth: '청년' }, SUPPLY_KO = { special: '특별공급', general: '일반공급' };
-const ST_TXT = { ok: ['pass', '가능'], no: ['fail', '불가'], unk: ['unk', '확인 필요'] }, MARK = { true: ['ok', '✔'], false: ['no', '✘'], null: ['unk', '?'] };
-const RANK_R = ['', '해당 구', '서울', '그 밖'];
-function renderSubs(ev) {
-  const S = state.subs, me = subDemo ? demoMe(S.tab) : S.me, t = todayYmd(), u = upcoming();
-  renderWizard();
-  { const ys = document.querySelector('[data-me="yt.single"]'), wed = me.nw.pre || isYmd(me.nw.married); ys.disabled = wed; ys.title = wed ? '신혼부부 탭에 혼인신고일·예비신혼이 있어 기혼으로 판정해요' : ''; }
-  const key = JSON.stringify([S.notices, subEdit]);   // 공고 카드는 바뀔 때만 다시 그린다 (입력 중인 칸이 지워지지 않게)
-  if (key !== noticesKey) {
-    noticesKey = key;
-    $('#subNotices').innerHTML = S.notices.map(n => subEdit === n.id
-      ? `<div class="sub-card"><h4>${esc(n.short)} · 공고 JSON 직접 고치기</h4><p class="hint">공고문과 다른 값이 있으면 여기서 고쳐요. 저장하면 형식을 다시 검사해요.</p><textarea id="subEditBox" spellcheck="false">${esc(JSON.stringify(n, null, 1))}</textarea>
-          <div class="row"><button type="button" class="small primary" data-nsave="${n.id}">저장</button><button type="button" class="small ghost" data-ncancel>취소</button></div></div>`
-      : `<div class="sub-card"><h4>${esc(n.name)}</h4><p class="hint">${esc(n.kind)} · 공고일 ${md2(n.noticeDate)} (자격 판단 기준일) · ${esc(n.addr)}${n.cite.date ? ` · 근거 ${esc(n.cite.date)}` : ''}</p><p>${esc(n.summary)}</p>
-          <ul class="notes">${n.notes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-          <div class="row" style="align-items:end">
-            ${safeUrl(n.url) ? `<a class="btn ghost small" href="${esc(safeUrl(n.url))}" target="_blank" rel="noopener noreferrer">공고 사이트 ↗</a>` : ''}
-            <button type="button" class="small ghost" data-nics="${n.id}">일정 .ics 내려받기</button><button type="button" class="small ghost" data-nedit="${n.id}">공고 JSON 고치기</button><button type="button" class="small danger" data-ndel="${n.id}">공고 지우기</button></div></div>`).join('')
-      || '<p class="hint" style="margin-top:12px">아직 넣은 공고가 없어요.</p>';
-  }
-  const tier = S.tab;
-  for (const b of document.querySelectorAll('[data-subtab]')) b.setAttribute('aria-selected', b.dataset.subtab === tier);
-  for (const f of document.querySelectorAll('[data-tier-panel]')) f.hidden = f.dataset.tierPanel !== tier;
-  const show = S.notices.length && (subDemo || (S.wizard.done && !wizOpen)), other = tier === 'youth' ? 'newlywed' : 'youth';
-  const links = `<div class="easy-links">${subDemo ? '' : '<button type="button" class="linkbtn" data-wgo="0">우리 상황 수정</button>'}<button type="button" class="linkbtn" data-subtab="${other}">${ro(TIER_KO[other])} 보기</button></div>`;
-  $('#subDemo').innerHTML = subDemo && S.notices.length ? `<div class="demo-banner"><p>예시 가족 기준 결과예요 · 저장되지 않아요</p><button type="button" class="primary big" id="subDemoExit">우리 상황 입력하기</button></div>` : '';
-  $('#subJudge').classList.toggle('is-demo', subDemo);
-  const metas = [], nextOf = n => n.schedule.filter(e => e.to >= t).sort((a, b) => a.from.localeCompare(b.from))[0];
-  const headOf = n => { const nx = nextOf(n), dd = nx && ddayOf(nx, t);
-    return `<header class="sub-head"><p class="sub-kind">${TIER_KO[tier]} 청약 · ${esc(n.kind)}</p><h3>${esc(n.short)}</h3>
-      <p class="sub-meta">${[n.region, n.name !== n.short ? n.name : '', nx ? `${dd.txt} ${nx.label.replace(/\s*\(.*\)$/, '')} ${span2(nx)}` : ''].filter(Boolean).map(esc).join(' · ')}</p></header>`; };
-  const htmls = !show ? [] : S.notices.map(n => {
-    const types = n.types.filter(x => x.tier === tier);
-    if (!types.length) { metas.push({ n, sig: ['unk', `${TIER_KO[tier]} 모집 없음`] }); return `<div class="easy-card sub-card">${headOf(n)}<p class="sig unk">이 공고는 ${TIER_KO[tier]}${tier === 'youth' ? '을' : '를'} 모집하지 않아요</p>${links}</div>`; }
-    const card = sup => { const e = elig(n, me, tier, sup); if (!e) return ''; const [c, w] = ST_TXT[e.st];
-      return `<div><p><b>${TIER_KO[tier]} ${SUPPLY_KO[sup]}</b> <span class="badge ${c}">${w}</span>${sup === 'special' && e.rankI ? ` <span class="badge deal">소득 ${e.rankI}순위</span>` : ''}${sup === 'special' && e.rankR ? ` <span class="badge deal">지역 ${e.rankR}순위 · ${RANK_R[e.rankR]}</span>` : ''}</p>
-        <ul>${e.checks.map(k => { const [cl, mk] = MARK[k.st]; return `<li class="${cl}" data-mark="${mk}">${esc(k.t)}</li>`; }).join('')}</ul>
-        <p class="hint" style="margin-top:8px">${sup === 'special' ? '선정: 소득 순위 → 지역 순위 → 추첨' : '선정: 타입별 전원 무작위 추첨'} · 근거 ${esc(n.cite.rules || '공고문')}</p></div>`; };
-    const rows = types.map(x => {
-      const l = subDemo ? null : state.listings.find(m => m.sub?.notice === n.id && m.sub?.type === x.id), opts = optionsOf(n, x, me, state.settings), rp = pickOption(n, x, me, state.settings), rec = rp && opts.find(o => o.supply === rp.supply && o.i === rp.i), key = `${n.id}|${x.id}`;
-      const pre = subPre[key], at = l ? l.sub : pre, pick = (at && opts.find(o => o.supply === at.supply && o.i === at.i)) || rec, manual = l ? l.sub.auto === false : pick !== rec, spSt = elig(n, me, tier, 'special')?.st, spNo = spSt === 'no';
-      const fitAny = opts.some(o => (!spNo || o.supply === 'general') && capsOk(o, state.settings)), dm = state.settings.depMax === undefined ? 13000 : state.settings.depMax;
-      const head = `<div class="sub-type"><div class="sub-type-head"><p><b>${esc(x.id)}형</b> · 전용 ${x.area}㎡ · 특공 ${x.units.special ?? '—'} · 일반 ${x.units.general ?? '—'}세대<br>${pick ? `${SUPPLY_KO[pick.supply]} ${pick.ratio}% · ${fmtWon(pick.deposit)} / ${pick.rent} → <b>${pick.monthly.toFixed(1)}만</b> / 월${manual ? ' (직접 고름)' : fitAny ? ' (추천)' : ' (자동)'}${pick.supply === 'special' && spNo ? ' <span class="badge fail">선택한 조합은 특공 자격 불가</span>' : ''}` : '—'}</p>
-        ${l ? `<button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button>` : `<button type="button" class="small primary" data-tadd="${key}">매물로 비교에 넣기</button>`}</div>`;
-      const note = o => o === rec && capsOk(o, state.settings) ? '<span class="badge pass">추천</span>' : o.supply === 'special' && spNo ? '<span class="badge fail">특공 자격 불가</span>' : o.supply === 'special' && spSt === 'unk' ? '<span class="badge warn">특공 확인 필요</span>' : !capsOk(o, state.settings) ? '<span class="badge fail">상한 초과</span>' : '';   // 글자 + 색 (색만으로 구분하지 않게)
-      return head + `<div class="tbl"><table class="rank"><thead><tr><th></th><th>공급</th><th class="n">보증금 비율</th><th class="n">보증금 / 월세</th><th class="n">관리비</th><th class="n">실제 월 부담</th></tr></thead><tbody>`
-        + opts.map(o => `<tr><td><input type="radio" name="opt-${l ? l.id : `${n.id}-${x.id}`}" ${l ? `data-opt="${l.id}|${o.supply}|${o.i}"` : `data-pre="${key}|${o.supply}|${o.i}"`} ${o === pick ? 'checked' : ''} aria-label="${SUPPLY_KO[o.supply]} ${o.ratio}%"></td><td>${SUPPLY_KO[o.supply]}${note(o) ? `<span class="cond">${note(o)}</span>` : ''}</td><td class="n">${o.ratio}%</td><td class="n">${fmtWon(o.deposit)} / ${o.rent}</td><td class="n">${o.fee}</td><td class="n">${o.monthly.toFixed(1)}만</td></tr>`).join('')
-        + `</tbody></table></div><p class="hint">${manual ? `<button type="button" class="small ghost" data-oauto="${l ? l.id : ''}" data-okey="${key}">추천으로 돌리기</button> ` : ''}추천: 보증금 상한 ${dm == null ? '없음' : fmtMan(dm)} · 월세 95만 · 실제 월 부담 상한 ${state.settings.budget == null ? '없음' : `${state.settings.budget}만`} 안에서 실제 월 부담이 가장 낮은 조합 (특공은 '가능'일 때만)${fitAny ? '' : ' · <b>상한 안에 드는 조합이 없어</b> 특공 가능이면 특공, 아니면 일반 가격 중 가장 싼 것'}${l ? ` · 계약금 ${n.contractPct}% = ${fmtMan(l.deposit * n.contractPct / 100)}${l.deposit * n.contractPct / 100 > state.settings.myCash ? ' (내 돈보다 많아요)' : ''}` : ''} · 보증금 대출은 은행 확인 필요</p></div>`;
-    }).join('');
-    // 쉬운 카드: 신호등 → 이유(최대 3줄) → 우리에게 맞는 집 → 다음 할 일 → 펼치기 두 개
-    const sp = elig(n, me, tier, 'special'), ge = elig(n, me, tier, 'general'), sts = [sp?.st, ge?.st];
-    let sig = sts.includes('ok') ? ['ok', '신청할 수 있어요'] : sts.includes('unk') ? ['unk', '확인이 필요해요'] : ['no', '이 공고는 어려워요'];
-    let why = [whyLine(sp, 'special'), whyLine(ge, 'general', sp?.st === 'ok')].filter(Boolean);
-    if (tier === 'youth' && [sp, ge].some(e => e?.checks.some(c => c.k === 'single' && c.st === false))) why = [{ t: '결혼한 경우 청년 공급은 신청할 수 없어요.' }];
-    const s0 = state.settings, cands = types.map(x => { const l = subDemo ? null : state.listings.find(m => m.sub?.notice === n.id && m.sub?.type === x.id), opts = optionsOf(n, x, me, s0);
-      const o = (l && opts.find(o => o.supply === l.sub.supply && o.i === l.sub.i)) || (subPre[`${n.id}|${x.id}`] && opts.find(o => o.supply === subPre[`${n.id}|${x.id}`].supply && o.i === subPre[`${n.id}|${x.id}`].i)) || pickOption(n, x, me, s0);
-      return { x, l, o, fit: !!o && capsOk(o, s0) }; }).filter(c => c.o).sort((a, b) => b.fit - a.fit || a.o.monthly - b.o.monthly);
-    const best = sig[0] === 'no' ? null : cands[0], dm = s0.depMax === undefined ? 13000 : s0.depMax;
-    const capOver = !best ? [] : [overBudget(best.o.monthly, s0) ? `예산보다 월 ${gap(best.o.monthly - s0.budget)}만원 많아요.` : '', dm != null && best.o.deposit > dm ? `보증금이 상한(${won(dm)})보다 ${won(best.o.deposit - dm)} 많아요.` : '', best.o.rent > 95 ? '월세가 95만원을 넘어서 비교에서는 빠져요.' : ''].filter(Boolean);
-    if (sig[0] === 'ok' && capOver.length) { sig = ['unk', '신청은 할 수 있어요 · 예산은 넘어요']; why = [{ t: capOver.join(' ') }, ...why]; }
-    const fit = !best ? `<div class="fit-home"><h4>우리에게 맞는 집</h4><p>신청할 수 있는 조합이 없어요.</p></div>` : (() => { const { x, l, o } = best, key = `${n.id}|${x.id}`, contract = o.deposit * n.contractPct / 100;
-      const over = [sig[1].includes('예산') ? '' : capOver.join(' '), contract > s0.myCash ? `계약금이 지금 가진 돈(${won(s0.myCash)})보다 많아요.` : ''].filter(Boolean);
-      return `<div class="fit-home"><h4>우리에게 맞는 집</h4>
-        <div><b>${esc(x.id)}형</b> 전용 ${x.area}㎡<br>${SUPPLY_KO[o.supply]} ${o.supply === 'special' ? qmH('sp') : qmH('ge')} · 보증금 ${o.ratio}%</div>
-        <dl><dt>보증금</dt><dd>${won(o.deposit)}</dd><dt>월세</dt><dd>월 ${won(o.rent)}</dd><dt>실제 한 달 부담</dt><dd>${won(o.monthly)}</dd><dt>계약금</dt><dd>${won(contract)} (보증금의 ${n.contractPct}%)</dd></dl>
-        <p class="formula">${formula({ deal: '월세', deposit: o.deposit, rent: o.rent, fee: o.fee, monthly: o.monthly })}</p>
-        ${over.map(t => `<p class="over">${t}</p>`).join('')}
-        <details class="easy-more" data-glid="sub-loan|${key}"${glOpen.has(`sub-loan|${key}`) ? ' open' : ''}><summary>보증금 대출 · 내 돈 계산기 열기</summary>${loanBox(`sub|${key}|${o.supply}|${o.i}`, o.deposit, false)}</details>
-        ${subDemo ? '<p class="hint">예시 가족 결과라 비교 매물로 넣을 수 없어요.</p>' : l ? `<div class="act"><span class="badge pass">비교에 넣었어요</span><button type="button" class="small ghost" data-tdel="${l.id}">비교에서 빼기</button></div>`
-          : `<div class="commute-find"><label>회사 주소 <span class="unit">한 번 넣으면 기억해요</span><input data-workaddr maxlength="80" placeholder="예: 서울 영등포구 여의대로 108" value="${esc(S.workAddr ?? '')}"></label>
-             <button type="button" class="ghost" data-kakao="${esc(n.addr)}" ${S.workAddr ? '' : 'disabled'}>카카오맵에서 통근 시간 보기 ↗</button><span class="hint" data-kakaomsg role="status"></span>
-             <p class="hint">출발은 이 단지 주소, 도착은 회사 주소로 길찾기가 열려요. 대중교통 시간을 보고 돌아와서 아래에 적어 주세요.</p></div>
-            <div class="act"><label>이 단지에서 직장까지 편도 몇 분인가요? <span class="unit">비교 매물로 넣을 때만 필요해요</span><span class="with-unit"><input type="number" inputmode="numeric" min="0" step="1" placeholder="예: 50" data-ncommute="${n.id}" value="${n.commute ?? ''}"><span>분</span></span></label><button type="button" class="primary" data-tadd="${key}">매물로 비교에 넣기</button></div>`}</div>`; })();
-    const nx = n.schedule.filter(e => e.to >= t).sort((a, b) => a.from.localeCompare(b.from))[0], dd = nx && ddayOf(nx, t);
-    const next = nx ? `<div class="next-do"><span class="dd ${dd.soon ? 'soon' : ''}">${dd.txt}</span><span>다음 할 일: ${mdLong(nx.from)}${nx.from !== nx.to ? '부터' : ''} ${esc(nx.label.replace(/\s*\(.*\)$/, ''))}</span><button type="button" class="small ghost" data-nics="${n.id}">캘린더에 저장</button></div>` : '';
-    metas.push({ n, sig });
-    return `<div class="easy-card sub-card">${headOf(n)}
-      <p class="sig ${sig[0]}" role="status">${sig[1]}</p>
-      <ul class="why">${why.slice(0, 3).map(w => `<li>${esc(w.t)}${w.step != null && !subDemo ? ` <button type="button" class="linkbtn" data-wgo="${w.step}">${WIZ_NAME[w.step]} 고치기</button>` : ''}</li>`).join('')}</ul>
-      ${fit}${next}
-      <details class="easy-more"><summary>다른 선택 보기</summary>${rows}</details>
-      <details class="easy-more"><summary>판정 근거 자세히</summary><div class="sub-judge">${card('special')}${card('general')}</div>
-        <p class="hint" style="margin-top:8px">예비 판정이에요. 최종 자격은 사업주체 심사로 정해져요.</p>
-        <p class="hint">1인 1건만 신청할 수 있고, 부부가 각자 내면 모두 무효예요.</p></details>
-      ${links}</div>`;
-  });
-  // 공고가 여럿이면 왼쪽(휴대폰은 위) 카드 목록에서 하나를 골라 크게 본다. 고른 공고는 subs.sel 에 저장
-  const si = Math.max(0, S.notices.findIndex(n => n.id === S.sel)), multi = htmls.length > 1;
-  const nav = multi ? `<nav class="sub-list" aria-label="공고 목록">${metas.map((m, i) => { const nx = nextOf(m.n), dd = nx && ddayOf(nx, t);
-      return `<button type="button" class="sub-pick" data-nsel="${m.n.id}" aria-current="${i === si}"><b>${esc(m.n.short)}</b><span class="hint">${esc(m.n.region)} · ${esc(m.n.kind)}</span><span class="sig-mini ${m.sig[0]}">${esc(m.sig[1])}</span>${dd ? `<span class="dd">${dd.txt} ${esc(nx.label.replace(/\s*\(.*\)$/, ''))}</span>` : ''}</button>`; }).join('')}
-      <button type="button" class="ghost small" data-addn>+ 공고 추가</button></nav>` : '';
-  const tabs = `<div class="tabs sub-tabs" role="tablist" aria-label="신청 유형 선택"><button type="button" role="tab" data-subtab="newlywed" aria-selected="${tier === 'newlywed'}">신혼부부 기준</button><button type="button" role="tab" data-subtab="youth" aria-selected="${tier === 'youth'}">청년(미혼) 기준</button></div>`;
-  $('#subJudge').innerHTML = !show ? '' : tabs + `<div class="sub-layout${multi ? ' multi' : ''}">${nav}<div class="sub-main">${htmls[si] || ''}</div></div><p class="hint sub-note">참고용 예비 판정이에요. 실제 자격·순위는 모집공고문 원본과 사업 주체의 심사로 정해져요.</p>`;
-  const added = state.listings.filter(l => l.sub), both = new Set(added.map(l => state.subs.notices.find(n => n.id === l.sub.notice)?.types.find(x => x.id === l.sub.type)?.tier)).size > 1;
-  paintLoans($('#subJudge'));
-  if (both && show && !subDemo) $('#subJudge').insertAdjacentHTML('afterbegin', '<p class="badge warn" style="margin-top:12px">신혼부부와 청년 주택형을 모두 비교에 넣었어요. 실제 신청은 한 사람이 한 건만 할 수 있어요.</p>');
-}
-// 단계별 질문: 화면에 한 단계만 · 진행 막대 · 바로 가기 칩. 값은 입력할 때마다 state.subs.me 에 저장
-function renderWizard() {
-  const S = state.subs, W = S.wizard, open = S.notices.length && !subDemo && (wizOpen || !W.done), step = Math.min(WIZ_N - 1, Math.max(0, W.step | 0));
-  $('#subWiz').hidden = !open; if (!open) return;
-  for (const f of document.querySelectorAll('.wiz-step')) f.hidden = +f.dataset.step !== step;
-  for (const f of document.querySelectorAll('#subWiz [data-tier-panel]')) { f.hidden = f.dataset.tierPanel !== S.tab; for (const i of f.matches('input,select') ? [f] : f.querySelectorAll('input,select')) i.disabled = f.hidden; }
-  $('#wizCount').textContent = `${step + 1} / ${WIZ_N} · ${WIZ_NAME[step]}`;
-  $('#wizBar').setAttribute('aria-valuenow', step + 1); $('#wizBar i').style.width = `${(step + 1) / WIZ_N * 100}%`;
-  $('#wizChips').innerHTML = WIZ_NAME.map((nm, i) => `<button type="button" class="ghost" data-wgo="${i}" ${i === step ? 'aria-current="step"' : ''}>${i + 1}. ${nm}</button>`).join('');
-  $('#wizPrev').disabled = step === 0; $('#wizShow').hidden = !W.done || step === WIZ_N - 1; $('#wizNext').textContent = step === WIZ_N - 1 ? '결과 보기' : '다음';
-  for (const b of document.querySelectorAll('[data-wtier]')) b.setAttribute('aria-pressed', b.dataset.wtier === S.tab);
-  const me = S.me, on = S.notices[0]?.noticeDate || todayYmd();
-  for (const o of document.querySelectorAll('[data-age]')) { const v = getPath(me, o.dataset.age); o.textContent = isYmd(v) ? `만 ${ageAt(v, on)}세 (공고일 기준)` : ''; }
-  for (const o of document.querySelectorAll('[data-won]')) { const v = getPath(me, o.dataset.won); o.textContent = v == null || v === '' ? '' : `${o.dataset.per || ''} ${won(v)}`.trim(); }
-  { const v = (S.tab === 'youth' ? me.yt : me.nw).asset, u = !!W.unk.asset, o = document.querySelector('[data-won-tier="asset"]'); o.textContent = u ? '확인 필요로 볼게요' : v == null ? '' : won(v);
-    document.querySelector('[data-unk="asset"]').checked = u; for (const i of document.querySelectorAll('[data-me="nw.asset"],[data-me="yt.asset"]')) if (u) i.disabled = true; }
-  { const m = document.querySelector('[data-me="nw.married"]'); m.disabled = m.disabled || !!me.nw.pre; m.title = me.nw.pre ? '결혼 예정이면 혼인신고일은 비워 둬요' : ''; }
-  { const o = document.querySelector('[data-wed]'), v = me.nw.married; o.textContent = isYmd(v) ? `혼인 ${daysBetween(v, on).toLocaleString()}일째 (공고일 기준)` : ''; }
-  document.querySelector('[data-yt-wed]').hidden = !(me.nw.pre || isYmd(me.nw.married));
-  document.querySelector('[data-car]').hidden = !me.hasCar;
-  for (const w of ['live', 'work']) {   // 시·도 = 서울이면 25개 구 고르기, 그 밖은 직접 입력
-    const city = me[w].city, sel = document.querySelector(`[data-me="${w}.gu"][data-gu-sel]`), txt = document.querySelector(`[data-me="${w}.gu"][data-gu-txt]`), seoul = city === '서울';
-    const cs = document.querySelector(`[data-me="${w}.city"]`); if (city && ![...cs.options].some(o => o.value === city)) cs.add(new Option(city, city));
-    if (!sel.options.length || sel.options.length === 1) for (const g of SEOUL_GU) sel.add(new Option(g, g));
-    sel.hidden = sel.disabled = !seoul; txt.hidden = txt.disabled = seoul; document.querySelector(`[data-gu="${w}"]`).firstChild.textContent = seoul ? '구' : '시·군·구';
-    if (seoul && me[w].gu && ![...sel.options].some(o => o.value === me[w].gu)) sel.add(new Option(me[w].gu, me[w].gu));
-  }
-  fillMe();
-}
-function wizGo(i) { state.subs.wizard.step = Math.min(WIZ_N - 1, Math.max(0, i)); wizOpen = true; render(); $('#subWiz').scrollIntoView({ block: 'start' }); $('#subWiz .wiz-step:not([hidden]) input:not([disabled]), #subWiz .wiz-step:not([hidden]) select:not([disabled]), #subWiz .wiz-step:not([hidden]) button')?.focus({ preventScroll: true }); }
-$('#subWiz').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return; const W = state.subs.wizard;
-  if (b.dataset.wtier) { state.subs.tab = b.dataset.wtier; if (b.dataset.wtier === 'youth') state.subs.me.yt.appl = 'a'; render(); return; }   // 선택만 표시 (자동으로 넘기면 바로 누른 '다음'이 한 단계를 건너뛴다)
-  if (b.dataset.wgo) { wizGo(+b.dataset.wgo); return; }
-  if (b.id === 'wizPrev') { wizGo(W.step - 1); return; }
-  if (b.id === 'wizNext' || b.id === 'wizShow') { if (b.id === 'wizNext' && W.step < WIZ_N - 1) wizGo(W.step + 1); else { W.done = true; wizOpen = false; render(); $('#subJudge').scrollIntoView({ block: 'start' }); } }
-});
-$('#subWiz').addEventListener('change', e => {   // 자산 '잘 모르겠어요' → 빈 값(확인 필요)
-  const u = e.target.closest('[data-unk]'); if (!u) return; const W = state.subs.wizard, me = state.subs.me;
-  W.unk[u.dataset.unk] = u.checked; if (u.checked) { me.nw.asset = null; me.yt.asset = null; }
-  for (const i of document.querySelectorAll('[data-me="nw.asset"],[data-me="yt.asset"]')) i.disabled = u.checked;
-  render();
-});
-// 우리 상황 입력: data-me="a.birth" 경로로 읽고 쓴다
-const getPath = (o, p) => p.split('.').reduce((a, k) => a?.[k], o);
-const setPath = (o, p, v) => { const ks = p.split('.'), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
-function readMe(el) { if (el.type === 'checkbox') return el.checked; if (el.dataset.kind === 'bool') return el.value === '' ? null : el.value === '1'; if (el.type === 'number') return el.value === '' ? null : Math.max(0, Number(el.value)); return el.value.trim(); }
-function fillMe() {
-  for (const el of document.querySelectorAll('[data-year-for]')) if (el !== document.activeElement) { const v = getPath(state.subs.me, el.dataset.yearFor); el.value = v == null ? '' : Math.round(v * 12); }   // 월은 0.1만 단위로 저장 → 연봉은 만원으로 반올림해 보여 준다
-  for (const el of document.querySelectorAll('[data-me]')) { if (el === document.activeElement) continue; const v = getPath(state.subs.me, el.dataset.me); if (el.type === 'checkbox') el.checked = !!v; else if (el.dataset.kind === 'bool') el.value = v == null ? '' : v ? '1' : '0'; else el.value = v ?? ''; }
-  for (const el of document.querySelectorAll('[data-pname]')) el.textContent = state.people[+el.dataset.pname]?.name || `사람 ${+el.dataset.pname + 1}`;
-}
-fillMe();
-$('#subMe').addEventListener('input', e => {
-  const el = e.target;
-  if (el.dataset.yearFor) {   // 연소득 → 월평균소득
-    const v = el.value === '' ? null : Math.round(Number(el.value) / 12 * 10) / 10; setPath(state.subs.me, el.dataset.yearFor, v);
-    const m = document.querySelector(`[data-me="${el.dataset.yearFor}"]`); if (m) m.value = v ?? ''; render(); return;
-  }
-  if (el.dataset.me) {
-    const nw = state.subs.me.nw, p = el.dataset.me, v = readMe(el);
-    if (p === 'nw.kids' && +v === 0) nw.fetus = false;   // 자녀 0명이면 태아도 없음
-    if (p === 'nw.fetus' && v !== nw.fetus) nw.kids = Math.max(0, (+nw.kids || 0) + (v ? 1 : -1));   // 자녀 수 칸이 바로 바뀌어 보이게
-    if (p === 'nw.pre' && v) nw.married = '';            // 결혼 예정이면 혼인신고일은 없음
-    if (p === 'nw.married' && v) nw.pre = false;
-    setPath(state.subs.me, p, v); render();
-  }
-});
-function addNotice(raw, msg) {
-  const n = normNotice(raw); if (!n) { $('#subMsg').textContent = '공고 JSON 형식이 아니에요 (임대 공고 · 공고일 · 주택형이 필요해요).'; return false; }
-  state.subs.sel = n.id; const i = state.subs.notices.findIndex(x => x.id === n.id); if (i >= 0) { n.commute ??= state.subs.notices[i].commute; state.subs.notices[i] = n; } else state.subs.notices.push(n);
-  $('#subMsg').textContent = `${msg}: ${n.short} · 주택형 ${n.types.length}개 · 일정 ${n.schedule.length}개`; render(); return true;
-}
-// ---------- 새로 올라온 공고 (feed/notices.json · 이 PC의 공고 감시가 만들어 올린다, 형식은 samples/feed_example.json) ----------
-let subFeed = null, feedAll = false;   // feedAll: '더 보기'를 눌렀으면 전부
-function normFeed(x) {
-  if (!x || !Array.isArray(x.items)) return null; const str = (v, n = 120) => String(v ?? '').slice(0, n);
-  return { updated: str(x.updated, 40), source: str(x.source), items: x.items.map(i => ({ id: str(i.id, 60), org: str(i.org, 40), title: str(i.title, 160), region: str(i.region, 40), kind: str(i.kind, 30),
-    posted: isYmd(i.posted) ? i.posted : '', from: isYmd(i.from) ? i.from : '', to: isYmd(i.to) ? i.to : '', url: safeUrl(i.url) ? i.url : '' })).filter(i => i.title) };
-}
-function renderFeed() {
-  const box = $('#subFeed'), t = todayYmd(), f = subFeed;
-  const all = (f?.items || []).filter(i => !i.to || i.to >= t).sort((a, b) => (a.to || '9').localeCompare(b.to || '9'));   // 마감 안 지난 것 · 마감 가까운 순
-  const items = feedAll ? all : all.slice(0, 8), more = all.length - items.length;
-  box.hidden = !items.length; if (!items.length) return;
-  box.innerHTML = `<h3>새로 올라온 공고<small>${f.updated ? `<span class="d">${esc(f.updated.slice(0, 10))} 확인</span>` : ''}${f.source ? ` · ${esc(f.source)}` : ''}</small></h3><ul>${items.map(i => {
-    const dd = i.to ? ddayOf({ from: i.from || i.to, to: i.to }, t) : null, isNew = i.posted && daysBetween(i.posted, t) <= 3;
-    return `<li><span class="org" title="${esc(i.org)}">${esc(i.org)}</span>${isNew ? '<span class="new">새 공고</span>' : ''}<span class="ttl">${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.title)} ↗</a>` : esc(i.title)}</span>
-      <span class="hint">${[i.region, i.kind, i.from && i.to ? `접수 ${md2(i.from)}~${md2(i.to)}` : ''].filter(Boolean).map(esc).join(' · ')}</span>${i.to === t ? '<span class="dd">오늘 마감</span>' : dd && !dd.past ? `<span class="dd">${dd.txt}</span>` : ''}</li>`; }).join('')}</ul>${more > 0 ? `<button type="button" class="ghost small more" data-feedmore>공고 ${more}개 더 보기</button>` : ''}
-    <p class="hint">마음에 드는 공고는 공고문 PDF를 받아 아래 '공고 추가하기'로 넣으면 판정해 줘요.</p>`;
-  const mb = box.querySelector('[data-feedmore]'); if (mb) mb.onclick = () => { feedAll = true; renderFeed(); };
-}
-const setFeed = x => { subFeed = normFeed(x); renderFeed(); };
-fetch('feed/notices.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(setFeed).catch(() => {});
 // ==== AI_SPEC 시작 (worker/src/spec.js 와 같아야 함 · 고친 뒤 python scripts/sync_ai_spec.py) ====
 const SUB_PROMPT = `첨부한 임대주택 입주자 모집공고문을 읽고, 아래 형식의 JSON 하나만 돌려줘. 설명 문장 없이 JSON만.
 - 금액은 모두 만원 단위 숫자, 날짜는 'YYYY-MM-DD', 모르는 값은 null.
@@ -2599,31 +2153,7 @@ const NOTICE_SCHEMA = { type: 'OBJECT', required: ['kind', 'name', 'noticeDate',
 const LISTING_SCHEMA = { type: 'OBJECT', properties: { deal: S_E(['월세', '전세', '매매']), deposit: S_N, rent: S_N, fee: S_N, area: S_N, rooms: S_I, floorNo: S_S, basement: { type: 'BOOLEAN', nullable: true },
   usage: S_E(['주거용', '업무용']), station: S_S, walk: S_I, moveIn: S_E(['가능', '불가']), loan: S_E(['가능', '불가']) } };
 // ==== AI_SPEC 끝 ====
-$('#subPrompt').value = SUB_PROMPT;
-$('#subAddBtn').addEventListener('click', () => { const a = $('#subAdd'); a.hidden = !a.hidden; $('#subAddBtn').setAttribute('aria-expanded', !a.hidden); if (!a.hidden) a.scrollIntoView({ block: 'start' }); });
-$('#subCopy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(SUB_PROMPT); $('#subCopy').textContent = '복사했어요'; } catch (err) { $('#subPrompt').select(); $('#subCopy').textContent = '선택했어요. Ctrl+C 로 복사하세요'; }
-});
-// 붙여넣은 공고 검사: 틀린 곳을 쉬운 말로 (형식이 맞으면 바로 넣는다)
-function noticeProblems(x) {
-  const n = x?.notice ?? x, p = []; if (!n || typeof n !== 'object') return ['공고 내용을 찾지 못했어요.'];
-  if (n.kind !== '임대') p.push('"kind" 가 "임대" 가 아니에요. 지금은 임대 공고만 넣을 수 있어요.');
-  if (!isYmd(n.noticeDate)) p.push('공고일(noticeDate)이 없거나 날짜 모양(2026-11-03)이 아니에요.');
-  if (!Array.isArray(n.types) || !n.types.length) p.push('주택형(types)이 비어 있어요.');
-  else n.types.forEach((t, i) => { const nm = `주택형 ${t?.id ?? i + 1}`; if (!(+t?.area > 0)) p.push(`${nm}의 전용면적(area)이 비어 있어요.`);
-    if (!(t?.prices?.special?.length || t?.prices?.general?.length)) p.push(`${nm}의 가격(prices)이 비어 있어요.`); });
-  if (!Array.isArray(n.incomeBase) || !n.incomeBase.length) p.push('소득 기준표(incomeBase)가 비어 있어요. 소득 판정을 못 해요.');
-  if (!n.rules) p.push('신청 자격(rules)이 비어 있어요.');
-  return p;
-}
-$('#subPaste').addEventListener('input', e => {
-  const v = e.target.value.trim(), out = $('#subPasteErr'); if (!v) { out.innerHTML = ''; return; }
-  const raw = v.replace(/^```(?:json)?/i, '').replace(/```$/, ''), i = raw.indexOf('{'), j = raw.lastIndexOf('}');
-  let x; try { x = JSON.parse(raw.slice(i, j + 1)); } catch (err) { out.innerHTML = '<li>내용이 중간에 끊겼거나 괄호·따옴표가 빠졌어요. AI에게 "JSON 형식으로 끝까지 다시 써줘"라고 말해 보세요.</li>'; return; }
-  const p = noticeProblems(x); if (p.length) { out.innerHTML = p.map(t => `<li>${esc(t)}</li>`).join(''); return; }
-  out.innerHTML = ''; subDemo = false; if (addNotice(x, '공고를 넣었어요')) { e.target.value = ''; $('#subAdd').hidden = true; $('#subAddBtn').setAttribute('aria-expanded', 'false'); }
-});
-// ---------- AI 읽기 (Gemini): 공고 PDF · 매물 글에서 값만 읽는다. 자격 판정은 위 규칙 코드가, 저장은 사람이 한다 ----------
+// ---------- AI 읽기 (Gemini): 매물 글에서 값만 읽는다. 저장은 사람이 한다 (공고 PDF 읽기는 청약 체크로 옮김) ----------
 const aiKey = () => { try { return localStorage.getItem(AI_KEY) || ''; } catch (e) { return ''; } };
 const aiReady = () => !!(aiKey() || AI_WORKER);
 const aiFail = st => Object.assign(new Error('ai'), { status: st });
@@ -2658,36 +2188,15 @@ async function aiRun(box, kind, payload, done) {
     catch (e) { if ((e.status !== 'busy' && e.status !== 0) || ac.signal.aborted) throw e; await new Promise(r => setTimeout(r, 2000)); if (ac.signal.aborted) throw e; t = await aiRead(kind, payload, ac.signal); }   // 붐비거나 연결이 안 되면 2초 뒤 한 번 더 (1분 시간 초과·429 는 다시 안 함)
     msg.textContent = ''; done(t);
   }
-  catch (e) { const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r); if (r === 503) showSteps();
+  catch (e) { const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r);
     if (r === 'busy') { const b = document.createElement('button'); b.type = 'button'; b.className = 'small ghost'; b.textContent = '다시 시도'; b.onclick = () => aiRun(box, kind, payload, done); msg.append(' ', b); } }
   finally { clearTimeout(timer); stop.hidden = true; go.hidden = false; }
 }
-// 공고 PDF: 파일을 고르면 보낼 내용 안내 → 'AI로 읽기'
-function aiAsk(box, kind, payload, what, done) {
-  box.hidden = false; box.querySelector('[data-what]').textContent = what; box.querySelector('[data-msg]').textContent = '';
-  box.querySelector('[data-go]').onclick = () => aiRun(box, kind, payload, t => { box.hidden = true; done(t); });
-}
-// 공고: AI 결과도 붙여넣기 칸과 같은 검사(noticeProblems)를 거친다
-let subManual = false;
-function showSteps() { subManual = true; $('#subSteps').hidden = false; }
 function syncAi() {
-  const on = aiReady(), k = aiKey();
-  $('#subAiRow').hidden = !on; $('#subAiOff').hidden = on; $('#subSteps').hidden = on && !subManual; if (!on) $('#subSend').hidden = true;
+  const k = aiKey();
   $('#aiState').textContent = k ? `내 키(…${k.slice(-4)})로 Gemini에 바로 보내요.` : AI_WORKER ? '공용 AI 서버로 읽어요. 내 키를 넣으면 내 키를 먼저 써요.'
     : '아직 공용 AI 서버가 없어요. 내 키를 넣으면 AI 읽기를 쓸 수 있고, 없으면 직접 붙여넣기로 해요.';
 }
-$('#subManual').addEventListener('click', () => { showSteps(); $('#subSteps').scrollIntoView({ block: 'nearest' }); });
-$('#subPdf').addEventListener('change', e => {
-  const f = e.target.files[0]; e.target.value = ''; if (!f) return; const mb = (f.size / 1048576).toFixed(1);
-  if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { $('#subMsg').textContent = 'PDF 파일만 읽을 수 있어요.'; return; }
-  if (f.size > 5 * 1048576) { $('#subMsg').textContent = `파일이 ${mb}MB예요. AI로는 5MB까지 보낼 수 있어요. 직접 붙여넣기로 해 주세요.`; showSteps(); return; }
-  const rd = new FileReader();
-  rd.onload = () => aiAsk($('#subSend'), 'notice', String(rd.result).split(',')[1], `${f.name} (${mb}MB)`, t => {
-    const p = $('#subPaste'); p.value = t; p.dispatchEvent(new Event('input'));
-    if ($('#subPasteErr').innerHTML) { showSteps(); $('#subMsg').textContent = 'AI가 읽은 공고에 빠진 곳이 있어요. 아래 3번 칸에서 확인해 주세요.'; }
-  });
-  rd.readAsDataURL(f);
-});
 // 매물 글: 뽑은 값은 범위·보기를 다시 걸러 폼에 채우기만 한다 (저장은 '매물 추가')
 function aiListing(x) {
   const o = {}; if (!x || typeof x !== 'object') return o;
@@ -2729,67 +2238,6 @@ $('#aiKeyForm').addEventListener('submit', e => {
 });
 $('#aiKeyDel').addEventListener('click', () => { try { localStorage.removeItem(AI_KEY); } catch (e) {} $('#aiKeyMsg').textContent = '지웠어요.'; syncAi(); });
 syncAi();
-$('#subFile').addEventListener('change', async e => {
-  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  try { addNotice(JSON.parse(await f.text()), `${f.name} 불러옴`); } catch (err) { $('#subMsg').textContent = 'JSON 파일을 읽지 못했어요.'; }
-});
-$('#subSample').addEventListener('click', async () => {
-  try { subDemo = !state.subs.wizard.done; addNotice(await (await fetch('samples/notice_yongsan.json')).json(), '예시 공고 넣음'); if (subDemo) $('#subDemo').scrollIntoView({ block: 'start' }); } catch (err) { $('#subMsg').textContent = '예시 공고를 불러오지 못했어요 (인터넷 연결 확인).'; }
-});
-$('#subsSec').addEventListener('input', e => {
-  const w = e.target.closest('[data-workaddr]'); if (!w) return; const v = w.value.trim();
-  for (const a of document.querySelectorAll('[data-kakao]')) a.disabled = !v;
-});
-$('#subsSec').addEventListener('change', e => {
-  const w = e.target.closest('[data-workaddr]'); if (w) { state.subs.workAddr = w.value.trim() || null; render(); return; }
-  const c = e.target.closest('[data-ncommute]');
-  if (c) { const n = state.subs.notices.find(x => x.id === c.dataset.ncommute); if (n) { n.commute = c.value === '' ? null : Math.max(0, Math.round(+c.value)); noticesKey = ''; render(); } return; }
-  if (subDemo && e.target.closest('[data-pre],[data-opt]')) return;
-  const pr = e.target.closest('[data-pre]');
-  if (pr) { const [nid, tid, sup, i] = pr.dataset.pre.split('|'); subPre[`${nid}|${tid}`] = { supply: sup, i: +i }; render(); return; }
-  const o = e.target.closest('[data-opt]');
-  if (o) { const [id, sup, i] = o.dataset.opt.split('|'), l = state.listings.find(x => x.id === id); if (l) { Object.assign(l.sub, { auto: false, supply: sup, i: +i }); render(); } }
-});
-$('#subsSec').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  const S = state.subs, ds = b.dataset;
-  if (b.id === 'subDemoExit') { subDemo = false; wizGo(0); return; }
-  if (ds.nsel) { S.sel = ds.nsel; render(); $('#subJudge .sub-main').scrollIntoView({ block: 'nearest' }); return; }
-  if ('addn' in ds) { $('#subAddBtn').click(); return; }
-  if (ds.kakao != null) {
-    const from = ds.kakao, to = (b.closest('.commute-find').querySelector('[data-workaddr]').value.trim() || S.workAddr || ''), msg = b.parentElement.querySelector('[data-kakaomsg]'); if (!to) return;
-    S.workAddr = to; const win = window.open('', '_blank'); msg.textContent = '주소 위치를 찾는 중…'; b.disabled = true;
-    (async () => {
-      const A = await geoFind(from), B = A && await geoFind(to), url = A && B ? kakaoDir(from, A, to, B) : googleDir(from, to);
-      msg.textContent = A && B ? '카카오맵 대중교통 길찾기를 열었어요.' : '주소 위치를 못 찾아 구글지도 대중교통 길찾기로 열었어요.'; b.disabled = false;
-      if (win) { win.opener = null; win.location.href = url; } else location.assign(url);
-    })();
-    return;
-  }
-  if ('wgo' in ds && b.closest('#subJudge')) { wizGo(+ds.wgo); return; }
-  if (ds.subtab) { S.tab = ds.subtab; render(); return; }
-  if (subDemo && (ds.tadd || ds.tdel || 'oauto' in ds)) return;   // 예시 가족 결과는 비교 매물과 연결하지 않는다
-  if (ds.nics) { const n = S.notices.find(x => x.id === ds.nics); if (!n) return;
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([icsOf(n)], { type: 'text/calendar' })); a.download = `${n.id}.ics`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    $('#subMsg').textContent = `일정 ${n.schedule.length}개를 .ics 로 내려받았어요. 휴대폰·구글 캘린더에서 열면 들어가요.`; return; }
-  if (ds.nedit) { subEdit = ds.nedit; render(); $('#subEditBox')?.focus(); return; }
-  if ('ncancel' in ds) { subEdit = null; render(); return; }
-  if (ds.nsave) { let j; try { j = JSON.parse($('#subEditBox').value); } catch (err) { $('#subMsg').textContent = 'JSON 문법이 틀렸어요. 따옴표·쉼표를 확인해 주세요.'; return; }
-    j.id = ds.nsave; if (addNotice(j, '공고를 고쳤어요')) { subEdit = null; render(); } return; }
-  if (ds.ndel && confirmTap(b)) { S.notices = S.notices.filter(x => x.id !== ds.ndel); state.listings = state.listings.filter(l => l.sub?.notice !== ds.ndel); render(); return; }
-  if (ds.tadd) {
-    const [nid, tid] = ds.tadd.split('|'), n = S.notices.find(x => x.id === nid), t = n?.types.find(x => x.id === tid); if (!t) return;
-    if (n.commute == null) { $('#subMsg').textContent = `먼저 "${n.short}" 카드에 이 단지 통근 시간(분)을 넣어 주세요.`; document.querySelector(`[data-ncommute="${nid}"]`)?.focus(); return; }
-    const rec = pickOption(n, t, S.me, state.settings), pre = subPre[ds.tadd], o = (pre && optionsOf(n, t, S.me, state.settings).find(x => x.supply === pre.supply && x.i === pre.i)) || rec, auto = o.supply === rec.supply && o.i === rec.i;
-    delete subPre[ds.tadd];
-    state.listings.push({ id: uid(), name: `${n.short} ${t.id}형`, region: n.region, addr: n.addr.replace(/^\S+\s+/, '').replace(n.region, '').trim(), station: n.station, deal: '월세',
-      deposit: o.deposit, rent: o.rent, fee: o.fee, area: t.area, rooms: t.rooms, basement: false, loanOk: true, usage: '주거용', walk: n.walk, commute: n.commute, current: false, facing: null,
-      moveIn: '가능', floorNo: '', route: '', url: safeUrl(n.url) ? n.url : '', urlSaved: todayYmd(), loanYears: 30, repay: 'amort', sub: { notice: n.id, type: t.id, supply: o.supply, i: o.i, auto } });
-    $('#subMsg').textContent = `${n.short} ${t.id}형을 매물로 넣었어요. 한눈에 비교에서 다른 집과 같이 볼 수 있어요.`; render(); return;
-  }
-  if (ds.tdel) { state.listings = state.listings.filter(l => l.id !== ds.tdel); render(); return; }
-  if ('oauto' in ds) { delete subPre[ds.okey]; const l = state.listings.find(x => x.id === ds.oauto); if (l) l.sub.auto = true; render(); }
-});
 // 데이터 옮기기: 내보낸 파일 = { app, version, exportedAt, data(state 그대로, 큰 평면도는 다시 압축) }
 const shrinkImg = src => new Promise(ok => {   // 300KB 넘는 평면도만 긴 변 900px·JPEG 0.75로
   if (src.length < 400000) return ok(src);

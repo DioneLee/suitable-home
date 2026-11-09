@@ -39,10 +39,15 @@
   - v27 (2026-11-06): 청약을 새 사이트 **청약 체크**(`../cheongyak-check`, 주소 예정 `dionelee.github.io/cheongyak-check/`)로 분리. 여기 청약 탭은 **2027-01-20(공모전 심사)까지 그대로** 두고 맨 위 안내 한 줄(`#subsMoved`)만 추가 · 백업 `index_v27_backup.html`
     - 판정 코드가 두 곳에 있음 → 청약 판정을 고치면 `cheongyak-check/scripts/verify/check.py`(판정 동등성)까지 돌리기
     - `push-feed.ps1`·jev-harness 공고 감시는 이 저장소용으로만 당분간 유지 (새 사이트는 GitHub Actions)
+  - **v28 (2026-11-09) 2단계: 여기서 청약 화면을 뺌.** 메뉴 '청약' 자리에 "청약 체크 ↗" (2027-01-20까지 유지) · `#subs` → 홈 · 홈 청약 띠 삭제
+    - 청약 매물(l.sub)은 마지막 판정을 `l.sub.no` 로 한 번 저장(탈락은 "청약 체크에서 확인한 결과: 자격 없음") · 보증금·월세 그대로 · `newlywed-home-v1.subs` 는 지우지 않음
+    - 판정 함수는 2027-01-20 까지만 남김 · 설계 `docs/design/청약분리.md` · 백업 `index_v28_backup.html`
+    - 위 '판정 동등성' 검사는 끝남 (청약 체크 check.py 에서 뺌)
+    - 남은 순서: `suitable-home-feed-push` 끄기(사용자 확인) → jev-harness `writeFeed`·`--feed` 빼기 → `feed/notices.json`·`samples/feed_example.json` 지우기
 
 ## 다음에 할 것 / 남은 것
 
-- [ ] 실제 우리 상황을 청약 화면에 입력해 판정 확인 (접수 11.12 전)
+- [ ] 2027-01-20 뒤: 청약 체크 링크를 둘지 정하고, 판정 함수(subMe~subInfo) 지우기 (`l.sub.no` 만 남김)
 - [ ] 분양 공고(가점·생애최초·중도금)는 실제 분양 공고가 생기면 공고 JSON `kind: '분양'`으로 추가
 
 - [ ] 실제 사이트를 오래 열어 둔 **예전 버전 탭은 새로고침** (보호 코드가 없는 예전 탭은 데이터를 덮어쓸 수 있음)

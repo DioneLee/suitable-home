@@ -18,7 +18,10 @@ const reloaded = f => new Promise(r => f.addEventListener('load', r, { once: tru
 (async () => {
   localStorage.setItem('newlywed-home-v1', SEED); localStorage.setItem('suitable-intro', '1');
   const src = await (await fetch('/index.html')).text();
-  ok('새 주소는 상수 NEW_SITE 한 곳 (https://suitable-home.pages.dev/) · 예전 주소 이름은 OLD_HOST 한 곳', /const NEW_SITE = 'https:\/\/suitable-home\.pages\.dev\/', OLD_HOST = 'dionelee\.github\.io';/.test(src) && src.split('suitable-home.pages.dev').length === 2 && src.split('dionelee.github.io').length === 2, '');
+  { const site = /const NEW_SITE = '([^']+)'/.exec(src)?.[1], og = s => new RegExp(`<meta (?:property|name)="${s}" content="([^"]*)">`).exec(src)?.[1];
+    ok('새 주소는 상수 NEW_SITE 한 곳 (https://suitable-home.pages.dev/) · 공유 미리보기 og:url·og:image 두 줄만 같은 값 · 예전 주소 이름은 OLD_HOST 한 곳', site === 'https://suitable-home.pages.dev/' && og('og:url') === site && og('og:image') === site + 'icons/og-image.png' && src.split('suitable-home.pages.dev').length === 4 && /OLD_HOST = 'dionelee\.github\.io';/.test(src) && src.split('dionelee.github.io').length === 2, site);
+    const bm = await new Promise(r => { const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = '/icons/og-image.png'; });   // decode·createImageBitmap 은 가상 시간에서 멈춤
+    ok('공유 미리보기: og:title · og:description = description · og:type website · twitter:card summary_large_image · 그림 1200×630 (있음)', og('og:title') === 'SUITABLE HOME — 신혼부부 전월세 비교' && og('og:description') === og('description') && og('description') === '월세에 대출 이자까지 더한 실제 월 부담, 우리 기준 적합도, 평면도 3D까지. 무료·가입 없음.' && og('og:type') === 'website' && og('twitter:card') === 'summary_large_image' && og('og:image:width') === '1200' && og('og:image:height') === '630' && bm && bm.naturalWidth === 1200 && bm.naturalHeight === 630, bm && `${bm.naturalWidth}×${bm.naturalHeight}`); }
   for (const [u, t] of [['/privacy.html', '개인정보 처리방침'], ['/404.html', '없는 주소']]) { const r = await fetch(u), h = await r.text();
     ok(`${u} 있음 (${t})`, r.ok && h.includes(`<title>${t}`) && (u !== '/privacy.html' || h.includes('https://github.com/DioneLee/suitable-home/issues')), r.status); }
   let f = await frame(1280, '#home'), d = f.contentDocument, fw = f.contentWindow, q = s => d.querySelector(s);

@@ -44,14 +44,16 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
   const added = [];
   for (const [k, it] of texts.entries()) {
     wcalls = []; const l = await reg(it.text, [{ text: JSON.stringify(k === 0 ? { ...asG(it.expect), rooms: 99 } : asG(it.expect)) }]); added.push(l?.id);
-    ok(`가상 매물 글 ${k + 1}: '등록' 한 번 → Worker /listing 에 글만 보냄 → 바로 카드로 저장 · 값 ${Object.keys(it.expect).length}개` + (k === 0 ? ' (범위 밖 방 99 는 버리고 규칙 읽기 값 2)' : ''),
-      !!l && wcalls.length === 1 && wcalls[0].url === WK + '/listing' && wcalls[0].body === it.text && !/goog|key/i.test(JSON.stringify(wcalls[0].headers)) && same(l, it.expect) && !q('#formDlg').open && fw.location.hash === '#listings' && !!q(`.gl-pend [data-card="${l.id}"]`), JSON.stringify(l));
+    ok(`가상 매물 글 ${k + 1}: '등록' 한 번 → Worker /listing 에 글만 보냄 → 바로 카드로 저장 · 값 ${Object.keys(it.expect).length}개 · 통근이 없어도 계산되는 카드` + (k === 0 ? ' (범위 밖 방 99 는 버리고 규칙 읽기 값 2)' : ''),
+      !!l && wcalls.length === 1 && wcalls[0].url === WK + '/listing' && wcalls[0].body === it.text && !/goog|key/i.test(JSON.stringify(wcalls[0].headers)) && same(l, it.expect) && !q('#formDlg').open && fw.location.hash === '#listings' && !q(`.gl-pend [data-card="${l.id}"]`) && fw.eval(`evaluate(state).all.some(x => x.id === '${l.id}')`), JSON.stringify(l));
   }
   { const l = fw.eval('state.listings.at(-1)'); }
   const l0 = fw.eval(`state.listings.find(l => l.id === '${added[0]}')`);
   ok('이름 비우면 자동: 역 + 방 개수 ("망원역 투룸")', l0.name === '망원역 투룸', l0.name);
-  ok('통근을 안 적어도 저장 · 카드에 "통근 미입력" 배지 · "값 미확인 · 수정에서 채우면 계산돼요" · 순위에서 빠짐 · Worker 가 읽었으면 안내 없음',
-    l0.commute == null && /통근 미입력/.test(q(`[data-card="${l0.id}"]`).textContent) && /값 미확인 · 수정에서 채우면 계산돼요/.test(q(`[data-card="${l0.id}"]`).textContent) && !fw.eval(`evaluate(state).all.some(l => l.id === '${l0.id}')`) && q('#regMsg').textContent === '', q('#regMsg').textContent);
+  { const c = q(`.gl-cards [data-card="${l0.id}"]`), ev = fw.eval('evaluate(state)'), e0 = ev.all.find(l => l.id === l0.id);
+    ok('통근을 안 적어도 계산: 카드에 실제 월 부담 숫자 · "통근 미입력" 배지 · 값 미확인 아님 · 적합도 점수·순위 있음(통근 점수는 통과 매물 평균) · 자세히 보기·수정·3D·삭제 버튼 · 안내 없음',
+      l0.commute == null && !!c && /실제 월 [\d.]+만원/.test(c.textContent) && /통근 미입력/.test(c.querySelector('.badge.warn')?.textContent || '') && !/값 미확인/.test(c.textContent) && !!e0 && Number.isFinite(e0.monthly)
+      && (e0.reasons.length || Number.isFinite(e0.score) && e0.rank >= 1) && ['data-detail', 'data-act="edit"', 'data-act="view"', 'data-act="del"'].every(s => c.querySelector(`[${s}]`)) && q('#regMsg').textContent === '', c?.textContent.replace(/\s+/g, ' ').slice(0, 160)); }
   ok('카드 요약 한 줄: 거래 · 보증금/월세 · 관리비 · 면적 · 방 · 층 · 역 도보', q(`[data-card="${l0.id}"] .gl-line`).textContent === '월세 3,000 / 70 · 관리비 8만 · 전용 42.5㎡ · 방 2 · 3/5층 · 망원역 도보 6분', q(`[data-card="${l0.id}"] .gl-line`).textContent);
   // ---- Worker 를 못 쓰면 규칙 읽기 (같은 글)
   for (const [k, it] of texts.entries()) for (const [why, plan, ms] of [['꺼짐(503)', [{ status: 503 }], 400], ['붐빔(502) 두 번', [{ status: 502 }, { status: 502 }], 2600], ['연결 안 됨 두 번', [{ net: 1 }, { net: 1 }], 2600]]) {
@@ -80,11 +82,18 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
   q('#submitBtn').click(); await W(400);
   { const l = fw.eval('state.listings.at(-1)'); added.push(l.id);
     ok('직접 입력만 → Worker 안 부르고 저장 · 값이 다 있으면 순위 계산에 들어감 · 안내 없음', l.name === '직접 입력 집' && wcalls.length === 0 && fw.eval(`evaluate(state).all.some(x => x.id === '${l.id}')`) && q('#regMsg').textContent === '' && !q('.gl-pend [data-card="' + l.id + '"]'), JSON.stringify(l)); }
-  // ---- 수정: 붙여넣기 칸 숨김 · 직접 입력 펼침 · 통근 채우면 계산에 들어감
-  q(`.gl-pend [data-card="${l0.id}"] [data-act="edit"]`).click(); await W(300);
+  // ---- 수정: 붙여넣기 칸 숨김 · 직접 입력 펼침 · 통근 채우면 배지 사라짐
+  q(`.gl-cards [data-card="${l0.id}"] [data-act="edit"]`).click(); await W(300);
   ok('수정: 붙여넣기 칸 숨김 · 직접 입력 펼침 · 버튼 "수정 저장" · 이름에 포커스', q('#pasteBox').hidden && q('#formDirect').open && q('#submitBtn').textContent === '수정 저장' && d.activeElement === F.name, d.activeElement?.name);
   F.commute.value = 35; F.rooms.value = 2; q('#submitBtn').click(); await W(400);
-  ok('수정에서 통근 채움 → 값 미확인에서 빠지고 계산·카드에 들어감', fw.eval(`evaluate(state).all.some(l => l.id === '${l0.id}')`) && !q(`.gl-pend [data-card="${l0.id}"]`) && !!q(`.gl-cards [data-card="${l0.id}"]`), '');
+  ok('수정에서 통근 채움 → "통근 미입력" 배지 사라지고 실제 통근으로 점수', fw.eval(`state.listings.find(l => l.id === '${l0.id}').commute`) === 35 && !/통근 미입력/.test(q(`.gl-cards [data-card="${l0.id}"]`).textContent) && fw.eval(`evaluate(state).all.find(l => l.id === '${l0.id}').commuteS`) === 35, '');
+  // ---- 실사용 시나리오 (2026-11-12): 붙여넣기 등록(통근 없음) → 카드에 실제 월 부담 · 홈 '적합도 상위'
+  { const l = await reg('쓰리룸 1000/30, 관리비 5만, 전용 80㎡, 방3, 5층/10층, 흑석역 도보 1분, 주거용, 전입신고 가능', [{ status: 503 }]); added.push(l?.id);
+    const c = q(`.gl-cards [data-card="${l.id}"]`), m = fw.eval(`evaluate(state).all.find(x => x.id === '${l.id}')`);
+    ok('붙여넣기 등록(통근 없음) → 카드에 실제 월 부담 숫자', l.commute == null && /실제 월 [\d.]+만원/.test(c.textContent) && c.textContent.includes(`${m.monthly.toFixed(1)}만원`), c.textContent.replace(/\s+/g, ' ').slice(0, 140));
+    fw.location.hash = 'home'; await W(400);
+    ok('붙여넣기 등록(통근 없음) → 홈 "적합도 상위"에 들어감 (통근 점수는 통과 매물 평균)', !m.reasons.length && q('#topList').textContent.includes('흑석역 쓰리룸') && !!q(`#topList [data-detail="${l.id}"]`), q('#topList').textContent.replace(/\s+/g, ' ').slice(0, 160));
+    fw.location.hash = 'listings'; await W(300); }
   // ---- 예전 키 값 · 다른 곳으로 안 보냄
   ok('기기에 남은 예전 키 값은 그대로 (지우지도 쓰지도 않음) · Gemini 로 직접 안 보냄 · 저장 데이터에 안 들어감', fw.localStorage.getItem('suitable-gemini-key') === 'TEST-ONLY-0000' && other.length === 0 && !/TEST-ONLY-0000/.test(fw.localStorage.getItem('newlywed-home-v1')), other.join());
   // ---- 390

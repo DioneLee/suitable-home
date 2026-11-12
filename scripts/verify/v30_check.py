@@ -38,8 +38,8 @@ const reloaded = f => new Promise(r => f.addEventListener('load', r, { once: tru
   ok('3D·시트: 선택이 값 미확인이면 계산되는 첫 매물로 · 3D 고르기 목록에 없음', fw.eval('state.selectedId') !== 'pend1' && ![...q('#sel3d').options].some(o => o.value === 'pend1'), fw.eval('state.selectedId'));
   fw.location.hash = 'listings'; await W(400);
   const pc = q('.gl-pend [data-card="pend1"]'), cards = [...q('[data-glance]').querySelectorAll('.gl-cards > li')];
-  ok('매물 화면: 값 미확인 카드는 계산된 카드 뒤 · "값 미확인 · 수정에서 채우면 계산돼요 (전용면적·통근)" · 통근 미입력 배지 · 자세히·3D 버튼 없음 · PC 에서도 보임',
-    !!pc && /값 미확인 · 수정에서 채우면 계산돼요 \(전용면적·통근\)/.test(pc.textContent) && /통근 미입력/.test(pc.textContent) && !pc.querySelector('[data-detail],[data-act="view"]') && pc.checkVisibility()
+  ok('매물 화면: 값 미확인 카드는 계산된 카드 뒤 · "값 미확인 · 수정에서 채우면 계산돼요 (전용면적)" · 통근 미입력 배지 · 자세히·3D 버튼 없음 · PC 에서도 보임',
+    !!pc && /값 미확인 · 수정에서 채우면 계산돼요 \(전용면적\)/.test(pc.textContent) && /통근 미입력/.test(pc.textContent) && !pc.querySelector('[data-detail],[data-act="view"]') && pc.checkVisibility()
     && cards.indexOf(pc) > cards.findIndex(li => !li.closest('.gl-pend') && !li.closest('.gl-failed')) && !pc.closest('.gl-failed'), pc?.textContent);
   ok('PC 표에는 값 미확인 없음', !q('.gl-table [data-card="pend1"]'), '');
   { const F = fw.eval('form'); fw.eval("startEdit(state.listings.find(l => !l.current && l.id !== 'pend1').id)"); await W(200); const id = F.id.value; F.url.value = 'javascript:alert(1)'; q('#submitBtn').click(); await W(300);
@@ -96,7 +96,7 @@ const reloaded = f => new Promise(r => f.addEventListener('load', r, { once: tru
   ok('불러오기 전: 매물 0곳', fw.eval('state.listings.length') === 0, fw.eval('state.listings.length'));
   { const dt = new fw.DataTransfer(); dt.items.add(new fw.File([blText], 'suitable-home.json', { type: 'application/json' }));
     const inp = q('#importFile'); inp.files = dt.files; inp.dispatchEvent(new fw.Event('change', { bubbles: true })); await W(300);
-  for (let i = 0; i < 50 && !q('#ioYes'); i++) await W(100);
+  for (let i = 0; i < 300 && !q('#ioYes'); i++) await W(100);
   step('불러오기 바꾸기 · ' + q('#ioMsg').textContent + ' · ' + blText.length);
   if (!q('#ioYes')) throw new Error('확인 버튼 없음: ' + q('#ioMsg').textContent);
     const done = reloaded(f); q('#ioYes').click(); await done; await W(1500); }

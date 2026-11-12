@@ -63,6 +63,7 @@
   - 맨 아래 문구 교체 · `privacy.html` · `404.html` · Worker ORIGINS 에 새 주소 추가(**Worker 배포는 사용자**)
   - 설계 `docs/design/새주소_등록.md` · 검사 `ai_check.py`(25) · `v30_check.py`(20) · 스크린샷 `screenshots/after_v30_*` · 백업 `index_v30_backup.html`
   - 실제 813호 옮기기는 사용자(Aside)가 push 뒤에
+  - v31 실사용 수정 (2026-11-12): 통근만 빈 매물도 계산·순위에 넣음('통근 미입력' 배지 · 통근 점수는 통과 매물 평균 · 화면 곳곳 '미입력') · '값 미확인'은 금액·면적·방이 빠졌을 때만 · 휴대폰 탭바 '청약 ↗'(읽을 때 '청약 체크 (새 창)') · 백업 `index_v31_backup.html` · 사진 `after_v31_*`
   - 보안: `_headers` CSP(script-src self + jsdelivr·cdnjs + 인라인 3개 해시 · connect-src Worker·Nominatim·OSRM) · nosniff · Referrer-Policy · 원문 링크는 http(s)만 저장. **index.html 인라인 스크립트를 고치면 `python scripts/csp.py --write`** (v30_check 가 다르면 NG) · 브라우저 확인 `python scripts/verify/csp_check.py`
 
 ## 작업 규칙 (요약 — 원문은 CLAUDE.md)

@@ -23,7 +23,7 @@ async function frame(w, hash = 'subs') { const f = document.createElement('ifram
   // 2단계: 청약 화면은 청약 체크로 옮김
   ok('예전 주소 #subs → 홈 · 청약 화면 없음', !d.querySelector('[data-view="subs"]') && vis('[data-view="home"]') && !d.querySelector('#subsSec, #subsNext'), fw.location.hash);
   const navs = [...d.querySelectorAll('.nav a, .tabbar a')].filter(a => a.href === CHECK);
-  ok('메뉴(위·휴대폰 탭바): 청약 자리에 "청약 체크 ↗" 새 탭 · #subs 링크 없음', navs.length === 2 && navs.every(a => a.target === '_blank' && /noopener/.test(a.rel) && a.textContent.trim() === '청약 체크 ↗') && !d.querySelector('a[href="#subs"]'), navs.length);
+  ok('메뉴(위·휴대폰 탭바): 청약 자리에 새 탭 링크 (위 "청약 체크 ↗" · 탭바는 한 줄 "청약 ↗" + 읽을 때 "청약 체크 (새 창)") · #subs 링크 없음', navs.length === 2 && navs.every(a => a.target === '_blank' && /noopener/.test(a.rel)) && navs.map(a => a.textContent.trim()).join('|') === '청약 체크 ↗|청약 ↗' && navs[1].getAttribute('aria-label') === '청약 체크 (새 창)' && !d.querySelector('a[href="#subs"]'), navs.length);
   ok('마이그레이션: 청약 빈 값 (subs 는 그대로 둠)', fw.eval('JSON.stringify([state.subs.tab, state.subs.notices.length, state.subs.me.nw.appl])') === '["newlywed",0,"a"]', fw.eval('JSON.stringify(state.subs.tab)'));
   const m1 = L('m1').monthly;
   // 청약 매물: 마지막 판정을 한 번만 저장 (freezeSubs) · 보증금은 그대로
@@ -72,7 +72,7 @@ async function frame(w, hash = 'subs') { const f = document.createElement('ifram
   // 휴대폰 390
   f.remove(); f = await frame(390, 'home'); d = f.contentDocument; fw = f.contentWindow;
   const tab = [...d.querySelectorAll('.tabbar a')].map(a => a.textContent.trim());
-  ok('휴대폰: 탭바 6칸 · 청약 자리에 청약 체크 ↗', tab.length === 6 && tab[2] === '청약 체크 ↗', tab.join('|'));
+  ok('휴대폰: 탭바 6칸 · 청약 자리에 "청약 ↗" · 칸마다 한 줄 (꺾이지 않음)', tab.length === 6 && tab[2] === '청약 ↗' && [...d.querySelectorAll('.tabbar a')].every(a => a.getClientRects().length && a.scrollHeight <= 60 && Math.round(a.getBoundingClientRect().height) <= 60 && (r => r.length === 1)([...new Set([...a.getClientRects()].map(x => 0))]) && a.querySelector('*') === null ? (() => { const rg = d.createRange(); rg.selectNodeContents(a); return rg.getClientRects().length === 1; })() : true), tab.join('|'));
   ok('390 홈 가로 넘침 없음', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);
   fw.location.hash = 'listings'; await W(500);
   ok('390 매물 가로 넘침 없음 (청약 배지 포함)', d.documentElement.scrollWidth <= 390, d.documentElement.scrollWidth);

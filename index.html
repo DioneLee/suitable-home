@@ -537,7 +537,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
     <a class="brand" href="#home">Suitable Home</a>
     <a class="lnk" href="#home" data-nav="home">홈</a>
     <a class="lnk" href="#listings" data-nav="listings">매물</a>
-    <a class="lnk" href="https://dionelee.github.io/cheongyak-check/" target="_blank" rel="noopener noreferrer">청약 체크 ↗</a>
+    <a class="lnk" href="https://seoul-cheongyak-check.pages.dev/" target="_blank" rel="noopener noreferrer">청약 체크 ↗</a>
     <a class="lnk" href="#report" data-nav="report">비교 리포트</a>
     <a class="lnk" href="#criteria" data-nav="criteria">우리 기준</a>
     <a class="lnk" href="#studio" data-nav="studio">3D 집 보기</a>
@@ -930,7 +930,7 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 <nav class="tabbar" aria-label="메뉴">
   <a href="#home" data-nav="home">홈</a>
   <a href="#listings" data-nav="listings">매물</a>
-  <a href="https://dionelee.github.io/cheongyak-check/" target="_blank" rel="noopener noreferrer">청약 체크 ↗</a>
+  <a href="https://seoul-cheongyak-check.pages.dev/" target="_blank" rel="noopener noreferrer">청약 체크 ↗</a>
   <a href="#report" data-nav="report">리포트</a>
   <a href="#criteria" data-nav="criteria">우리 기준</a>
   <a href="#studio" data-nav="studio">3D</a>
@@ -1488,7 +1488,7 @@ const md = ymd => { const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(ymd || ''); return 
 const sg1 = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1);
 const moveBadge = l => l.moveIn === '가능' ? '<span class="badge pass">전입신고 가능</span>' : l.moveIn === '불가' ? '<span class="badge fail">전입신고 불가</span>' : '<span class="badge unk">전입신고 미확인</span>';
 // 청약 매물 배지: 마지막 판정이 자격 없음이면 탈락 배지, 아니면 청약 체크로 가는 링크
-const subBadge = l => l.sub.no ? '<span class="badge fail">청약 체크에서 확인한 결과: 자격 없음</span>' : '<a class="badge unk" href="https://dionelee.github.io/cheongyak-check/" target="_blank" rel="noopener noreferrer">청약 체크에서 확인 ↗</a>';
+const subBadge = l => l.sub.no ? '<span class="badge fail">청약 체크에서 확인한 결과: 자격 없음</span>' : '<a class="badge unk" href="https://seoul-cheongyak-check.pages.dev/" target="_blank" rel="noopener noreferrer">청약 체크에서 확인 ↗</a>';
 const loanBadge = l => l.loanOk ? '<span class="badge pass">대출 가능</span>' : '<span class="badge fail">대출 불가</span>';
 // 매물 한 곳의 항목 ①~⑧ (표·카드·시트·패널이 같이 쓴다)
 function glanceRows(l, cur) {

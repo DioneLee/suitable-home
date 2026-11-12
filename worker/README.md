@@ -1,7 +1,7 @@
 # AI 읽기 중계 (Cloudflare Worker)
 
 공고 PDF·매물 글을 Gemini로 읽는 중계 서버예요. 받는 요청은 `POST /notice`(PDF base64, 5MB까지)와 `POST /listing`(글, 5,000자까지) 두 가지뿐이고,
-`https://dionelee.github.io`·`http://localhost:8766`·청약 체크 앱(`https://localhost` Android · `capacitor://localhost` iOS)에서 온 요청만 받아요. 요청 내용은 로그에 남기지 않아요.
+`https://dionelee.github.io`·청약 체크 새 주소(`https://seoul-cheongyak-check.pages.dev`)·`http://localhost:8766`·청약 체크 앱(`https://localhost` Android · `capacitor://localhost` iOS)에서 온 요청만 받아요. 요청 내용은 로그에 남기지 않아요.
 
 ## 배포 (무료 플랜)
 1. `npx wrangler login`

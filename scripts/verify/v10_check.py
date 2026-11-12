@@ -14,7 +14,7 @@ BASE = "http://localhost:8766"
 JS = r"""
 const asc = o => JSON.stringify(o).replace(/[<>&]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));   // 결과 글자에 < 가 있어도 HTML 로 안 바뀌게
 const W = ms => new Promise(r => setTimeout(r, ms)), out = [], ok = (name, cond, got) => out.push([cond ? 'OK' : 'NG', name, String(got ?? '')]);
-const CHECK = 'https://dionelee.github.io/cheongyak-check/';
+const CHECK = 'https://seoul-cheongyak-check.pages.dev/';
 async function frame(w, hash = 'subs') { const f = document.createElement('iframe'); f.style.cssText = `border:0;width:${w}px;height:900px`; f.src = '/index.html#' + hash; document.body.append(f); await new Promise(r => f.onload = r); await W(1200); return f; }
 (async () => {
   localStorage.setItem('newlywed-home-v1', SEED); localStorage.setItem('suitable-intro', '1');

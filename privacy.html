@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>개인정보 처리방침 — SUITABLE HOME</title>
+<meta name="color-scheme" content="dark">
+<style>
+:root { --bg: #1C1A19; --paper: #252220; --ink: #EDE6DD; --muted: #A39A90; --line: #3A3532; --accent: #B8875F;
+  --sans: "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 var(--sans); }
+main { max-width: 720px; margin: 0 auto; padding: 32px max(16px, env(safe-area-inset-left, 0px)) 48px; }
+h1 { font-size: 26px; margin: 8px 0 4px; } h2 { font-size: 18px; margin: 28px 0 6px; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 8px 24px 20px; }
+.muted { color: var(--muted); font-size: 14px; } ul { padding-left: 20px; } a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <a href="./#home">← SUITABLE HOME으로 돌아가기</a>
+  <h1>개인정보 처리방침</h1>
+  <p class="muted">시행일 2026-11-12 · https://suitable-home.pages.dev</p>
+  <div class="card">
+    <h2>1. 저장하는 곳</h2>
+    <p>회원가입이 없고, 서버에 내 데이터를 모아 두지 않아요. 매물·평면도·가구·우리 기준은 <b>이 기기의 브라우저 저장 공간</b>에만 있어요. 브라우저 데이터를 지우면 같이 지워지니, 맨 아래 '백업'에서 파일로 받아 두세요.</p>
+    <h2>2. 밖으로 나가는 것 (그때만)</h2>
+    <ul>
+      <li><b>매물 글</b>: 등록 창에 붙여넣은 글은 칸을 정리하기 위해 우리 서버(Cloudflare Worker)를 거쳐 Google(Gemini API)로 가요. 서버는 글을 저장하지 않아요. Google의 처리 방식은 Google 약관을 따라요. 소득·자산·가족 정보는 보내지 않아요.</li>
+      <li><b>지도 주소</b>: 입지 지도를 그릴 때 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색(Nominatim)·경로 검색으로 보내요.</li>
+      <li><b>화면 부품</b>: 글꼴·차트·3D 부품을 공개 CDN(jsDelivr·cdnjs·Google Fonts)에서 받아요. 이때 접속 주소(IP)가 해당 서비스에 남을 수 있어요.</li>
+    </ul>
+    <h2>3. 쓰지 않는 것</h2>
+    <p>광고·방문 분석 도구, 쿠키 추적을 쓰지 않아요.</p>
+    <h2>4. 참고용 계산</h2>
+    <p>실제 월 부담·대출 계산은 판단을 돕는 참고용이에요. 계약 전에는 원문과 금융기관에서 꼭 확인해 주세요.</p>
+    <h2>5. 문의</h2>
+    <p><a href="https://github.com/DioneLee/suitable-home/issues" target="_blank" rel="noopener noreferrer">GitHub Issues ↗</a>에 남겨 주세요.</p>
+  </div>
+</main>
+</body>
+</html>

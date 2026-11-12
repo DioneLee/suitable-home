@@ -57,6 +57,14 @@
 - [ ] (선택) Kakao 개발자 콘솔에 등록해 둔 도메인 정리 (카카오맵은 쓰지 않기로 함)
 - 알려진 한계: 301호 도면을 가로 9.8m로 맞추면 세로가 4.11m(도면 3.9m)로 잡힘 / 한눈에 비교 표는 매물이 많으면 가로로 스크롤
 
+- v30 새 주소 정리 (2026-11-12): **https://suitable-home.pages.dev** (Cloudflare Pages, 상수 `NEW_SITE` 한 곳) · 예전 주소엔 '주소가 바뀌었어요' 띠 + '내 데이터 옮기기'
+  - 매물 등록 한 번에(붙여넣기 → '등록' → Worker 정리, 못 하면 규칙 읽기 → 바로 저장) · AI 문구·AI 설정·내 키 코드 삭제(기기에 남은 키 값은 그대로) · 값 미확인 매물은 계산·순위·홈 상위·3D 에서 빼고 맨 뒤
+  - '데이터와 AI 설정' 칸 → `#backup` 화면(맨 아래 '백업' 링크) · 불러오기 화면 안 확인 · 평면도 사진은 내보낼 때 줄이지 않음(방 구분 보존)
+  - 맨 아래 문구 교체 · `privacy.html` · `404.html` · Worker ORIGINS 에 새 주소 추가(**Worker 배포는 사용자**)
+  - 설계 `docs/design/새주소_등록.md` · 검사 `ai_check.py`(25) · `v30_check.py`(20) · 스크린샷 `screenshots/after_v30_*` · 백업 `index_v30_backup.html`
+  - 실제 813호 옮기기는 사용자(Aside)가 push 뒤에
+  - 보안: `_headers` CSP(script-src self + jsdelivr·cdnjs + 인라인 3개 해시 · connect-src Worker·Nominatim·OSRM) · nosniff · Referrer-Policy · 원문 링크는 http(s)만 저장. **index.html 인라인 스크립트를 고치면 `python scripts/csp.py --write`** (v30_check 가 다르면 NG) · 브라우저 확인 `python scripts/verify/csp_check.py`
+
 ## 작업 규칙 (요약 — 원문은 CLAUDE.md)
 
 - 큰 작업은 `/지시서`(일곱 칸 계획 → 확인 후 작업), 수정은 `/고쳐줘` (`.claude/commands/`)
@@ -72,7 +80,7 @@
 python -m http.server 8766 --bind localhost        # 레포 루트에서, 테스트 전용 주소
 python scripts/verify/v8_check.py ; python scripts/verify/v10_check.py   # 한눈에 비교·시트 / 청약 자동 검사
 python scripts/verify/length_check.py              # 화면별 세로 길이 (예시 3곳 · 가상 11곳)
-python scripts/verify/ai_check.py ; node scripts/verify/worker_check.mjs ; python scripts/sync_ai_spec.py --check   # AI 읽기
+python scripts/verify/ai_check.py ; python scripts/verify/v30_check.py ; node scripts/verify/worker_check.mjs ; python scripts/sync_ai_spec.py --check   # 등록 한 번에 · 새 주소·백업·평면도 치수
 python scripts/verify/screenshot.py after_v8_ index.html home,listings,report --seed scripts/verify/seed_v8.json
 python scripts/verify/ana_shots.py sample          # 도면 분석 스크린샷
 ```
@@ -82,4 +90,4 @@ python scripts/verify/ana_shots.py sample          # 도면 분석 스크린샷
 
 1. `git clone https://github.com/DioneLee/suitable-home.git`
 2. 전역 Claude 설정: 공개 저장소에는 없다(2026-11-04 뺌). 이 PC의 `setup/`(git 제외 폴더)을 직접 옮겨서 `setup/README.md` 참고
-3. **매물 데이터는 브라우저마다 따로 저장된다.** 지금 PC 사이트에서 '매물 → 데이터 옮기기 → JSON 내보내기' → 새 노트북 사이트에서 'JSON 불러오기'
+3. **매물 데이터는 브라우저마다 따로 저장된다.** 지금 PC 사이트 맨 아래 '백업' → JSON 내보내기 → 새 노트북 사이트 맨 아래 '백업' → JSON 불러오기

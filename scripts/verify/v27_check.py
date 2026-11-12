@@ -2,7 +2,7 @@
 
 먼저 레포 루트에서:  python -m http.server 8766 --bind localhost
 사용: python scripts/verify/v27_check.py
-항목: AI 503 재시도·다시 시도 · 매물 추가 후 글 칸 비움 · 홈 상위 N곳 제목 · PC 표 탈락 제외 · 시트 안내(PC/휴대폰)
+항목: 매물 글 정리 재시도·규칙 읽기 · 등록 후 글 칸 비움 · 홈 상위 N곳 제목 · PC 표 탈락 제외 · 시트 안내(PC/휴대폰)
       · 정렬 줄 흐림 · 매물 화면 버튼 하나 · 입력칸 단위 설명 · 리포트 aria-current · 방향 입력 펼침 · 탈락 카드 강조 · 같은 메뉴로 시트 닫기
 """
 import json, re, subprocess, sys, tempfile
@@ -51,42 +51,31 @@ const fill = (d, v) => { const F = d.querySelector('#form'); for (const [k, x] o
   ok('엣지3. 시트 열고 다른 메뉴(리포트) → 이동 + 닫힘', !fw.eval('sheet.open') && /^#report/.test(fw.location.hash) && !q('[data-view="report"]').hidden, fw.location.hash);
   fw.location.hash = 'report/space'; await W(500);
   ok('8. 리포트 장 링크 aria-current', q('[data-rptab="space"]').getAttribute('aria-current') === 'page' && d.querySelectorAll('.rp-tabs [aria-current]').length === 1, '');
-  // 2. 매물 추가 성공 → 글 칸 비움
+  // 가짜 Worker (매물 글 정리) — 실제 Worker 는 부르지 않는다
+  let gcalls = 0, mode = 503; const realFetch = fw.fetch;
+  fw.fetch = async (url, o) => { if (!/generativelanguage|workers\.dev/.test(url)) return realFetch(url, o); gcalls++;
+    if (mode === 'net' || (mode === 'net1' && gcalls === 1)) throw new TypeError('Failed to fetch');   // 연결 실패
+    if (mode === 'ok' || mode === 'net1') return new Response(JSON.stringify({ text: JSON.stringify({ deal: '월세', deposit: 3000, rent: 70, area: 40, rooms: 2 }) }), { status: 200 });
+    if (mode === 'w502') return new Response(JSON.stringify({ error: 'gemini', why: ['gemini-2.5-flash 503 UNAVAILABLE The model is overloaded'] }), { status: 502 });
+    return new Response(JSON.stringify({ error: 'x' }), { status: mode }); };
+  // 2. 등록 성공 → 글 칸 비움
   fw.location.hash = 'listings'; await W(400);
   q('.nav [data-addform]').click(); await W(300);
   q('#lstText').value = '투룸 보증금 3000 / 월세 70'; q('#lstText').dispatchEvent(new Event('input'));
   fill(d, { name: 'v27 추가', deposit: 3000, rent: 70, area: 40, rooms: 2, commute: 30 });
   q('#submitBtn').click(); await W(500);
-  ok('2. 매물 추가 → 매물 글 칸 비움', q('#lstText').value === '' && !q('#formDlg').open && fw.eval("state.listings.some(l => l.name === 'v27 추가')"), JSON.stringify(q('#lstText').value));
-  // 1. AI 503 (내 키 → Gemini 503)
-  fw.localStorage.setItem('suitable-gemini-key', 'TESTKEY'); fw.eval('syncAi()');
-  q('.nav [data-addform]').click(); await W(300);
-  let gcalls = 0, mode = 503; const realFetch = fw.fetch;
-  fw.fetch = async (url, o) => { if (!/generativelanguage|workers\.dev/.test(url)) return realFetch(url, o); gcalls++;
-    if (mode === 'net' || (mode === 'net1' && gcalls === 1)) throw new TypeError('Failed to fetch');   // 연결 실패
-    if (mode === 'net1') return new Response(JSON.stringify({ text: JSON.stringify({ deal: '월세', deposit: 3000, rent: 70 }) }), { status: 200 });   // 공용 Worker 응답
-    if (mode === 'ok') return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ deal: '월세', deposit: 3000, rent: 70 }) }] } }] }), { status: 200 });
-    if (mode === 'w502') return new Response(JSON.stringify({ error: 'gemini', why: ['gemini-2.5-flash 503 UNAVAILABLE The model is overloaded'] }), { status: 502 });
-    return new Response(JSON.stringify({ error: { status: 'X' } }), { status: mode }); };
-  const lmsg = () => q('#lstSend [data-msg]');
-  q('#lstText').value = '투룸 보증금 3000 / 월세 70'; q('#lstGo').click(); await W(1000);
-  const per = gcalls; ok('1. 첫 시도 뒤 2초 대기 중 (아직 실패 문구 없음)', per >= 1 && !/붐벼요/.test(lmsg().textContent), `calls ${per}`);
-  await W(3000);
-  ok('1. 내 키 503 → 2초 뒤 한 번 더 (호출 2배) → 붐빔 문구 + 다시 시도', gcalls === per * 2 && /AI 서버가 지금 붐벼요\. 잠시 후 다시 누르거나 직접 붙여넣기로 할 수 있어요\./.test(lmsg().textContent) && lmsg().querySelector('button')?.textContent === '다시 시도', `calls ${gcalls} · ${lmsg().textContent}`);
-  mode = 'ok'; lmsg().querySelector('button').click(); await W(1000);
-  ok('1. 다시 시도 → 성공하면 칸 채움', q('#form [name=deposit]').value === '3000' && /AI가 \d칸을 채웠어요/.test(q('#lstMsg').textContent), q('#lstMsg').textContent);
-  mode = 429; gcalls = 0; q('#lstGo').click(); await W(4000);
-  ok('1. 429 → 지금 문구 그대로 (재시도 없음)', /오늘 AI 사용량이 다 찼어요/.test(lmsg().textContent) && !lmsg().querySelector('button') && gcalls === per, `calls ${gcalls} · ${lmsg().textContent}`);
-  fw.localStorage.removeItem('suitable-gemini-key'); fw.eval('syncAi()');
-  mode = 'w502'; gcalls = 0; q('#lstGo').click(); await W(4000);
-  ok('1. 공용 Worker 502(why 503) → 2번 시도 → 붐빔 문구', gcalls === 2 && /붐벼요/.test(lmsg().textContent), `calls ${gcalls} · ${lmsg().textContent}`);
-  mode = 'net'; gcalls = 0; q('#lstGo').click(); await W(4000);
-  ok('1. 연결 실패 → 2초 뒤 한 번 더 (2번 시도) → 연결 문구', gcalls === 2 && !/붐벼요/.test(lmsg().textContent) && lmsg().textContent.length > 0, `calls ${gcalls} · ${lmsg().textContent}`);
-  mode = 'net1'; gcalls = 0; q('#form [name=deposit]').value = ''; q('#lstGo').click(); await W(4000);
-  ok('1. 연결 실패 한 번 → 다시 해서 성공하면 칸 채움', gcalls === 2 && q('#form [name=deposit]').value === '3000', `calls ${gcalls} · ${q('#lstMsg').textContent}`);
-  mode = 503; gcalls = 0; q('#lstGo').click(); await W(4000);
-  ok('1. 공용 Worker 503(AI 꺼짐) → 기존 문구 · 재시도 없음', gcalls === 1 && /AI 읽기가 꺼져 있어요/.test(lmsg().textContent), `calls ${gcalls} · ${lmsg().textContent}`);
-  fw.fetch = realFetch; q('#cancelEdit').click(); d.querySelector('#formDlg').close();
+  ok('2. 등록 → 매물 글 칸 비움 · 직접 입력 값이 먼저', q('#lstText').value === '' && !q('#formDlg').open && fw.eval("state.listings.some(l => l.name === 'v27 추가' && l.commute === 30)"), JSON.stringify(q('#lstText').value));
+  // 1. 매물 글 정리: 붐빔(502)·연결 실패는 2초 뒤 한 번 더 · 429·503 은 다시 안 부름 · 못 읽으면 규칙 읽기로 저장 + 안내 한 줄
+  const N0 = fw.eval('state.listings.length');
+  const reg = async (txt, ms) => { q('.nav [data-addform]').click(); await W(300); q('#lstText').value = txt; q('#submitBtn').click(); await W(ms); return fw.eval('state.listings.at(-1)'); };
+  for (const [m, n, ms] of [['w502', 2, 3500], ['net', 2, 3500], [429, 1, 800], [503, 1, 800]]) {
+    mode = m; gcalls = 0; const n0 = fw.eval('state.listings.length'); const l = await reg('투룸 보증금 3000 / 월세 70 전용 40㎡ 흑석역 도보 5분', ms);
+    ok(`1. Worker ${m} → ${n}번 부르고 규칙 읽기로 저장 · "일부 칸을 못 읽었어요 · 수정에서 채워 주세요" (AI 문구 없음)`, gcalls === n && fw.eval('state.listings.length') === n0 + 1 && l.deposit === 3000 && l.rent === 70 && l.area === 40 && l.name === '흑석역 투룸'
+      && q('#regMsg').textContent === '일부 칸을 못 읽었어요 · 수정에서 채워 주세요' && !q('#formDlg').open, `calls ${gcalls} · ${JSON.stringify(l)} · ${q('#regMsg').textContent}`);
+  }
+  mode = 'net1'; gcalls = 0; { const l = await reg('그냥 집', 3500);
+    ok('1. 연결 실패 한 번 → 다시 해서 성공하면 그 값으로 저장 · 안내 없음 (통근만 빈 건 배지로)', gcalls === 2 && l.deposit === 3000 && l.area === 40 && l.commute == null && q('#regMsg').textContent === '', `calls ${gcalls} · ${q('#regMsg').textContent}`); }
+  fw.fetch = realFetch; fw.eval(`state.listings = state.listings.slice(0, ${N0}); render()`);   // 시험 매물 지움
   // 엣지1. 3D 집 보기 → 방향 입력 버튼
   fw.location.hash = 'studio'; await W(1500);
   q("#stTabAna").click(); await W(1500);   // 예시 매물은 방향이 모두 비어 있다

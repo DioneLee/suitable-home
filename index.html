@@ -138,7 +138,7 @@ input, select { width: 100%; font: 16px var(--sans); color: var(--ink); backgrou
 .in { position: relative; display: block; }
 .in > i { position: absolute; right: 12px; top: calc(50% + 3px); transform: translateY(-50%); font: 13px var(--sans); color: var(--muted); pointer-events: none; }
 .in > input { padding-right: 3.2em; }
-/* 접어 둔 도구 (데이터 옮기기 · AI 설정) */
+/* 접어 둔 도구 */
 details.tool.fold > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--s1); min-height: 28px; }
 details.tool.fold > summary b { font: 600 17px/1.4 var(--sans); }
 details.tool.fold[open] > summary { margin-bottom: var(--s2); }
@@ -154,16 +154,12 @@ details.ch-foot > p { margin-top: 4px; }
 .totop { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 25; background: var(--bg); border-color: var(--line); box-shadow: 0 4px 16px rgba(0, 0, 0, .35); }
 @media (max-width: 767.98px) { .totop { bottom: calc(var(--tabbar-h, 64px) + 12px + env(safe-area-inset-bottom, 0px)); } }
 .sheet-lock .totop { display: none; }
-@media (min-width: 768px) { .gl-cards { display: none; } .gl-failed .gl-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } }   /* PC 도 탈락 매물은 표에서 빼고 여기 카드로 */
+@media (min-width: 768px) { .gl-cards { display: none; } .gl-cards.gl-pend { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } .gl-failed .gl-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } }   /* PC 도 탈락 매물은 표에서 빼고 여기 카드로 */
 @media (max-width: 767.98px) { .gl-table { display: none; } }
 /* v14 쉬운 청약 화면: 본문 16px · 줄 간격 1.6 */
 .ai-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); margin: var(--s2) 0; }
-.ai-send { margin: var(--s2) 0; padding: var(--s2); border: 1px solid var(--line); border-left: 6px solid var(--accent); border-radius: var(--r2); }
-.ai-send p { margin: 0 0 4px; }
-.ai-filled { border-color: var(--accent) !important; box-shadow: 0 0 0 1px var(--accent); }   /* AI가 채운 칸 · 사람이 고치면 해제 */
 .ai-paste { padding-bottom: var(--s3); margin-bottom: var(--s3); border-bottom: 1px solid var(--line); }
 .ai-paste textarea { display: block; width: 100%; margin: var(--s1) 0; font: 16px/1.6 var(--sans); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r1); padding: 12px; }
-.ai-key label { margin-top: var(--s2); max-width: 32em; }
 .demo-banner { margin-top: var(--s3); padding: var(--s3); border: 1px dashed var(--accent); border-radius: var(--r2); }
 .demo-banner p { margin: 0 0 var(--s2); font: 600 20px/1.5 var(--sans); color: var(--accent); }
 .qm { display: inline-block; vertical-align: middle; }
@@ -223,6 +219,11 @@ details.ch-foot > p { margin-top: 4px; }
 .vs { display: block; font-size: 13px; color: var(--muted); }
 .check { display: flex; align-items: center; gap: var(--s1); cursor: pointer; }
 .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); flex: none; }
+.moved { margin-top: var(--s2); padding: 12px var(--s2); border-radius: var(--r2); background: color-mix(in srgb, var(--warn) 14%, var(--paper)); font-size: 14px; line-height: 1.55; }
+.moved p { margin: 0; } .moved p + p { margin-top: 4px; } .moved b { font-size: 15px; } .moved a { font-weight: 700; } .moved button { min-height: 36px; padding: 0 12px; border-radius: var(--pill); font-size: 13px; }
+.gl-pend { margin-top: var(--s3); } .gl-pend > li { border-style: dashed; } .gl-pend .gl-score { display: block; margin-top: var(--s1); color: var(--warn); font-size: 14px; }
+.gl-pend-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--s1); } .gl-pend-h .gl-name { flex: 1 1 auto; }
+#regMsg:empty { display: none; } #regMsg { margin-top: var(--s2); color: var(--warn); }
 .io-row { display: flex; flex-wrap: wrap; gap: var(--s1); align-items: center; margin-top: var(--s2); }
 .io-row .msg { font-size: 13px; color: var(--muted); flex-basis: 100%; }
 .baseline { position: absolute; top: 0; bottom: 0; border-left: 1.5px dashed var(--accent); pointer-events: none; }
@@ -546,6 +547,11 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 </nav>
 
 <main id="top">
+<div class="wrap"><section class="moved" id="movedBar" aria-labelledby="h-moved" hidden>
+  <p><b id="h-moved">주소가 바뀌었어요</b> · <a id="movedGo" href="#">새 주소 열기 ↗</a></p>
+  <p>매물·평면도는 이 주소에만 저장돼 있어요. <button type="button" class="ghost" id="movedExport">내 데이터 옮기기</button> 로 받은 파일을 새 주소 맨 아래 '백업' → JSON 불러오기로 넣어 주세요.</p>
+  <p class="msg" id="movedMsg" role="status"></p>
+</section></div>
 <div class="view" data-view="home">
   <!-- 0 히어로 · 분양 사이트 -->
   <header class="hero">
@@ -583,28 +589,10 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <p class="eyebrow" id="ebType">At a glance</p>
       <div class="gl-head"><h2 class="h2" id="h-glanceList">한눈에 비교</h2></div>
       <p class="lead">계약 조건 · 전입신고 · 주소 · 통근 · 원문을 매물마다 나란히 봐요. 평면도·3D·계산식은 "자세히 보기"에서.</p>
+      <p class="msg" id="regMsg" role="status"></p>
       <div class="gl-sort" role="group" aria-label="정렬"><span class="hint">정렬</span>
         <button type="button" class="small ghost" data-gsort="price">금액 낮은 순</button><button type="button" class="small ghost" data-gsort="monthly">실제 월 부담 낮은 순</button><button type="button" class="small ghost" data-gsort="commute">통근 짧은 순</button><button type="button" class="small ghost" data-gsort="area">넓은 순</button></div>
       <div class="gl-body" data-glance></div>
-    </div>
-  </section>
-  <section class="block" id="manageSec" aria-label="데이터와 AI 설정">
-    <div class="wrap">
-      <details class="tool fold" id="io"><summary><b>데이터 옮기기</b> <span class="hint">JSON 내보내기 · 불러오기 · 초기화</span></summary>
-        <p class="hint">매물·사람별 가중치·자금 설정·가구·평면도를 파일 하나로 저장하고, 다른 기기나 발표 PC에서 불러와요.</p>
-        <div class="io-row">
-          <button type="button" class="ghost" id="exportBtn">JSON 내보내기</button>
-          <label class="filebtn ghost">JSON 불러오기<input type="file" id="importFile" accept="application/json,.json"></label>
-          <button type="button" class="danger" id="resetBtn">예시 데이터로 초기화</button>
-          <span class="msg" id="ioMsg" role="status"></span>
-        </div>
-      </details>
-      <details class="tool fold" id="aiSet" style="scroll-margin-top:72px"><summary><b>AI 설정</b> <span class="hint">Google Gemini 키</span></summary>
-        <p class="hint">매물 글 칸 채우기에 Google Gemini를 써요. AI는 읽기만 하고, 저장은 내가 해요.</p>
-        <p class="hint" id="aiState"></p>
-        <form class="ai-key" id="aiKeyForm"><label>내 Gemini 키 <span class="unit">(선택 · 이 기기에만 저장 · 내보내기 파일에 안 들어가요)</span><input id="aiKey" type="password" autocomplete="off" spellcheck="false" maxlength="100"></label>
-          <div class="row"><button class="primary" id="aiKeySave">키 저장</button><button type="button" class="ghost" id="aiKeyDel">키 지우기</button><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">키 받기 ↗</a><span class="msg" id="aiKeyMsg" role="status"></span></div></form>
-      </details>
     </div>
   </section>
 </div>
@@ -837,35 +825,50 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
     </div>
   </section>
 </div>
+
+<div class="view" data-view="backup" hidden>
+  <section class="block" id="backupSec" aria-labelledby="h-backup">
+    <div class="wrap">
+      <h2 class="h2" id="h-backup">백업</h2>
+      <div class="tool" id="io">
+        <p class="hint">매물·사람별 가중치·자금 설정·가구·평면도(사진·인식한 칸·축척·방향)를 파일 하나로 받아 두고, 다른 기기나 새 주소에서 불러와요.</p>
+        <p class="hint"><b>불러오면 지금 이 기기의 매물·평면도가 파일 내용으로 바뀌어요.</b> 파일을 고르면 한 번 더 확인해요.</p>
+        <div class="io-row">
+          <button type="button" class="ghost" id="exportBtn">백업 받기 (JSON 내보내기)</button>
+          <label class="filebtn ghost">JSON 불러오기<input type="file" id="importFile" accept="application/json,.json"></label>
+          <button type="button" class="danger" id="resetBtn">예시 데이터로 초기화</button>
+          <span class="msg" id="ioMsg" role="status"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 </main>
-<footer><div class="wrap">계산은 이 브라우저 안에서만 해요. 입력한 매물·평면도·가구는 이 기기에만 저장돼요. 입지 지도를 그릴 때만 지역·주소·역·직장 이름을 OpenStreetMap 위치 검색에 보내요. AI 읽기를 쓸 때만 매물 글을 Google Gemini로 보내요.
-  <p>공고 출처: 마이홈포털·LH 공공데이터 API, SH·서울 청년안심주택(원문 링크)</p>
-  <p>본 서비스에서 제공하는 실제 월 부담·대출(LTV) 계산 및 청약 자격 판정은 의사결정을 돕기 위한 참고용 시뮬레이션이며 법적·금융적 효력이 없습니다. 실제 청약 신청 및 부동산 계약 전에는 반드시 모집공고문 원본과 금융기관을 통해 최종 확인하시기 바랍니다.</p></div></footer>
+<footer><div class="wrap">계산은 이 브라우저에서만 · 데이터는 이 기기에만 · 매물 글은 정리를 위해 Google로 · 지도 주소는 OpenStreetMap으로 · 참고용 계산
+  <p><a href="#backup">백업</a> · <a href="privacy.html">개인정보 처리방침</a></p></div></footer>
 <dialog class="fdlg" id="formDlg" aria-labelledby="h-form">
   <div class="fdlg-head"><h3 id="h-form">매물 등록</h3><button type="button" class="ghost small" id="formClose" aria-label="닫기">✕</button></div>
   <div class="fdlg-body" id="manage">
-    <div class="ai-paste">
-      <h4>매물 글 붙여넣기 <span class="unit">(선택)</span></h4>
-      <p class="hint">직방·네이버 매물 설명을 붙여넣으면 AI가 아래 칸을 채워요. 글에 없는 값은 비워 두고, 저장은 확인한 뒤 '매물 추가'를 눌러야 돼요. <a href="#listings" data-focus="#aiSet">AI 설정</a></p>
-      <textarea id="lstText" rows="3" maxlength="5000" placeholder="예: 투룸 보증금 3000 / 월세 70, 관리비 8만, 전용 42㎡, 3층/5층, 망원역 도보 6분, 전입신고 가능" aria-label="매물 설명 글"></textarea>
-      <div class="ai-send" id="lstSend"><p>이 내용만 Gemini로 보내요: <b data-what>붙여넣은 매물 글</b></p>
-      <p class="unit">무료 등급은 구글 제품 개선에 쓰일 수 있어요. 소득·자산·지금 집·직장·가족 정보는 보내지 않아요.</p>
-      <div class="row"><button type="button" class="primary" data-go id="lstGo">AI로 읽기</button><button type="button" class="ghost" data-stop hidden>취소</button><span class="msg" data-msg role="status"></span></div></div>
-      <p class="msg" id="lstMsg" role="status"></p>
-    </div>
-    <p class="hint" style="margin-top:16px">금액은 만원 단위로 적어 주세요. 예: 1억 2천 → 12000</p>
-    <form id="form" style="margin-top:12px">
+    <form id="form">
       <input type="hidden" name="id">
+      <div class="ai-paste" id="pasteBox">
+        <h4><label for="lstText">매물 글 붙여넣기</label></h4>
+        <p class="hint">직방·네이버 매물 설명을 붙여넣고 '등록'을 누르면 바로 매물 카드로 저장돼요. 글에 없는 값은 '미확인'으로 두고, 나중에 수정에서 채우면 돼요.</p>
+        <textarea id="lstText" rows="5" maxlength="5000" placeholder="예: 투룸 보증금 3000 / 월세 70, 관리비 8만, 전용 42㎡, 3층/5층, 망원역 도보 6분, 전입신고 가능"></textarea>
+        <p class="msg" id="lstMsg" role="status"></p>
+      </div>
+      <details class="form-more" id="formDirect"><summary>직접 입력 <span class="hint">이름 · 금액 · 면적 · 방 · 통근 · 주소 · 층</span></summary>
+      <p class="hint" style="margin-top:12px">금액은 만원 단위로 적어 주세요. 예: 1억 2천 → 12000. 비운 칸은 '미확인'이에요.</p>
       <div class="fields">
-        <label class="wide">이름<input name="name" required maxlength="40" placeholder="예: 망원동 투룸"></label>
+        <label class="wide">이름<input name="name" maxlength="40" placeholder="비우면 역·지역 + 방 개수 (예: 흑석역 투룸)"></label>
         <label class="wide">지역<input name="region" maxlength="40" placeholder="예: 마포구 망원동"></label>
         <label>거래 유형<select name="deal" id="fDeal"><option>월세</option><option>전세</option><option>매매</option></select></label>
-        <label><span id="fDepLabel">보증금</span><span class="in"><input aria-labelledby="fDepLabel" name="deposit" type="number" inputmode="decimal" min="0" step="any" required><i>만원</i></span></label>
-        <label data-deal="월세"><span id="fRentLabel">월세</span><span class="in"><input aria-labelledby="fRentLabel" name="rent" type="number" inputmode="decimal" min="0" step="any" required><i>만원</i></span></label>
+        <label><span id="fDepLabel">보증금</span><span class="in"><input aria-labelledby="fDepLabel" name="deposit" type="number" inputmode="decimal" min="0" step="any"><i>만원</i></span></label>
+        <label data-deal="월세"><span id="fRentLabel">월세</span><span class="in"><input aria-labelledby="fRentLabel" name="rent" type="number" inputmode="decimal" min="0" step="any"><i>만원</i></span></label>
         <label><span id="fFeeLabel">관리비</span><span class="in"><input aria-labelledby="fFeeLabel" name="fee" type="number" inputmode="decimal" min="0" step="any" placeholder="모르면 비워 두기"><i>만원</i></span></label>
-        <label><span id="fAreaLabel">전용면적</span><span class="in"><input aria-labelledby="fAreaLabel" name="area" type="number" inputmode="decimal" min="1" step="any" required><i>㎡</i></span></label>
-        <label><span id="fRoomsLabel">방 개수</span><span class="in"><input aria-labelledby="fRoomsLabel" name="rooms" type="number" inputmode="numeric" min="1" max="6" step="1" required><i>개</i></span></label>
-        <label><span id="fCommuteLabel">통근</span><span class="in"><input aria-labelledby="fCommuteLabel" name="commute" type="number" inputmode="numeric" min="0" step="1" required placeholder="편도"><i>분</i></span></label>
+        <label><span id="fAreaLabel">전용면적</span><span class="in"><input aria-labelledby="fAreaLabel" name="area" type="number" inputmode="decimal" min="1" step="any"><i>㎡</i></span></label>
+        <label><span id="fRoomsLabel">방 개수</span><span class="in"><input aria-labelledby="fRoomsLabel" name="rooms" type="number" inputmode="numeric" min="1" max="6" step="1"><i>개</i></span></label>
+        <label><span id="fCommuteLabel">통근</span><span class="in"><input aria-labelledby="fCommuteLabel" name="commute" type="number" inputmode="numeric" min="0" step="1" placeholder="편도 · 모르면 비워 두기"><i>분</i></span></label>
       </div>
       <details class="form-more" id="formMore"><summary>더 입력하기 <span class="hint">주소 · 층 · 전입신고 · 역 · 경로 · 원문 링크</span></summary>
       <div class="fields">
@@ -885,8 +888,9 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       </div>
       <label class="check" style="margin-top:16px"><input type="checkbox" name="current"> 지금 사는 집 <span class="unit">(순위에서 빼고 비교 기준선으로 써요 · 한 곳만)</span></label>
       </details>
+      </details>
       <div class="row">
-        <button class="primary" type="submit" id="submitBtn">매물 추가</button>
+        <button class="primary" type="submit" id="submitBtn">등록</button>
         <button type="button" class="ghost" id="cancelEdit" hidden>수정 취소</button>
       </div>
     </form>
@@ -939,9 +943,9 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
 <script>
 // ---------- 데이터 ----------
 const KEY = 'newlywed-home-v1';
-const AI_WORKER = 'https://suitable-home-ai.demolee.workers.dev';   // 배포한 Cloudflare Worker 주소 (worker/README.md). 비우면 '내 Gemini 키' → 없으면 직접 붙여넣기
-const AI_MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'];   // 기본 · 실패하면 한 번만 더 (2026-11-05 공식 문서 정식 모델, worker/src/index.js 와 같게)
-const AI_KEY = 'suitable-gemini-key';   // 내 키는 저장 데이터(KEY)와 따로, 이 기기에만 (내보내기에 안 들어감)
+const AI_WORKER = 'https://suitable-home-ai.demolee.workers.dev';   // 매물 글 정리용 Cloudflare Worker (worker/README.md). 못 읽으면 규칙 읽기(ruleListing)
+// 주소는 여기 한 곳 (2026-11-12 Cloudflare Pages 프로젝트 suitable-home). 예전 주소(GitHub Pages)에는 '주소가 바뀌었어요' 띠 + 바로 내보내기
+const NEW_SITE = 'https://suitable-home.pages.dev/', OLD_HOST = 'dionelee.github.io';
 const CRITERIA = [
   { k: 'price',   label: '가격',   lower: true,  get: l => l.monthly },
   { k: 'area',    label: '면적',   lower: false, get: l => l.area },
@@ -969,6 +973,8 @@ const GEO_PRESET = { '마포구 망원동': [37.55602, 126.90098], '망원역': 
   '구로디지털단지역': [37.48367, 126.9028], '동작구 상도동': [37.49882, 126.9441], '상도역': [37.50385, 126.949], '여의도': [37.52567, 126.92522] };
 
 // 예전 형식 → 지금 형식 (localStorage 와 JSON 불러오기 공통). 형식이 아니면 null
+// 원문 링크는 http(s) 주소만 저장 (javascript: 등은 빈 글자 · 2026-11-12) — 함수 선언: migrate 가 먼저 불려도 쓰게
+function httpUrl(u) { try { const x = new URL(String(u ?? '').trim()); return /^https?:$/.test(x.protocol) ? x.href : ''; } catch (e) { return ''; } }
 function migrate(s) {
   if (!s || !Array.isArray(s.listings)) return null;
   s.settings ??= { ...DEFAULT.settings };
@@ -995,7 +1001,7 @@ function migrate(s) {
     if (!['월세', '전세', '매매'].includes(l.deal)) l.deal = '월세';
     if (!['가능', '불가'].includes(l.moveIn)) l.moveIn = null;
     l.loanYears = Number(l.loanYears) > 0 ? Number(l.loanYears) : 30; if (l.repay !== 'interest') l.repay = 'amort';
-    l.floorNo = String(l.floorNo ?? ''); l.route = String(l.route ?? ''); l.url = String(l.url ?? ''); l.urlSaved ??= null; }   // v8: 거래 유형·전입신고·층·경로·원문   // v6: 방향(null = 미확인)   // v3: 관리비·도보 미확인(null), 지금 사는 집
+    l.floorNo = String(l.floorNo ?? ''); l.route = String(l.route ?? ''); l.url = httpUrl(l.url); l.urlSaved ??= null; }   // v8: 거래 유형·전입신고·층·경로·원문   // v6: 방향(null = 미확인)   // v3: 관리비·도보 미확인(null), 지금 사는 집
   return s;
 }
 // 여러 탭: 탭마다 데이터를 메모리에 들고 화면을 그릴 때마다 저장하므로, 다른 탭이 바꾼 뒤 이 탭이 저장하면 그 변경을 덮어쓴다.
@@ -1175,10 +1181,13 @@ function scores(passed, w) {
   if (out.every(s => Math.abs(s - out[0]) < 1e-9)) return out.map(() => 100);
   return out;
 }
+// 계산에 꼭 필요한 값(금액·면적·방·통근) 중 빠진 것 → 있으면 '값 미확인' 매물 (계산·점수·순위·차트·3D 에서 빼고 목록 맨 뒤에)
+const missingOf = l => [[l.deposit, { 월세: '보증금', 전세: '전세금', 매매: '매매가' }[l.deal || '월세']], [(l.deal || '월세') === '월세' ? l.rent : 0, '월세'], [l.area, '전용면적'], [l.rooms, '방 개수'], [l.commute, '통근']]
+  .filter(([v]) => v == null || !Number.isFinite(+v)).map(x => x[1]);
 function evaluate(st) {
-  const s = st.settings;
-  const curL = st.listings.find(l => l.current);
-  const all = st.listings.map(l => {
+  const s = st.settings, ready = st.listings.filter(l => !missingOf(l).length);
+  const curL = ready.find(l => l.current);
+  const all = ready.map(l => {
     const cp = costParts(l, s), monthly = cp.monthly, over = !l.current && overBudget(monthly, s), r = l.current ? [] : reasons(l, s);
     if (l.sub?.no && !l.current) r.push('청약 체크에서 확인한 결과: 자격 없음');   // 저장해 둔 마지막 판정 (freezeSubs)
     if (over && s.budgetFail) r.push(`실제 월 부담 ${monthly.toFixed(1)}만 (상한 ${s.budget}만 초과)`);
@@ -1196,7 +1205,7 @@ function evaluate(st) {
   // 동점 = 화면에 보이는 반올림 점수가 같음 → 같은 순위, 실제 월 부담이 낮은 순
   passed.sort((a, b) => Math.round(b.score) - Math.round(a.score) || a.monthly - b.monthly);
   for (const l of passed) { const r = Math.round(l.score); l.rank = 1 + passed.filter(x => Math.round(x.score) > r).length; l.tie = passed.filter(x => Math.round(x.score) === r).length > 1; }
-  return { all, cands, passed, failed: cands.filter(l => l.reasons.length), cur };
+  return { all, cands, passed, failed: cands.filter(l => l.reasons.length), cur, pending: st.listings.filter(l => missingOf(l).length) };
 }
 // 지금 집 대비: 월 부담·통근·전용면적 차이 문구
 function vsCur(l, cur, compact) {
@@ -1260,12 +1269,18 @@ function ensureTypeLetters(listings) {
 // 계산 자체검사: 깨지면 콘솔에 Assertion failed 가 찍힌다
 (function selfTest() {
   const eq = (a, b, m) => console.assert(Math.abs(a - b) < 1e-6, m, a, b);
-  const base = { rent: 50, fee: 10, deposit: 11000, area: 50, basement: false, loanOk: true, usage: '주거용', walk: 5, commute: 30 };
+  const base = { rent: 50, fee: 10, deposit: 11000, area: 50, rooms: 2, basement: false, loanOk: true, usage: '주거용', walk: 5, commute: 30 };
   eq(monthlyCost(base, { myCash: 5000, rate: 3 }), 75, '월 부담: 60 + 6000×3%÷12');
   eq(monthlyCost({ ...base, deposit: 3000 }, { myCash: 5000, rate: 3 }), 60, '내 돈이 더 많으면 이자 0');
   console.assert(reasons(base).length === 0, '정상 매물 통과');
   { const a = aiListing({ deal: '전세', deposit: 21000, rent: 50, rooms: 99, area: '59', basement: true, usage: '기타', walk: 7, station: ' 망원역 ', moveIn: null });
     console.assert(JSON.stringify(a) === '{"deal":"전세","deposit":21000,"floor":"반지하","station":"망원역","walk":7}', 'AI 매물 값: 범위·보기 밖·없는 값은 버림', a); }
+  { const a = ruleListing('투룸 3000/68, 관리비 8만, 전용 41㎡, 방2, 3층/5층, 흑석역 도보 5분');
+    console.assert(JSON.stringify(a) === '{"deal":"월세","deposit":3000,"rent":68,"fee":8,"area":41,"rooms":2,"floorNo":"3/5","floor":"지상","station":"흑석역","walk":5}', '규칙 읽기: 3000/68 · 관리비 · 전용 · 방 · 층 · 역 도보', a);
+    const b = ruleListing('전세 2억 1천 쓰리룸 반지하'), c = ruleListing('매매 2억 8,000만원 원룸');
+    console.assert(b.deposit === 21000 && b.rooms === 3 && b.floor === '반지하' && c.deal === '매매' && c.deposit === 28000 && c.rooms === 1, '규칙 읽기: 억·천·쉼표', b, c);
+    console.assert(autoName({ station: '흑석역', rooms: 2 }) === '흑석역 투룸' && autoName({ region: '동작구 상도동', rooms: 4 }) === '상도동 방4' && autoName({}) === '새 매물', '이름 자동');
+    console.assert(missingOf({ deal: '전세', deposit: 1, rent: 0, area: 30, rooms: 1, commute: null }).join() === '통근' && !missingOf(base).length, '값 미확인 판정'); }
   console.assert(reasons({ ...base, basement: true, loanOk: false, usage: '업무용', area: 39, deposit: 13001, rent: 96 }).length === 6, '탈락 사유 6개');
   // v8 거래 유형 손계산 (내 돈 5000, 연이율 3%, 주담대 4%)
   const S8 = { myCash: 5000, rate: 3, mortRate: 4 };
@@ -1419,9 +1434,9 @@ function schematic(l, labels) {
 }
 
 // ---------- 화면 전환: 메뉴별로 한 화면만 보인다 (주소 끝 #home, #listings, #report, #criteria, #studio) ----------
-const VIEWS = { home: '', listings: '매물', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기' };
+const VIEWS = { home: '', listings: '매물', report: '비교 리포트', criteria: '우리 기준', studio: '3D 집 보기', backup: '백업' };   // #backup 은 메뉴에 없음 (맨 아래 '백업' 링크)
 const RP = ['cost', 'space', 'commute', 'fit', 'location'];
-const OLD = { top: 'home', type: 'listings', manage: 'listings', sim: 'criteria', location: 'report', final: 'home', goto: 'home', subs: 'home' };   // #subs: 청약은 청약 체크로 옮김   // 예전 한 페이지 주소
+const OLD = { top: 'home', type: 'listings', manage: 'backup', io: 'backup', sim: 'criteria', location: 'report', final: 'home', goto: 'home', subs: 'home' };   // #subs: 청약은 청약 체크로 옮김   // 예전 한 페이지 주소
 let pendingFocus = null;
 function route() {
   const [h, sub] = location.hash.slice(1).split('/'), v = SHOT ? (SHOT[2] in VIEWS ? SHOT[2] : 'home') : h in VIEWS ? h : OLD[h] ?? 'home';
@@ -1505,6 +1520,9 @@ function glanceRows(l, cur) {
     ['적합도', isCur ? '<span class="gl-score">지금 집 · 순위에서 빼고 기준으로 써요</span>' : l.reasons.length ? `<span class="gl-score fail">탈락 · ${l.reasons.map(esc).join(', ')}</span>` : `<span class="gl-score">적합도 ${Math.round(l.score)}점 · ${rankTxt(l)}</span>`],
   ];
 }
+const factsLine = l => { const d = l.deal || '월세', u = v => v == null ? '미확인' : v;
+  return [`${d} ${l.deposit == null ? '미확인' : fmtWon(l.deposit)}${d === '월세' ? ` / ${u(l.rent)}` : ''}`, `관리비 ${l.fee == null ? '미확인' : l.fee + '만'}`, `전용 ${l.area == null ? '미확인' : l.area + '㎡'}`, `방 ${u(l.rooms)}`,
+    l.floorNo ? `${esc(l.floorNo)}층${l.basement ? ' 반지하' : ''}` : l.basement ? '반지하' : '층 미확인', l.walk != null ? `${l.station ? esc(l.station) : '역'} 도보 ${l.walk}분` : l.station ? `${esc(l.station)} 도보 미확인` : '역 도보 미확인'].join(' · '); };
 let glSort = 'price';
 const GL_SORT = { price: (a, b) => a.deposit - b.deposit, monthly: (a, b) => a.monthly - b.monthly, commute: (a, b) => a.commute - b.commute, area: (a, b) => b.area - a.area };
 const glOpen = new Set();   // 휴대폰에서 펼친 카드 (다시 그려도 유지)
@@ -1514,15 +1532,19 @@ function renderGlance(ev) {
   const acts = l => `<div class="gl-acts"><button type="button" class="small primary gl-more" data-detail="${l.id}">자세히 보기</button><button type="button" class="small ghost" data-act="edit" data-id="${l.id}">수정</button><button type="button" class="small ghost" data-act="view" data-id="${l.id}">3D</button><button type="button" class="small danger" data-act="del" data-id="${l.id}">삭제</button></div>`;
   const rows = new Map(L.map(l => [l.id, glanceRows(l, cur)]));
   const sig = l => l.current ? '<span class="badge base">지금 집</span>' : l.reasons.length ? '<span class="badge fail">탈락</span>' : '<span class="badge pass">통과</span>';
-  const card = l => `<li class="${l.current ? 'cur' : ''}" data-card="${l.id}"><details${glOpen.has(l.id) ? ' open' : ''} data-glid="${l.id}"><summary>${head(l)}<span class="gl-line">실제 월 <b>${fmtMonthly(l.monthly)}</b> · 통근 ${fmtMin(l.commute)}</span>${sig(l)}</summary>
+  const card = l => `<li class="${l.current ? 'cur' : ''}" data-card="${l.id}"><details${glOpen.has(l.id) ? ' open' : ''} data-glid="${l.id}"><summary>${head(l)}<span class="gl-line">${factsLine(l)}</span><span class="gl-line">실제 월 <b>${fmtMonthly(l.monthly)}</b> · 통근 ${fmtMin(l.commute)}</span>${sig(l)}</summary>
       <dl>${rows.get(l.id).map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl></details>${acts(l)}</li>`;
   const ok = L.filter(l => l.current || !l.reasons.length), out = L.filter(l => !l.current && l.reasons.length);
+  const pend = l => `<li data-card="${l.id}"><div class="gl-pend-h"><span class="gl-name"><b>${esc(l.name)}</b></span><span class="badge unk">값 미확인</span>${l.commute == null ? '<span class="badge warn">통근 미입력</span>' : ''}</div>
+      <p class="gl-line">${factsLine(l)}</p><p class="gl-score">값 미확인 · 수정에서 채우면 계산돼요 <span class="gl-sub" style="display:inline">(${missingOf(l).join('·')})</span></p>
+      <div class="gl-acts"><button type="button" class="small primary" data-act="edit" data-id="${l.id}">수정</button><button type="button" class="small danger" data-act="del" data-id="${l.id}">삭제</button></div></li>`;
+  const P = ev.pending, pendHtml = P.length ? `<ul class="gl-cards gl-pend" aria-label="값 미확인 ${P.length}곳 · 순위 계산에서 빠져 있어요">${P.map(pend).join('')}</ul>` : '';
   const T = ok;   // 표(PC)도 카드처럼 통과·지금 집만, 탈락은 '탈락 N곳 보기'에만
-  const html = !L.length ? '<p class="empty">매물을 등록하면 여기에서 나란히 비교해요. <button type="button" class="small primary" data-addform>+ 매물 등록</button></p>'
+  const html = !L.length ? (pendHtml || '<p class="empty">매물을 등록하면 여기에서 나란히 비교해요. <button type="button" class="small primary" data-addform>+ 매물 등록</button></p>')
     : (T.length ? `<div class="gl-table"><table><thead><tr><th scope="col"><span class="sr">항목</span></th>${T.map(l => `<th scope="col" class="${l.current ? 'cur' : ''}" data-card="${l.id}">${head(l)}</th>`).join('')}</tr></thead><tbody>`
       + rows.get(T[0].id).map((r, i) => `<tr><th scope="row">${r[0]}</th>${T.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${rows.get(l.id)[i][1]}</td>`).join('')}</tr>`).join('')
       + `<tr><th scope="row"><span class="sr">자세히</span></th>${T.map(l => `<td class="${l.current ? 'cur' : ''}" data-card="${l.id}">${acts(l)}</td>`).join('')}</tr></tbody></table></div>` : '<p class="empty gl-none">탈락 조건을 통과한 매물이 없어요. 아래에서 탈락 사유를 확인해 보세요.</p>')
-      + `<ul class="gl-cards">${ok.map(card).join('')}</ul>`
+      + `<ul class="gl-cards">${ok.map(card).join('')}</ul>` + pendHtml
       + (out.length ? `<details class="gl-failed"${glOpen.has('_failed') ? ' open' : ''} data-glid="_failed"><summary>탈락 ${out.length}곳 보기</summary><ul class="gl-cards">${out.map(card).join('')}</ul></details>` : '');
   for (const el of document.querySelectorAll('[data-glance]')) el.innerHTML = html;
   for (const b of document.querySelectorAll('[data-gsort]')) b.setAttribute('aria-pressed', b.dataset.gsort === glSort);
@@ -1913,16 +1935,16 @@ function drawCharts(ev) {
 }
 
 function render() {
-  if (!state.listings.some(l => l.id === state.selectedId)) state.selectedId = state.listings[0]?.id ?? null;
   ensureTypeLetters(state.listings);
   freezeSubs(state);   // 청약 매물: 마지막 판정을 한 번만 저장
   const ev = evaluate(state);
+  if (!ev.all.some(l => l.id === state.selectedId)) state.selectedId = ev.all[0]?.id ?? null;   // 값 미확인 매물은 시트·3D 에서 뺀다
   renderHero(ev); renderGlance(ev); renderSheet(ev); renderReport(ev); renderSim(ev); renderLocation(ev); renderTop(ev);
   const areas = ev.all.map(l => l.area);
   const lo = Math.min(...areas), hi = Math.max(...areas);
   $('#ebType').textContent = ev.all.length ? `${ev.all.length} ${ev.all.length === 1 ? 'type' : 'types'} · 전용 ${lo === hi ? lo : `${lo}–${hi}`}㎡` : 'At a glance';
   $('#ebSim').textContent = `Criteria · ${state.people.length}명 기준`;
-  $('#sel3d').innerHTML = state.listings.map(l => `<option value="${l.id}" ${l.id === state.selectedId ? 'selected' : ''}>${typeCode(l)} · ${esc(l.name)}</option>`).join('');
+  $('#sel3d').innerHTML = state.listings.filter(l => !missingOf(l).length).map(l => `<option value="${l.id}" ${l.id === state.selectedId ? 'selected' : ''}>${typeCode(l)} · ${esc(l.name)}</option>`).join('');
   drawCharts(ev);
   const sel = state.listings.find(l => l.id === state.selectedId);
   window.show3D?.(sel);
@@ -1987,7 +2009,7 @@ $('#addPerson').addEventListener('click', () => {
 });
 
 const form = $('#form');
-const NUMS = ['deposit', 'rent', 'fee', 'area', 'rooms', 'walk', 'commute'], OPTIONAL = ['fee', 'walk'];   // 비우면 미확인(null)
+const NUMS = ['deposit', 'rent', 'fee', 'area', 'rooms', 'walk', 'commute'];   // 비우면 미확인(null) · 금액·면적·방·통근이 비면 '값 미확인' 매물
 // 거래 유형에 따라 금액 칸 이름·보이는 칸을 바꾼다 (월세: 보증금·월세 / 전세: 전세금 / 매매: 매매가·대출 기간·상환 방식)
 function syncDeal() {
   const d = form.deal.value;
@@ -1996,16 +2018,28 @@ function syncDeal() {
 }
 form.deal.addEventListener('change', syncDeal);
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-function resetForm() { form.querySelectorAll('.ai-filled').forEach(el => el.classList.remove('ai-filled')); form.reset(); $('#h-form').textContent = '매물 등록'; $('#formMore').open = false; $('#lstMsg').textContent = ''; lstWhat(); form.id.value = ''; syncDeal(); $('#submitBtn').textContent = '매물 추가'; $('#cancelEdit').hidden = true; }
-form.addEventListener('submit', e => {
+function resetForm() { form.reset(); $('#lstText').value = ''; $('#h-form').textContent = '매물 등록'; $('#formMore').open = $('#formDirect').open = false; $('#pasteBox').hidden = false; $('#lstMsg').textContent = ''; form.id.value = ''; syncDeal(); $('#submitBtn').textContent = '등록'; $('#submitBtn').disabled = false; $('#cancelEdit').hidden = true; }
+// 이름을 비우면 '역(없으면 동네) + 방 개수' (예: 흑석역 투룸)
+function autoName(l) { const w = ['', '원룸', '투룸', '쓰리룸'];   // 함수 선언: 위 selfTest 에서도 쓴다
+  return [l.station || (l.region || '').trim().split(/\s+/).pop() || '새 매물', l.rooms ? w[l.rooms] || `방${l.rooms}` : ''].filter(Boolean).join(' '); }
+form.addEventListener('submit', async e => {
   e.preventDefault();
+  const text = $('#lstText').value.trim(), m = $('#lstMsg'), b = $('#submitBtn');
+  let unread = false;
+  if (!form.id.value && text) {   // 새 등록 + 붙여넣은 글: 읽어서 빈 칸만 채운다 (직접 입력에 적은 값이 먼저)
+    b.disabled = true; b.textContent = '읽는 중…'; m.textContent = '매물 글을 정리하는 중… (최대 1분)';
+    const got = await readListing(text); b.disabled = false; b.textContent = '등록';
+    if (!$('#formDlg').open) { m.textContent = ''; return; }   // 읽는 중에 창을 닫으면 저장 안 함
+    unread = !got; fillEmpty({ ...ruleListing(text), ...got });
+  } else if (!form.id.value && !NUMS.some(k => form[k] && !form[k].disabled && form[k].value.trim()) && !form.name.value.trim()) { m.textContent = '매물 글을 붙여넣거나, 직접 입력에 적어 주세요.'; return; }
   const f = Object.fromEntries(new FormData(form));
   const l = { id: f.id || uid(), name: f.name.trim(), region: f.region.trim(), addr: (f.addr || '').trim(), station: (f.station || '').trim(),
     basement: f.floor === '반지하', loanOk: f.loan === '가능', usage: f.usage, current: !!f.current, facing: f.facing || null,
-    deal: f.deal, moveIn: f.moveIn || null, floorNo: (f.floorNo || '').trim(), route: (f.route || '').trim(), url: (f.url || '').trim(),
+    deal: f.deal, moveIn: f.moveIn || null, floorNo: (f.floorNo || '').trim(), route: (f.route || '').trim(), url: httpUrl(f.url),
     loanYears: Number(f.loanYears) || 30, repay: f.repay || 'amort' };
-  for (const k of NUMS) l[k] = OPTIONAL.includes(k) && (f[k] ?? '').trim() === '' ? null : Number(f[k] ?? 0);
+  for (const k of NUMS) l[k] = (f[k] ?? '').trim() === '' || !Number.isFinite(+f[k]) ? null : Number(f[k]);
   if (l.deal !== '월세') l.rent = 0;   // 전세·매매는 월세 없음 (칸이 꺼져 있어 값이 안 온다)
+  l.name ||= autoName(l);
   const prev = state.listings.find(x => x.id === l.id);
   l.urlSaved = !l.url ? null : prev && prev.url === l.url ? prev.urlSaved : today();   // 링크가 바뀔 때만 오늘 날짜
   if (l.current) for (const x of state.listings) x.current = false;   // 지금 집은 한 곳만
@@ -2013,11 +2047,13 @@ form.addEventListener('submit', e => {
   if (i >= 0 && state.listings[i].sub) { const o = state.listings[i]; l.sub = { ...o.sub, auto: o.sub.auto !== false && o.deposit === l.deposit && o.rent === l.rent && o.fee === l.fee }; }
   if (i >= 0) { const old = state.listings[i]; if (old.plan) l.plan = old.plan; if (old.layout) l.layout = old.layout; if (old.loanRegion) l.loanRegion = old.loanRegion; l.tl = old.tl; state.listings[i] = l; } else state.listings.push(l);
   state.selectedId = l.id;
-  $('#lstText').value = ''; resetForm(); render(); $('#formDlg').close(); go('listings'); setTimeout(() => flashCard(l.id), 60);   // 화면 전환 스크롤 뒤에
+  const miss = missingOf(l).filter(x => x !== '통근');   // 통근은 글에 없으니 '통근 미입력' 배지로만
+  $('#regMsg').textContent = unread || miss.length ? '일부 칸을 못 읽었어요 · 수정에서 채워 주세요' : '';
+  resetForm(); render(); $('#formDlg').close(); go('listings'); setTimeout(() => flashCard(l.id), 60);   // 화면 전환 스크롤 뒤에
 });
 $('#cancelEdit').addEventListener('click', () => { resetForm(); $('#formDlg').close(); });
 // 매물 등록 창: 휴대폰은 아래에서 올라오고, PC는 오른쪽 패널 (기본 <dialog>: Esc 로 닫힘, 뒤 화면은 못 누름)
-function openForm() { const d = $('#formDlg'); if (!d.open) d.showModal(); d.querySelector('.fdlg-body').scrollTop = 0; form.name.focus({ preventScroll: true }); }
+function openForm() { const d = $('#formDlg'); if (!d.open) d.showModal(); d.querySelector('.fdlg-body').scrollTop = 0; $('#regMsg').textContent = ''; (form.id.value ? form.name : $('#lstText')).focus({ preventScroll: true }); }
 $('#formClose').addEventListener('click', () => $('#formDlg').close());
 $('#formDlg').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });   // 바깥(어두운 곳)을 누르면 닫기
 
@@ -2027,7 +2063,7 @@ document.addEventListener('click', e => {
   const f = e.target.closest('a[data-focus]');
   if (f) {
     e.preventDefault(); if ($('#formDlg').open) $('#formDlg').close();
-    const tg = $(f.dataset.focus); if (tg?.tagName === 'DETAILS') tg.open = true;   // 접힌 칸(AI 설정 등)은 펼쳐서
+    const tg = $(f.dataset.focus); if (tg?.tagName === 'DETAILS') tg.open = true;   // 접힌 칸은 펼쳐서
     go(f.getAttribute('href').slice(1), f.dataset.focus);
     if (f.dataset.hl) { const tops = document.querySelectorAll('#simRank li.top'); tops.forEach(li => li.classList.add('flash')); setTimeout(() => tops.forEach(li => li.classList.remove('flash')), 2000); }
     return;
@@ -2058,7 +2094,7 @@ function startEdit(id) {
     form.loanYears.value = l.loanYears || 30; form.repay.value = l.repay || 'amort'; syncDeal();
     form.floor.value = l.basement ? '반지하' : '지상'; form.loan.value = l.loanOk ? '가능' : '불가'; form.usage.value = l.usage;
     $('#submitBtn').textContent = '수정 저장'; $('#cancelEdit').hidden = false; $('#h-form').textContent = '매물 수정 · ' + l.name;
-    form.querySelectorAll('.ai-filled').forEach(el => el.classList.remove('ai-filled'));
+    $('#pasteBox').hidden = true; $('#formDirect').open = true; $('#lstMsg').textContent = '';   // 수정은 직접 입력만
     $('#formMore').open = [...$('#formMore').querySelectorAll('input:not([type=hidden]):not([name=loanYears]), select')].some(el => el.type === 'checkbox' ? el.checked : el.tagName === 'SELECT' ? el.selectedIndex > 0 : el.value.trim());   // 더 입력하기 칸에 값이 있으면 펼쳐 둔다
     openForm();
   }
@@ -2153,51 +2189,47 @@ const NOTICE_SCHEMA = { type: 'OBJECT', required: ['kind', 'name', 'noticeDate',
 const LISTING_SCHEMA = { type: 'OBJECT', properties: { deal: S_E(['월세', '전세', '매매']), deposit: S_N, rent: S_N, fee: S_N, area: S_N, rooms: S_I, floorNo: S_S, basement: { type: 'BOOLEAN', nullable: true },
   usage: S_E(['주거용', '업무용']), station: S_S, walk: S_I, moveIn: S_E(['가능', '불가']), loan: S_E(['가능', '불가']) } };
 // ==== AI_SPEC 끝 ====
-// ---------- AI 읽기 (Gemini): 매물 글에서 값만 읽는다. 저장은 사람이 한다 (공고 PDF 읽기는 청약 체크로 옮김) ----------
-const aiKey = () => { try { return localStorage.getItem(AI_KEY) || ''; } catch (e) { return ''; } };
-const aiReady = () => !!(aiKey() || AI_WORKER);
-const aiFail = st => Object.assign(new Error('ai'), { status: st });
-async function aiRead(kind, payload, signal) {   // kind 'notice'(payload = PDF base64) | 'listing'(payload = 글) → Gemini 가 돌려준 JSON 글자
-  const key = aiKey();
-  if (!key) {   // 공용 Worker: 종류와 내용만 보낸다 (지시문은 Worker 안에)
-    let r; try { r = await fetch(`${AI_WORKER}/${kind}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: payload, signal }); } catch (e) { if (signal.aborted) throw e; throw aiFail(0); }
-    if (!r.ok) { const why = r.status === 502 ? (await r.json().catch(() => null))?.why : null; throw aiFail(Array.isArray(why) && why.some(w => / 503 /.test(w)) ? 'busy' : r.status); }   // Worker 는 Gemini 503(붐빔)을 502 + why 로 돌려준다
-    const t = (await r.json())?.text; if (!t) throw aiFail(502); return t;
-  }
-  const [prompt, schema, part] = kind === 'notice' ? [SUB_PROMPT, NOTICE_SCHEMA, { inline_data: { mime_type: 'application/pdf', data: payload } }] : [LISTING_PROMPT, LISTING_SCHEMA, { text: payload }];
-  const body = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }, part] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema } });
-  let last = 0;
-  for (const m of AI_MODELS) {
-    let r; try { r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body, signal }); }
-    catch (e) { if (signal.aborted) throw e; last = 0; continue; }
-    if (!r.ok) { last = r.status === 400 && /API_KEY/.test(await r.text()) ? 403 : r.status === 503 ? 'busy' : r.status; if (last === 403) break; continue; }
-    const t = (await r.json())?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join(''); if (t) return t; last = 502;
-  }
-  throw aiFail(last);
-}
-const aiErrText = r => ({ cancel: '취소했어요.', busy: 'AI 서버가 지금 붐벼요. 잠시 후 다시 누르거나 직접 붙여넣기로 할 수 있어요.', timeout: '1분 안에 읽지 못했어요. 다시 해 보거나 직접 붙여넣기로 할 수 있어요.', 429: '오늘 AI 사용량이 다 찼어요. 직접 붙여넣기로 할 수 있어요.',
-  0: 'AI에 연결하지 못했어요. 인터넷을 확인하거나 직접 붙여넣기로 할 수 있어요.', 403: 'Gemini 키가 맞지 않아요. AI 설정에서 확인하거나 직접 붙여넣기로 할 수 있어요.',
-  413: '너무 커요. PDF는 5MB, 글은 5,000자까지 보낼 수 있어요.', 503: '지금은 AI 읽기가 꺼져 있어요. 직접 붙여넣기로 해 주세요.' })[r] || 'AI가 읽지 못했어요. 직접 붙여넣기로 할 수 있어요.';
-// 버튼을 눌러야 보낸다 · 1분 지나면 끊고, 읽는 중엔 취소 · 끝나면(성공·실패·취소) '읽는 중' 문구를 바꾼다
-async function aiRun(box, kind, payload, done) {
-  const q = x => box.querySelector(x), go = q('[data-go]'), stop = q('[data-stop]'), msg = q('[data-msg]');
-  const ac = new AbortController(), timer = setTimeout(() => ac.abort('timeout'), 60000);
-  go.hidden = true; stop.hidden = false; stop.onclick = () => ac.abort('cancel'); msg.textContent = '읽는 중… (최대 1분)';
+// ---------- 매물 글 정리: Worker(/listing) 가 값을 JSON 으로 · 붐비거나 연결이 안 되면 2초 뒤 한 번 더 · 1분 넘거나 실패하면 null (규칙 읽기로) ----------
+async function readListing(text) {
+  const ac = new AbortController(), timer = setTimeout(() => ac.abort(), 60000);
   try {
-    let t; try { t = await aiRead(kind, payload, ac.signal); }
-    catch (e) { if ((e.status !== 'busy' && e.status !== 0) || ac.signal.aborted) throw e; await new Promise(r => setTimeout(r, 2000)); if (ac.signal.aborted) throw e; t = await aiRead(kind, payload, ac.signal); }   // 붐비거나 연결이 안 되면 2초 뒤 한 번 더 (1분 시간 초과·429 는 다시 안 함)
-    msg.textContent = ''; done(t);
-  }
-  catch (e) { const r = ac.signal.aborted ? ac.signal.reason : e.status ?? 0; msg.textContent = aiErrText(r);
-    if (r === 'busy') { const b = document.createElement('button'); b.type = 'button'; b.className = 'small ghost'; b.textContent = '다시 시도'; b.onclick = () => aiRun(box, kind, payload, done); msg.append(' ', b); } }
-  finally { clearTimeout(timer); stop.hidden = true; go.hidden = false; }
+    for (let k = 0; k < 2; k++) {
+      let r = null; try { r = await fetch(`${AI_WORKER}/listing`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text.slice(0, 5000), signal: ac.signal }); } catch (e) { if (ac.signal.aborted) return null; }
+      if (r?.ok) { const t = (await r.json().catch(() => null))?.text; try { return t ? aiListing(JSON.parse(t)) : null; } catch (e) { return null; } }
+      if (r && r.status !== 502) return null;   // 429·503(꺼짐) 등은 다시 안 부름
+      if (k === 0) { await new Promise(ok => setTimeout(ok, 2000)); if (ac.signal.aborted) return null; }
+    }
+    return null;
+  } finally { clearTimeout(timer); }
 }
-function syncAi() {
-  const k = aiKey();
-  $('#aiState').textContent = k ? `내 키(…${k.slice(-4)})로 Gemini에 바로 보내요.` : AI_WORKER ? '공용 AI 서버로 읽어요. 내 키를 넣으면 내 키를 먼저 써요.'
-    : '아직 공용 AI 서버가 없어요. 내 키를 넣으면 AI 읽기를 쓸 수 있고, 없으면 직접 붙여넣기로 해요.';
+// 규칙 읽기: '3000/68' · '관리비 8만' · '전용 41㎡' · '방2' · '3층/5층' · 'OO역 도보 5분' 등 (값은 aiListing 으로 같은 범위 검사)
+function ruleListing(t) {
+  const x = {}, AMT = '(\\d+(?:\\.\\d+)?\\s*억(?:\\s*\\d+\\s*천|\\s*\\d[\\d,]*)?|\\d[\\d,]*)', R = s => new RegExp(s), mm = (re, s = t) => re.exec(s);
+  const won = s => { const a = /^(?:(\d+(?:\.\d+)?)\s*억)?\s*(?:(\d+)\s*천|([\d,]+))?$/.exec(s.trim()); return a ? Number(a[1] || 0) * 10000 + (a[2] ? +a[2] * 1000 : Number((a[3] || '0').replace(/,/g, ''))) : null; };
+  let a;
+  x.deal = /월세/.test(t) ? '월세' : /매매/.test(t) ? '매매' : /전세(?!\s*대출)/.test(t) ? '전세' : /\d\s*\/\s*\d+(?!\s*층|\d)/.test(t) ? '월세' : null;
+  if (x.deal === '월세') {
+    if ((a = mm(R('(?:보증금\\s*)?' + AMT + '\\s*/\\s*(?:월세\\s*)?(\\d+(?:\\.\\d+)?)(?![\\d.]|\\s*층)')))) { x.deposit = won(a[1]); x.rent = +a[2]; }
+    else { if ((a = mm(R('보증금\\s*' + AMT)))) x.deposit = won(a[1]); if ((a = /월세\s*(\d+(?:\.\d+)?)/.exec(t))) x.rent = +a[1]; }
+  } else if (x.deal && (a = mm(R((x.deal === '전세' ? '전세(?:금)?' : '매매(?:가)?') + '\\s*' + AMT)))) x.deposit = won(a[1]);
+  if ((a = /관리비\s*(\d+(?:\.\d+)?)\s*만/.exec(t))) x.fee = +a[1];
+  if ((a = /전용(?:면적)?\s*(\d+(?:\.\d+)?)\s*(?:㎡|m²|m2|제곱)/.exec(t))) x.area = +a[1];
+  if ((a = /방\s*(\d)\s*개?/.exec(t))) x.rooms = +a[1]; else if ((a = /(원|투|쓰리)룸/.exec(t))) x.rooms = { 원: 1, 투: 2, 쓰리: 3 }[a[1]];
+  if ((a = /(\d+)\s*층?\s*\/\s*(\d+)\s*층/.exec(t))) x.floorNo = `${a[1]}/${a[2]}`;
+  x.basement = /반지하/.test(t) ? true : /지상/.test(t) || x.floorNo ? false : undefined;
+  if ((a = /([가-힣A-Za-z0-9]+역)\s*(?:까지|에서)?\s*(?:도보|걸어서)\s*(\d+)\s*분/.exec(t))) { x.station = a[1]; x.walk = +a[2]; }
+  else { if ((a = /([가-힣A-Za-z0-9]+역)(?![가-힣])/.exec(t))) x.station = a[1]; if ((a = /(?:도보|걸어서|역에서)\s*(\d+)\s*분/.exec(t))) x.walk = +a[1]; }
+  x.usage = /업무용/.test(t) ? '업무용' : /주거용/.test(t) ? '주거용' : null;
+  if ((a = /전입(?:신고)?\s*(가능|불가)/.exec(t))) x.moveIn = a[1];
+  if ((a = /대출\s*(가능|불가)/.exec(t))) x.loan = a[1];
+  return aiListing(x);
 }
-// 매물 글: 뽑은 값은 범위·보기를 다시 걸러 폼에 채우기만 한다 (저장은 '매물 추가')
+// 붙여넣은 글에서 읽은 값: 빈 칸만 채운다 (거래 유형·고르는 칸은 글 값으로)
+function fillEmpty(o) {
+  if (o.deal) { form.deal.value = o.deal; syncDeal(); }
+  for (const [k, v] of Object.entries(o)) if (k !== 'deal' && form[k] && !form[k].disabled && (form[k].tagName === 'SELECT' || form[k].value.trim() === '')) form[k].value = v;
+}
+// 매물 글: 뽑은 값은 범위·보기를 다시 걸러 받는다 (Worker 응답·규칙 읽기 공통)
 function aiListing(x) {
   const o = {}; if (!x || typeof x !== 'object') return o;
   const n = (v, lo, hi) => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : null, int = (v, lo, hi) => Number.isInteger(v) ? n(v, lo, hi) : null;
@@ -2209,59 +2241,24 @@ function aiListing(x) {
   put('station', txt(x.station, 20)); put('walk', int(x.walk, 0, 120)); put('moveIn', pick(x.moveIn, ['가능', '불가'])); put('loan', pick(x.loan, ['가능', '불가']));
   return o;
 }
-function fillAi(o) {
-  form.querySelectorAll('.ai-filled').forEach(el => el.classList.remove('ai-filled'));
-  if (o.deal) { form.deal.value = o.deal; syncDeal(); }
-  for (const [k, v] of Object.entries(o)) { form[k].value = v; form[k].classList.add('ai-filled'); }
-  if (Object.keys(o).some(k => form[k].closest('#formMore'))) $('#formMore').open = true;   // 더 입력하기 안 칸을 채웠으면 펼쳐서 보이게
-  return Object.keys(o).length;
-}
-form.addEventListener('input', e => e.target.classList?.remove('ai-filled'));   // 사람이 고치면 표시 지움
-const lstWhat = () => { const n = $('#lstText').value.trim().length; $('#lstSend [data-what]').textContent = n ? `붙여넣은 매물 글 ${n.toLocaleString()}자` : '붙여넣은 매물 글'; };
-$('#lstText').addEventListener('input', () => { lstWhat(); $('#lstMsg').textContent = ''; });
-$('#lstGo').addEventListener('click', () => {
-  const v = $('#lstText').value.trim(), m = $('#lstMsg');
-  if (!v) { m.textContent = '매물 설명 글을 먼저 붙여넣어 주세요.'; return; }
-  if (!aiReady()) { m.textContent = 'AI 설정에 Gemini 키를 넣으면 쓸 수 있어요. 지금은 아래 칸에 직접 적어 주세요.'; return; }
-  m.textContent = '';
-  aiRun($('#lstSend'), 'listing', v.slice(0, 5000), t => {
-    let x = null; try { x = JSON.parse(t); } catch (e) {}
-    const c = fillAi(aiListing(x));
-    m.textContent = c ? `AI가 ${c}칸을 채웠어요. 색이 다른 칸을 확인하고, 이름·통근을 적은 뒤 '매물 추가'를 눌러 주세요.` : '글에서 채울 값을 찾지 못했어요. 아래 칸에 직접 적어 주세요.';
-  });
-});
-// AI 설정: 내 키
-$('#aiKeyForm').addEventListener('submit', e => {
-  e.preventDefault(); const v = $('#aiKey').value.trim(); if (!v) { $('#aiKeyMsg').textContent = '키를 넣어 주세요.'; return; }
-  try { localStorage.setItem(AI_KEY, v); $('#aiKey').value = ''; $('#aiKeyMsg').textContent = '저장했어요.'; } catch (e) { $('#aiKeyMsg').textContent = '이 브라우저에 저장하지 못했어요.'; }
-  syncAi();
-});
-$('#aiKeyDel').addEventListener('click', () => { try { localStorage.removeItem(AI_KEY); } catch (e) {} $('#aiKeyMsg').textContent = '지웠어요.'; syncAi(); });
-syncAi();
-// 데이터 옮기기: 내보낸 파일 = { app, version, exportedAt, data(state 그대로, 큰 평면도는 다시 압축) }
-const shrinkImg = src => new Promise(ok => {   // 300KB 넘는 평면도만 긴 변 900px·JPEG 0.75로
-  if (src.length < 400000) return ok(src);
-  const im = new Image();
-  im.onload = () => { const k = Math.min(1, 900 / Math.max(im.width, im.height)), c = document.createElement('canvas');
-    c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
-    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
-    ok(c.toDataURL('image/jpeg', 0.75)); };
-  im.onerror = () => ok(src); im.src = src;
-});
-$('#exportBtn').addEventListener('click', async () => {
+// 데이터 옮기기: 내보낸 파일 = { app, version, exportedAt, data(state 그대로) }
+// 평면도 사진은 줄이지 않는다 (2026-11-12: 줄여서 JPEG 로 바꾸면 색으로 나눈 방·거실 구분이 달라져서. 치수·인식 칸·축척·방향은 원래 그대로)
+async function exportFile(msgEl) {
   const data = structuredClone(state);
-  for (const l of data.listings) if (l.plan?.img) l.plan.img = await shrinkImg(l.plan.img);
   const d = new Date(), ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const blob = new Blob([JSON.stringify({ app: 'suitable-home', version: 3, exportedAt: d.toISOString(), data })], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `suitable-home-${ymd}.json`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   const priv = ['a', 'b'].some(k => data.subs?.me?.[k]?.birth || data.subs?.me?.[k]?.income != null);
-  $('#ioMsg').textContent = (priv ? '⚠ 청약 우리 상황(생년월일·소득) 개인정보가 들어 있어요. 파일을 공유할 때 주의하세요. ' : '') + `내보냈어요: 매물 ${data.listings.length}곳 · 평면도 ${data.listings.filter(l => l.plan).length}개 · 가구 ${data.furniture.length}개 (${(blob.size / 1024).toFixed(0)}KB)`;
-});
+  msgEl.textContent = (priv ? '⚠ 청약 우리 상황(생년월일·소득) 개인정보가 들어 있어요. 파일을 공유할 때 주의하세요. ' : '') + `내보냈어요: 매물 ${data.listings.length}곳 · 평면도 ${data.listings.filter(l => l.plan).length}개 · 가구 ${data.furniture.length}개 (${(blob.size / 1024).toFixed(0)}KB)`;
+}
+$('#exportBtn').addEventListener('click', () => exportFile($('#ioMsg')));
+$('#movedExport').addEventListener('click', () => exportFile($('#movedMsg')));
+$('#movedBar').hidden = location.hostname !== OLD_HOST; $('#movedGo').href = NEW_SITE;
 const replaceState = (s, msg) => {   // 저장한 뒤 다시 열어 3D·가구 목록까지 새 데이터로 그린다
   try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { $('#ioMsg').textContent = '브라우저 저장 공간이 부족해 불러오지 못했어요.'; return; }
   try { sessionStorage.setItem('suitable-io-msg', msg); } catch (e) {}
-  location.hash = 'listings'; location.reload();
+  location.hash = 'backup'; location.reload();
 };
 $('#importFile').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
@@ -2269,7 +2266,7 @@ $('#importFile').addEventListener('change', async e => {
   try { const j = JSON.parse(await file.text()); s = migrate(j.data ?? j); } catch (err) {}
   if (!s) { $('#ioMsg').textContent = 'SUITABLE HOME에서 내보낸 JSON 파일이 아니에요.'; return; }
   const sum = `매물 ${s.listings.length}곳 · 평면도 ${s.listings.filter(l => l.plan).length}개 · 가구 ${s.furniture.length}개`;
-  $('#ioMsg').innerHTML = `${esc(file.name)}: ${sum}. 지금 데이터를 덮어쓸까요? <button type="button" class="small danger" id="ioYes">덮어쓰기</button> <button type="button" class="small ghost" id="ioNo">취소</button>`;
+  $('#ioMsg').innerHTML = `${esc(file.name)}: ${sum}. 불러오면 지금 이 기기의 매물·평면도(매물 ${state.listings.length}곳 · 평면도 ${state.listings.filter(l => l.plan).length}개)가 이 파일 내용으로 바뀌어요. <button type="button" class="small danger" id="ioYes">바꾸기</button> <button type="button" class="small ghost" id="ioNo">취소</button>`;
   $('#ioYes').onclick = () => replaceState(s, `불러왔어요: ${sum}`);
   $('#ioNo').onclick = () => { $('#ioMsg').textContent = '불러오기를 취소했어요.'; };
 });

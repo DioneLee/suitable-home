@@ -5,7 +5,7 @@ import { SUB_PROMPT, LISTING_PROMPT, NOTICE_SCHEMA, LISTING_SCHEMA } from './spe
 
 const MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'];   // index.html AI_MODELS 와 같게
 // 앱(Capacitor): Android 화면 주소 https://localhost · iOS capacitor://localhost (청약 체크 앱 · 2026-11-09)
-const ORIGINS = ['https://dionelee.github.io', 'https://seoul-cheongyak-check.pages.dev', 'http://localhost:8766', 'http://127.0.0.1:8766', 'https://localhost', 'capacitor://localhost'];
+const ORIGINS = ['https://dionelee.github.io', 'https://suitable-home.pages.dev', 'https://seoul-cheongyak-check.pages.dev', 'http://localhost:8766', 'http://127.0.0.1:8766', 'https://localhost', 'capacitor://localhost'];
 const MAX_PDF = 5 * 1024 * 1024, MAX_TEXT = 5000, TIMEOUT = 60000;
 
 const cors = o => ({ 'Access-Control-Allow-Origin': o, 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Vary': 'Origin' });

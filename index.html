@@ -510,6 +510,16 @@ kbd { font: 12px var(--sans); border: 1px solid var(--line); border-bottom-width
 #locMap .leaflet-control-attribution { background: rgba(28,26,25,.8); color: var(--muted); }
 #locMap .leaflet-control-attribution a, #locMap .leaflet-bar a { color: var(--ink); }
 #locMap .leaflet-bar a { background: var(--paper); border-color: var(--line); }
+.loc-sep { display: inline-block; width: 1px; height: 24px; background: var(--line); margin: 0 var(--s1); vertical-align: middle; }
+/* 모아 보기: 구별 동그라미(개수) · 매물 핀 — 아이콘 자리는 0×0, 안쪽 요소를 가운데로 */
+#locMap .loc-gu, #locMap .loc-pin { outline: none; }
+#locMap .loc-gu span { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 64px; min-height: 48px; padding: 4px 12px;
+  border-radius: var(--r2); background: var(--paper); border: 1px solid var(--accent); color: var(--ink); font: 600 16px/1.2 var(--sans); white-space: nowrap; cursor: pointer; }
+#locMap .loc-gu b { font-size: 12px; font-weight: 500; color: var(--muted); }
+#locMap .loc-pin i { position: absolute; width: 44px; height: 44px; transform: translate(-50%, -50%); cursor: pointer; }
+#locMap .loc-pin i::after { content: ''; position: absolute; inset: 13px; border-radius: 50%; background: var(--accent); border: 2px solid var(--paper); }
+#locMap .loc-pin i.work { cursor: default; } #locMap .loc-pin i.work::after { background: var(--ink); }
+#locMap .loc-gu:focus-visible span, #locMap .loc-pin:focus-visible i::after { outline: 2px solid var(--ink); outline-offset: 2px; }
 .facts { border-top: 1px solid var(--ink); }
 .facts div { display: grid; grid-template-columns: 6em minmax(0, 1fr); gap: var(--s2); padding: var(--s2) 0; border-bottom: 1px solid var(--line); }
 .facts dt { font-size: 13px; color: var(--muted); }
@@ -668,7 +678,8 @@ footer { padding-block: var(--s4) calc(var(--s4) + env(safe-area-inset-bottom, 0
       <p class="eyebrow reveal" id="ebLoc">Location</p>
       <h2 class="h2 reveal" id="h-loc">입지 환경</h2>
       <p class="lead reveal" id="locLead">집에서 역과 직장까지 걸리는 시간을 거리처럼 그렸어요.</p>
-      <div class="chips reveal" id="locChips" style="margin-top:24px" aria-label="매물 고르기"></div>
+      <div class="chips reveal" id="locModes" style="margin-top:24px" aria-label="지도 보기 방식"></div>
+      <div class="chips reveal" id="locChips" style="margin-top:12px" aria-label="매물 고르기"></div>
       <div class="loc-grid">
         <div><div id="locMap" hidden role="img" aria-label="입지 지도"></div>
         <svg id="locSvg" class="reveal" viewBox="90 10 520 430" role="img" aria-label="입지 다이어그램"></svg></div>
@@ -1803,15 +1814,79 @@ async function geocodeQueue() {   // OpenStreetMap Nominatim: 1초에 1건 이�
   }
   geocodeQueue.busy = false;
 }
-function drawLocMap(l, home, stn, work) {
+function locMapInit() {
   const box = $('#locMap');
   if (!locMap) {
-    locMap = L.map(box, { scrollWheelZoom: false, dragging: !L.Browser.mobile, zoomSnap: 0.5 });
+    locMap = L.map(box, { scrollWheelZoom: false, dragging: !L.Browser.mobile, zoomSnap: 0.5 }).setView([37.55, 126.98], 11);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,   // 키 없는 OSM 기본 지도 + CSS 필터로 밤 톤
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(locMap);
     locMap.on('click', () => locMap.scrollWheelZoom.enable());   // 누른 뒤에만 휠 확대 → 페이지 스크롤을 빼앗지 않음
     box.addEventListener('mouseleave', () => locMap.scrollWheelZoom.disable());
+    locMap.on('zoomend', () => { if (locAll && locPins) drawLocPins(); });   // 멀리 = 구별 동그라미, 가까이 = 매물 핀
   }
+  return box;
+}
+// ---------- 모아 보기: 매물 여러 곳을 한 지도에 (멀리서는 구별 개수, 가까이서는 매물 핀) ----------
+let locAll = true, locPass = true, locPins = null;
+const guOfL = l => `${l.region || ''} ${l.addr || ''}`.match(/(\S+구)(?=\s|$)/)?.[1] || (l.region || '').split(/\s+/)[0] || '지역 미입력';
+const LOC_NEAR = 13;   // 이 확대 정도부터 매물 핀
+const groupGu = ps => ps.reduce((m, p) => ((m[p.gu] ??= []).push(p), m), {});
+function renderLocAll(ev) {
+  const list = locPass ? ev.passed : ev.all, wq = state.settings.work, pins = [], wait = [], miss = [];
+  for (const l of list) {
+    const qHome = homeQuery(l), qRegion = l.region && l.region !== qHome ? l.region : '';
+    let g = geoOf(qHome), rough = false;
+    if (!g && geoMiss(qHome) && geoOf(qRegion)) { g = geoOf(qRegion); rough = true; }   // 상세 주소를 못 찾으면 지역(구·동) 위치 = 대략 위치
+    if (!g && l.station && geoOf(l.station) && geoMiss(qHome) && (!qRegion || geoMiss(qRegion))) { g = geoOf(l.station); rough = true; }
+    if (g) pins.push({ l, g, rough, gu: guOfL(l) });
+    else if (qHome && !geoKnown(qHome)) { geoQueue.add(qHome); wait.push(l); }
+    else if (qRegion && !geoKnown(qRegion)) { geoQueue.add(qRegion); wait.push(l); }
+    else if (l.station && !geoKnown(l.station)) { geoQueue.add(l.station); wait.push(l); }
+    else miss.push(l);
+  }
+  if (wq && !geoKnown(wq)) geoQueue.add(wq);
+  const mapOk = typeof L !== 'undefined';
+  if (geoQueue.size && mapOk) geocodeQueue();
+  $('#ebLoc').textContent = 'Location · 모아 보기';
+  $('#locSvg').setAttribute('hidden', ''); $('#locMap').hidden = !mapOk || !list.length;
+  const byGu = Object.entries(groupGu(pins)).sort((a, b) => b[1].length - a[1].length);
+  $('#locLead').textContent = !list.length ? '' : `${locPass ? '우리 기준을 통과한' : '등록한'} 매물 ${list.length}곳을 구별로 모았어요. 동그라미를 누르면 매물 핀이 보이고, 핀을 누르면 자세히 볼 수 있어요.`
+    + (pins.some(p => p.rough) ? ' 상세 주소를 지도에서 찾지 못한 매물은 동·역 위치에 \'대략 위치\'로 찍었어요.' : '') + (mapOk ? '' : ' 지도를 불러오지 못해 목록으로 보여 드려요.');
+  $('#locFacts').innerHTML = !list.length ? `<p class="empty">${nAllEmpty(ev)}</p>`
+    : byGu.map(([gu, ps]) => `<div><dt>${esc(gu)}</dt><dd>${ps.length}곳<small>${ps.map(p => esc(short(p.l.name, 14)) + (p.rough ? ' (대략 위치)' : '')).join(' · ')}</small></dd></div>`).join('')
+      + (wait.length ? `<div><dt>위치 찾는 중</dt><dd>${wait.length}곳<small>${wait.map(l => esc(short(l.name, 14))).join(' · ')}</small></dd></div>` : '')
+      + (miss.length ? `<div><dt>위치 못 찾음</dt><dd>${miss.length}곳<small>수정에서 지역·주소를 적어 주세요 · ${miss.map(l => esc(short(l.name, 14))).join(' · ')}</small></dd></div>` : '');
+  if (!mapOk || !list.length) { locPins = null; return; }
+  const box = locMapInit(), work = geoOf(wq);
+  locPins = { pins, work };
+  const key = pins.map(p => p.l.id + p.g).join() + work;
+  const fit = () => {
+    locMap.invalidateSize(); const pts = [...pins.map(p => p.g), ...(work ? [work] : [])];
+    if (locMap._allKey !== key) { locMap._allKey = key; pts.length > 1 ? locMap.fitBounds(pts, { padding: [48, 48], maxZoom: 15 }) : pts.length && locMap.setView(pts[0], 14); }
+    drawLocPins();
+  };
+  box.offsetWidth ? fit() : (locMap._fitLater = fit);   // 숨겨진 화면이면 보일 때 맞춤
+}
+const nAllEmpty = ev => ev.all.length ? '우리 기준을 통과한 매물이 없어요. \'전체\'를 누르면 모든 매물을 볼 수 있어요.' : '매물을 등록하면 지도에 모아 보여 드려요.';
+function drawLocPins() {
+  locLayer?.remove(); locLayer = L.layerGroup().addTo(locMap);
+  const { pins, work } = locPins, near = locMap.getZoom() >= LOC_NEAR;
+  if (work) L.marker(work, { icon: L.divIcon({ className: 'loc-pin', html: '<i class="work"></i>', iconSize: [0, 0] }), title: `직장 ${state.settings.work}`, keyboard: false })
+    .bindTooltip(`${esc(state.settings.work)} · 직장`, { permanent: true, direction: 'top', offset: [0, -10] }).addTo(locLayer);
+  if (near) for (const p of pins) {
+    L.marker(p.g, { icon: L.divIcon({ className: 'loc-pin', html: '<i></i>', iconSize: [0, 0] }), title: `${p.l.name} 자세히 보기` })
+      .bindTooltip(`${esc(short(p.l.name, 12))} · 월 ${p.l.monthly.toFixed(1)}만원${p.rough ? ' · 대략 위치' : ''}`, { permanent: true, direction: 'top', offset: [0, -12] })
+      .on('click', () => { state.selectedId = p.l.id; render(); openSheet($('#locMap')); }).addTo(locLayer);
+  }
+  else for (const [gu, ps] of Object.entries(groupGu(pins))) {
+    const c = [ps.reduce((s, p) => s + p.g[0], 0) / ps.length, ps.reduce((s, p) => s + p.g[1], 0) / ps.length];
+    L.marker(c, { icon: L.divIcon({ className: 'loc-gu', html: `<span><b>${esc(gu)}</b>${ps.length}</span>`, iconSize: [0, 0] }), title: `${gu} 매물 ${ps.length}곳 · 눌러서 확대` })
+      .on('click', () => { const b = ps.map(p => p.g);   // 휴대폰처럼 좁아도 핀이 보이는 확대(LOC_NEAR) 이상으로
+        locMap.setView(L.latLngBounds(b).getCenter(), Math.min(16, Math.max(LOC_NEAR, locMap.getBoundsZoom(b, false, L.point(64, 64))))); }).addTo(locLayer);
+  }
+}
+function drawLocMap(l, home, stn, work) {
+  const box = locMapInit(); locMap._allKey = null;   // 모아 보기로 돌아가면 다시 맞춤
   locLayer?.remove(); locLayer = L.layerGroup().addTo(locMap);
   const tip = (m, t, d = 'top') => m.bindTooltip(t, { permanent: true, direction: d, offset: d === 'top' ? [0, -8] : d === 'bottom' ? [0, 10] : [10, 0] });
   const pts = [home];
@@ -1844,7 +1919,12 @@ async function fetchRoute(a, b, car) {   // OpenStreetMap FOSSGIS 도보·차도
 const km = (a, b) => a && b ? `직선 ${(L.latLng(a).distanceTo(b) / 1000).toFixed(1)}km` : '';
 function renderLocation(ev) {
   lastLocEv = ev;
-  const l = ev.all.find(x => x.id === locId) ?? ev.all.find(x => x.id === state.selectedId) ?? ev.all[0];
+  const nP = ev.passed.length, nA = ev.all.length;
+  $('#locModes').innerHTML = `<button type="button" class="chip-btn" data-locmode="all" aria-pressed="${locAll}">모아 보기</button><button type="button" class="chip-btn" data-locmode="one" aria-pressed="${!locAll}">한 곳 보기</button>`
+    + (locAll ? `<span class="loc-sep" aria-hidden="true"></span><button type="button" class="chip-btn" data-locpass="1" aria-pressed="${locPass}">우리 기준 통과만 ${nP}</button><button type="button" class="chip-btn" data-locpass="0" aria-pressed="${!locPass}">전체 ${nA}</button>` : '');
+  $('#locChips').hidden = locAll;
+  if (locAll) return renderLocAll(ev);
+  const l =ev.all.find(x => x.id === locId) ?? ev.all.find(x => x.id === state.selectedId) ?? ev.all[0];
   $('#ebLoc').textContent = l ? `Location · ${typeCode(l)} 기준` : 'Location';
   $('#locChips').innerHTML = ev.all.map(x => `<button type="button" class="chip-btn" data-loc="${x.id}" aria-pressed="${x === l}" title="${esc(x.name)}">${typeCode(x)} · ${esc(short(x.name, 14))}</button>`).join('');
   $('#locSvg').toggleAttribute('hidden', !l); $('#locMap').hidden = true;
@@ -2096,6 +2176,8 @@ document.addEventListener('click', e => {
     return;
   }
   if (e.target.closest('[data-addform]')) { e.preventDefault(); resetForm(); openForm(); return; }
+  const lm = e.target.closest('[data-locmode], [data-locpass]');
+  if (lm) { if (lm.dataset.locmode) locAll = lm.dataset.locmode === 'all'; else locPass = lm.dataset.locpass === '1'; renderLocation(evaluate(state)); return; }
   const lc = e.target.closest('[data-loc]');
   if (lc) { locId = lc.dataset.loc; renderLocation(evaluate(state)); return; }
   const b = e.target.closest('button[data-act]'); if (!b) return;

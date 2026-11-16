@@ -17,7 +17,7 @@ r = await W.fetch(req('notice', pdf, 'https://evil.example'), env); ok('다른 �
 r = await W.fetch(req('notice', pdf, null), env); ok('Origin 없음 거절 403', r.status === 403, r.status);
 r = await W.fetch(req('ask', 'hi'), env); ok('정해진 두 종류 말고는 거절 404', r.status === 404 && !calls.length, r.status);
 r = await W.fetch(req('notice', pdf), { ...env, AI_ENABLED: 'false' }); ok('AI_ENABLED=false → 503 (Gemini 안 부름)', r.status === 503 && !calls.length, r.status);
-r = await W.fetch(req('notice', 'A'.repeat(7 * 1024 * 1024)), env); ok('PDF 5MB 넘음 413', r.status === 413 && !calls.length, r.status);
+r = await W.fetch(req('notice', 'A'.repeat(21 * 1024 * 1024)), env); ok('PDF 15MB 넘음 413', r.status === 413 && !calls.length, r.status);
 r = await W.fetch(req('notice', Buffer.from('hello').toString('base64')), env); ok('PDF 아닌 것 400', r.status === 400 && !calls.length, r.status);
 r = await W.fetch(req('listing', '가'.repeat(5001)), env); ok('글 5,000자 넘음 413', r.status === 413 && !calls.length, r.status);
 r = await W.fetch(req('notice', pdf), env); let c = calls.pop();

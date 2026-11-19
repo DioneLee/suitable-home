@@ -9,8 +9,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = ["index.html", "privacy.html", "404.html"]
-SCRIPT_HOSTS = ["https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"]   # Chart.js · Three.js(importmap) · Leaflet
-CONNECT = ["https://suitable-home-ai.demolee.workers.dev", "https://nominatim.openstreetmap.org", "https://routing.openstreetmap.de"]   # 매물 글 정리 Worker · 지도 주소 검색 · 경로
+SCRIPT_HOSTS = ["https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://static.cloudflareinsights.com"]   # Chart.js · Three.js(importmap) · Leaflet
+CONNECT = ["https://suitable-home-ai.demolee.workers.dev", "https://nominatim.openstreetmap.org", "https://routing.openstreetmap.de", "https://cloudflareinsights.com"]   # 매물 글 정리 Worker · 지도 주소 검색 · 경로 · Cloudflare Web Analytics(beacon.min.js · 수집 주소)
 
 def inline_hashes():
     out = []

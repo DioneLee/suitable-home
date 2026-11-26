@@ -30,6 +30,15 @@ calls = []; plan = [500, 200]; r = await W.fetch(req('listing', '글'), env);
 ok('기본 모델 실패 → Flash-Lite 한 번 더', r.status === 200 && calls.length === 2 && /3\.6-flash:/.test(calls[0].url) && /flash-lite:/.test(calls[1].url), calls.map(x => x.url.split('/').pop()).join(', '));
 calls = []; plan = [429, 429]; r = await W.fetch(req('listing', '글'), env); ok('둘 다 한도 초과 → 429 (두 번만 부름)', r.status === 429 && calls.length === 2, r.status);
 r = await W.fetch(req('notice', '', O, 'OPTIONS'), env); ok('OPTIONS 허용 사이트만 CORS', r.status === 204 && r.headers.get('Access-Control-Allow-Origin') === O, r.status);
+// 모델마다 따로 시간 제한 (검사에선 MODEL_TIMEOUT_MS=50): 첫 모델이 멈춰도 예비 모델 부름 · 사유에 timeout
+{ const keep = setInterval(() => {}, 1000);   // Node 의 AbortSignal.timeout 은 프로세스를 붙잡지 않음
+  const f0 = globalThis.fetch, hang = (u, o) => new Promise((_, rej) => o.signal.addEventListener('abort', () => rej(new DOMException('t', 'TimeoutError'))));
+  const env2 = { ...env, MODEL_TIMEOUT_MS: '50' }; env2.GEMINI = { idFromName: n => n, get: () => { const c = new mod.GeminiCaller(null, env2); return { fetch: (u, i) => c.fetch(new Request(u, i)) }; } };
+  calls = []; let k = 0; globalThis.fetch = (u, o) => k++ === 0 ? (calls.push({ url: u }), hang(u, o)) : f0(u, o);   // 두 번째는 f0 가 calls 에 넣음
+  r = await W.fetch(req('listing', '글'), env2); ok('첫 모델 시간 초과 → 예비 모델(Flash-Lite)로 200', r.status === 200 && calls.length === 2 && /flash-lite:/.test(calls[1].url), r.status);
+  calls = []; globalThis.fetch = hang; const t0 = Date.now(); r = await W.fetch(req('listing', '글'), env2); const j = await r.json();
+  ok('둘 다 시간 초과 → 504 · 사유 "gemini-… timeout 0.05s" 두 줄 · 모델마다 따로 (합쳐 약 100ms)', r.status === 504 && j.why.length === 2 && j.why.every(w => /timeout 0\.05s$/.test(w)) && Date.now() - t0 >= 95, JSON.stringify(j.why));
+  globalThis.fetch = f0; clearInterval(keep); }
 const src = (await import('node:fs')).readFileSync(path.join(root, 'worker/src/index.js'), 'utf8');
 ok('요청 내용을 로그로 안 남김 (console 없음)', !/console\./.test(src));
 console.log(`\n${n - bad}/${n} OK`); process.exit(bad ? 1 : 0);

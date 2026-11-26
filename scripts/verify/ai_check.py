@@ -56,7 +56,7 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
       && (e0.reasons.length || Number.isFinite(e0.score) && e0.rank >= 1) && ['data-detail', 'data-act="edit"', 'data-act="view"', 'data-act="del"'].every(s => c.querySelector(`[${s}]`)) && q('#regMsg').textContent === '', c?.textContent.replace(/\s+/g, ' ').slice(0, 160)); }
   ok('카드 요약 한 줄: 거래 · 보증금/월세 · 관리비 · 면적 · 방 · 층 · 역 도보', q(`[data-card="${l0.id}"] .gl-line`).textContent === '월세 3,000 / 70 · 관리비 8만 · 전용 42.5㎡ · 방 2 · 3/5층 · 망원역 도보 6분', q(`[data-card="${l0.id}"] .gl-line`).textContent);
   // ---- Worker 를 못 쓰면 규칙 읽기 (같은 글)
-  for (const [k, it] of texts.entries()) for (const [why, plan, ms] of [['꺼짐(503)', [{ status: 503 }], 400], ['붐빔(502) 두 번', [{ status: 502 }, { status: 502 }], 2600], ['연결 안 됨 두 번', [{ net: 1 }, { net: 1 }], 2600]]) {
+  for (const [k, it] of texts.entries()) for (const [why, plan, ms] of [['꺼짐(503)', [{ status: 503 }], 400], ['붐빔(502) 한 번, 다시 안 부름', [{ status: 502 }], 400], ['시간 초과(504) 한 번', [{ status: 504 }], 400], ['연결 안 됨 한 번', [{ net: 1 }], 400]]) {
     if (k > 0 && why !== '꺼짐(503)') continue;
     wcalls = []; const l = await reg(it.text, plan, ms); added.push(l?.id);
     ok(`Worker ${why} → 규칙 읽기로 글 ${k + 1} 의 값 그대로 저장 (${wcalls.length}번 부름) · 안내 "일부 칸을 못 읽었어요 · 수정에서 채워 주세요"`, !!l && same(l, it.expect) && wcalls.length === plan.length && q('#regMsg').textContent === '일부 칸을 못 읽었어요 · 수정에서 채워 주세요', JSON.stringify(l) + ' · ' + q('#regMsg').textContent);
@@ -69,10 +69,10 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
     ok('읽는 중: 버튼 "읽는 중…"(못 누름) · 안내', q('#submitBtn').disabled && q('#submitBtn').textContent === '읽는 중…' && /정리하는 중/.test(q('#lstMsg').textContent), q('#lstMsg').textContent);
     q('#formClose').click(); await W(800);
     ok('읽는 중에 창을 닫으면 저장 안 함', fw.eval('state.listings.length') === n0, fw.eval('state.listings.length')); }
-  // 1분 제한 (시험에선 300ms)
-  { const st = fw.setTimeout; fw.setTimeout = (fn, ms, ...a) => st(fn, ms === 60000 ? 300 : ms, ...a);
+  // 30초 제한 (시험에선 300ms)
+  { const st = fw.setTimeout; fw.setTimeout = (fn, ms, ...a) => st(fn, ms === 30000 ? 300 : ms, ...a);
     const l = await reg(texts[1].text, [{ wait: 1 }], 900); fw.setTimeout = st; added.push(l?.id);
-    ok('1분 안에 못 읽으면 끊고 규칙 읽기로 저장', !!l && l.deposit === 21000 && l.area === 59 && q('#regMsg').textContent === '일부 칸을 못 읽었어요 · 수정에서 채워 주세요', JSON.stringify(l)); }
+    ok('30초 안에 못 읽으면 끊고 규칙 읽기로 저장 · 안내 "(최대 30초)"', !!l && l.deposit === 21000 && l.area === 59 && q('#regMsg').textContent === '일부 칸을 못 읽었어요 · 수정에서 채워 주세요', JSON.stringify(l)); }
   // ---- 직접 입력 (접힌 칸) · 글 없이
   q('.nav [data-addform]').click(); await W(200); wcalls = [];
   q('#submitBtn').click(); await W(200);

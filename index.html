@@ -2151,7 +2151,7 @@ form.addEventListener('submit', async e => {
   const text = $('#lstText').value.trim(), m = $('#lstMsg'), b = $('#submitBtn');
   let unread = false;
   if (!form.id.value && text) {   // 새 등록 + 붙여넣은 글: 읽어서 빈 칸만 채운다 (직접 입력에 적은 값이 먼저)
-    b.disabled = true; b.textContent = '읽는 중…'; m.textContent = '매물 글을 정리하는 중… (최대 1분)';
+    b.disabled = true; b.textContent = '읽는 중…'; m.textContent = '매물 글을 정리하는 중… (최대 30초)';
     const got = await readListing(text); b.disabled = false; b.textContent = '등록';
     if (!$('#formDlg').open) { m.textContent = ''; return; }   // 읽는 중에 창을 닫으면 저장 안 함
     unread = !got; fillEmpty({ ...ruleListing(text), ...got });
@@ -2315,18 +2315,15 @@ const NOTICE_SCHEMA = { type: 'OBJECT', required: ['kind', 'name', 'noticeDate',
 const LISTING_SCHEMA = { type: 'OBJECT', properties: { deal: S_E(['월세', '전세', '매매']), deposit: S_N, rent: S_N, fee: S_N, area: S_N, rooms: S_I, floorNo: S_S, basement: { type: 'BOOLEAN', nullable: true },
   usage: S_E(['주거용', '업무용']), station: S_S, walk: S_I, moveIn: S_E(['가능', '불가']), loan: S_E(['가능', '불가']) } };
 // ==== AI_SPEC 끝 ====
-// ---------- 매물 글 정리: Worker(/listing) 가 값을 JSON 으로 · 붐비거나 연결이 안 되면 2초 뒤 한 번 더 · 1분 넘거나 실패하면 null (규칙 읽기로) ----------
+// ---------- 매물 글 정리: Worker(/listing) 가 값을 JSON 으로 · 한 번만 부름 · 실패하거나 30초 넘으면 바로 null (규칙 읽기로) ----------
 async function readListing(text) {
-  const ac = new AbortController(), timer = setTimeout(() => ac.abort(), 60000);
+  const ac = new AbortController(), timer = setTimeout(() => ac.abort(), 30000);   // 전체 대기 30초 (Worker 는 모델마다 12초 · 둘 합쳐 24초)
   try {
-    for (let k = 0; k < 2; k++) {
-      let r = null; try { r = await fetch(`${AI_WORKER}/listing`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text.slice(0, 5000), signal: ac.signal }); } catch (e) { if (ac.signal.aborted) return null; }
-      if (r?.ok) { const t = (await r.json().catch(() => null))?.text; try { return t ? aiListing(JSON.parse(t)) : null; } catch (e) { return null; } }
-      if (r && r.status !== 502) return null;   // 429·503(꺼짐) 등은 다시 안 부름
-      if (k === 0) { await new Promise(ok => setTimeout(ok, 2000)); if (ac.signal.aborted) return null; }
-    }
-    return null;
-  } finally { clearTimeout(timer); }
+    const r = await fetch(`${AI_WORKER}/listing`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text.slice(0, 5000), signal: ac.signal });
+    if (!r.ok) return null;   // 502·503·504·429 모두 다시 안 부름
+    const t = (await r.json())?.text; return t ? aiListing(JSON.parse(t)) : null;
+  } catch (e) { return null; }   // 연결 안 됨 · 30초 초과 · 응답이 JSON 아님
+  finally { clearTimeout(timer); }
 }
 // 규칙 읽기: '3000/68' · '관리비 8만' · '전용 41㎡' · '방2' · '3층/5층' · 'OO역 도보 5분' 등 (값은 aiListing 으로 같은 범위 검사)
 function ruleListing(t) {

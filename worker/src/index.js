@@ -6,7 +6,7 @@ import { SUB_PROMPT, LISTING_PROMPT, NOTICE_SCHEMA, LISTING_SCHEMA } from './spe
 const MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'];   // index.html AI_MODELS 와 같게
 // 앱(Capacitor): Android 화면 주소 https://localhost · iOS capacitor://localhost (청약 체크 앱 · 2026-11-09)
 const ORIGINS = ['https://dionelee.github.io', 'https://suitable-home.pages.dev', 'https://seoul-cheongyak-check.pages.dev', 'http://localhost:8766', 'http://127.0.0.1:8766', 'https://localhost', 'capacitor://localhost'];
-const MAX_PDF = 15 * 1024 * 1024, MAX_TEXT = 5000, TIMEOUT = 60000;
+const MAX_PDF = 15 * 1024 * 1024, MAX_TEXT = 5000, MODEL_TIMEOUT = 12000;   // 모델마다 따로 12초 (둘 합쳐 24초 < 앱 30초) (2026-11-26: 타이머 하나를 같이 쓰면 첫 모델이 멈출 때 예비 모델을 못 부름)
 
 const cors = o => ({ 'Access-Control-Allow-Origin': o, 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Vary': 'Origin' });
 const reply = (status, body, o) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...(o ? cors(o) : {}) } });
@@ -42,15 +42,16 @@ export default {
 export class GeminiCaller {   // Durable Object (미국 서부 고정)
   constructor(state, env) { this.env = env; }
   async fetch(req) {
-    const body = await req.text(), signal = AbortSignal.timeout(TIMEOUT), why = [];   // why: Gemini 오류 번호·사유만 (요청 내용은 안 담김)
+    const body = await req.text(), why = [], ms = +this.env.MODEL_TIMEOUT_MS || MODEL_TIMEOUT;   // why: Gemini 오류 번호·사유만 (요청 내용은 안 담김) · MODEL_TIMEOUT_MS 는 검사용
     let status = 502;
-    for (const m of MODELS) {   // 기본 모델 실패하면 Flash-Lite 로 한 번만
+    for (const m of MODELS) {   // 기본 모델 실패·시간 초과면 Flash-Lite 로 한 번만
+      const signal = AbortSignal.timeout(ms);
       try {
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.env.GEMINI_API_KEY }, body, signal });
         if (!r.ok) { status = r.status === 429 ? 429 : 502; const e = (await r.json().catch(() => null))?.error; why.push(`${m} ${r.status} ${e?.status || ''} ${String(e?.message || '').slice(0, 200)}`); continue; }
         const text = (await r.json())?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('');
         if (text) return Response.json({ text, model: m });
-      } catch (e) { status = signal.aborted ? 504 : 502; if (signal.aborted) break; }
+      } catch (e) { status = signal.aborted ? 504 : 502; why.push(`${m} ${signal.aborted ? `timeout ${ms / 1000}s` : 'network'}`); }
     }
     return Response.json({ error: 'gemini', why }, { status });
   }

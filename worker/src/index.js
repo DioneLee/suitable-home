@@ -32,7 +32,9 @@ export default {
       part = { text: data };
     }
     const [prompt, schema] = kind === 'notice' ? [SUB_PROMPT, NOTICE_SCHEMA] : [LISTING_PROMPT, LISTING_SCHEMA];
-    const body = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }, part] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema } });
+    // 매물 글은 짧은 값 뽑기라 thinking 최소 (2026-11-26: 기본 thinking 으로 gemini-3.6-flash 가 12초를 넘김) · 공고 PDF 는 정확도 위해 기본 그대로
+    const gen = { responseMimeType: 'application/json', responseSchema: schema, ...(kind === 'listing' ? { thinkingConfig: { thinkingLevel: 'minimal' } } : {}) };
+    const body = JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }, part] }], generationConfig: gen });
     // Gemini 는 홍콩 등에서 온 요청을 막는다 (Worker 가 HKG 에서 돌 수 있음) → 미국 서부에 고정한 Durable Object 에서 부른다
     const r = await env.GEMINI.get(env.GEMINI.idFromName('wnam'), { locationHint: 'wnam' }).fetch('https://do/', { method: 'POST', body });
     return new Response(r.body, { status: r.status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors(origin) } });
@@ -50,7 +52,7 @@ export class GeminiCaller {   // Durable Object (미국 서부 고정)
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': this.env.GEMINI_API_KEY }, body, signal });
         if (!r.ok) { status = r.status === 429 ? 429 : 502; const e = (await r.json().catch(() => null))?.error; why.push(`${m} ${r.status} ${e?.status || ''} ${String(e?.message || '').slice(0, 200)}`); continue; }
         const text = (await r.json())?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('');
-        if (text) return Response.json({ text, model: m });
+        if (text) return Response.json({ text, model: m, why });   // why: 앞 모델이 실패한 사유 (번호·사유만, 요청 내용 없음 · 앱은 text 만 읽음)
       } catch (e) { status = signal.aborted ? 504 : 502; why.push(`${m} ${signal.aborted ? `timeout ${ms / 1000}s` : 'network'}`); }
     }
     return Response.json({ error: 'gemini', why }, { status });

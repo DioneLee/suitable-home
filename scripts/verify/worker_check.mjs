@@ -26,7 +26,10 @@ ok('공고: PDF 그대로 inline_data + 지시문 + JSON 형식', r.status === 2
   && c.body.generationConfig.responseMimeType === 'application/json' && c.body.generationConfig.responseSchema.properties.types, c.url.split('/').pop());
 r = await W.fetch(req('listing', '투룸 3000/70'), env); c = calls.pop();
 ok('매물 글: 글 + 매물 형식', r.status === 200 && c.body.contents[0].parts[1].text === '투룸 3000/70' && c.body.generationConfig.responseSchema.properties.walk, (await r.json()).text);
+ok('thinking: 매물 글은 thinkingLevel minimal · 공고는 설정 없음(기본)', c.body.generationConfig.thinkingConfig?.thinkingLevel === 'minimal', JSON.stringify(c.body.generationConfig.thinkingConfig));
+r = await W.fetch(req('notice', pdf), env); ok('thinking: 공고 PDF 요청엔 thinkingConfig 없음', !calls.pop().body.generationConfig.thinkingConfig);
 calls = []; plan = [500, 200]; r = await W.fetch(req('listing', '글'), env);
+{ const j = await r.clone().json(); ok('예비 모델이 성공해도 첫 모델 실패 사유가 남음 (why)', j.model === 'gemini-3.5-flash-lite' && j.why.length === 1 && /^gemini-3\.6-flash 500/.test(j.why[0]), JSON.stringify(j.why)); }
 ok('기본 모델 실패 → Flash-Lite 한 번 더', r.status === 200 && calls.length === 2 && /3\.6-flash:/.test(calls[0].url) && /flash-lite:/.test(calls[1].url), calls.map(x => x.url.split('/').pop()).join(', '));
 calls = []; plan = [429, 429]; r = await W.fetch(req('listing', '글'), env); ok('둘 다 한도 초과 → 429 (두 번만 부름)', r.status === 429 && calls.length === 2, r.status);
 r = await W.fetch(req('notice', '', O, 'OPTIONS'), env); ok('OPTIONS 허용 사이트만 CORS', r.status === 204 && r.headers.get('Access-Control-Allow-Origin') === O, r.status);

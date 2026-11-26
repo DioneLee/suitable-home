@@ -68,13 +68,13 @@ const fill = (d, v) => { const F = d.querySelector('#form'); for (const [k, x] o
   // 1. 매물 글 정리: 붐빔(502)·연결 실패는 2초 뒤 한 번 더 · 429·503 은 다시 안 부름 · 못 읽으면 규칙 읽기로 저장 + 안내 한 줄
   const N0 = fw.eval('state.listings.length');
   const reg = async (txt, ms) => { q('.nav [data-addform]').click(); await W(300); q('#lstText').value = txt; q('#submitBtn').click(); await W(ms); return fw.eval('state.listings.at(-1)'); };
-  for (const [m, n, ms] of [['w502', 2, 3500], ['net', 2, 3500], [429, 1, 800], [503, 1, 800]]) {
+  for (const [m, n, ms] of [['w502', 1, 800], ['net', 1, 800], [429, 1, 800], [503, 1, 800]]) {   // 2026-11-26: 실패하면 다시 안 부름(한 번)
     mode = m; gcalls = 0; const n0 = fw.eval('state.listings.length'); const l = await reg('투룸 보증금 3000 / 월세 70 전용 40㎡ 흑석역 도보 5분', ms);
     ok(`1. Worker ${m} → ${n}번 부르고 규칙 읽기로 저장 · "일부 칸을 못 읽었어요 · 수정에서 채워 주세요" (AI 문구 없음)`, gcalls === n && fw.eval('state.listings.length') === n0 + 1 && l.deposit === 3000 && l.rent === 70 && l.area === 40 && l.name === '흑석역 투룸'
       && q('#regMsg').textContent === '일부 칸을 못 읽었어요 · 수정에서 채워 주세요' && !q('#formDlg').open, `calls ${gcalls} · ${JSON.stringify(l)} · ${q('#regMsg').textContent}`);
   }
-  mode = 'net1'; gcalls = 0; { const l = await reg('그냥 집', 3500);
-    ok('1. 연결 실패 한 번 → 다시 해서 성공하면 그 값으로 저장 · 안내 없음 (통근만 빈 건 배지로)', gcalls === 2 && l.deposit === 3000 && l.area === 40 && l.commute == null && q('#regMsg').textContent === '', `calls ${gcalls} · ${q('#regMsg').textContent}`); }
+  mode = 'net1'; gcalls = 0; { const l = await reg('그냥 집', 800);
+    ok('1. 연결 실패 한 번 → 다시 안 부르고 바로 규칙 읽기 (2026-11-26 · 예전엔 2초 뒤 한 번 더)', gcalls === 1 && q('#regMsg').textContent !== '', `calls ${gcalls} · ${q('#regMsg').textContent}`); }
   fw.fetch = realFetch; fw.eval(`state.listings = state.listings.slice(0, ${N0}); render()`);   // 시험 매물 지움
   // 엣지1. 3D 집 보기 → 방향 입력 버튼
   fw.location.hash = 'studio'; await W(1500);

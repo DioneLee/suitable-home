@@ -1310,6 +1310,7 @@ function ensureTypeLetters(listings) {
   eq(monthlyCost(base, { myCash: 5000, rate: 3 }), 75, '월 부담: 60 + 6000×3%÷12');
   eq(monthlyCost({ ...base, deposit: 3000 }, { myCash: 5000, rate: 3 }), 60, '내 돈이 더 많으면 이자 0');
   console.assert(reasons(base).length === 0, '정상 매물 통과');
+  console.assert(JSON.stringify(grounded({ deal: '월세', deposit: 1000, rent: 60, walk: 8, area: 30, rooms: 1, floorNo: '3/5', fee: 8 }, '1000/60 관리 8만')) === '{"deal":"월세","deposit":1000,"rent":60,"fee":8}', 'Worker 값: 글에 근거(도보·층·㎡·방) 없으면 버림');
   eq(convOf({ deal: '전세', deposit: 20000, fee: null }, { convRate: 4.5 }), 75, '전세 환산: 2억 × 4.5% ÷ 12 = 75 (관리비 미확인 0)');
   eq(convOf({ deal: '전세', deposit: 20000, fee: null }, { convRate: 6 }), 100, '전세 환산: 전환율 6%면 100');
   eq(convOf({ deal: '월세', deposit: 1000, rent: 60, fee: 8 }, { convRate: 4.5 }), 71.75, '월세 환산: 60 + 1000 × 4.5% ÷ 12 + 8 = 71.75');
@@ -2321,7 +2322,7 @@ async function readListing(text) {
   try {
     const r = await fetch(`${AI_WORKER}/listing`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: text.slice(0, 5000), signal: ac.signal });
     if (!r.ok) return null;   // 502·503·504·429 모두 다시 안 부름
-    const t = (await r.json())?.text; return t ? aiListing(JSON.parse(t)) : null;
+    const t = (await r.json())?.text; return t ? grounded(aiListing(JSON.parse(t)), text) : null;
   } catch (e) { return null; }   // 연결 안 됨 · 30초 초과 · 응답이 JSON 아님
   finally { clearTimeout(timer); }
 }
@@ -2347,6 +2348,12 @@ function ruleListing(t) {
   if ((a = /전입(?:신고)?\s*(가능|불가)/.exec(t))) x.moveIn = a[1];
   if ((a = /대출\s*(가능|불가)/.exec(t))) x.loan = a[1];
   return aiListing(x);
+}
+// Worker 값은 글에 근거가 있을 때만 받는다 (2026-11-26: '1000/60 관리 8만' → Gemini 가 도보 8분을 지어냄). 버린 칸은 규칙 읽기 값이나 미확인
+function grounded(o, text) {   // 함수 선언: 위 selfTest 에서도 쓴다
+  const ev = { walk: /도보|걸어서|분|역/, station: /도보|걸어서|분|역/, floorNo: /층|F/i, floor: /층|F|지하/i, area: /㎡|평|m2|m²/i, rooms: /방|룸/, fee: /관리/ };
+  for (const [k, re] of Object.entries(ev)) if (k in o && !re.test(text)) delete o[k];
+  return o;
 }
 // 붙여넣은 글에서 읽은 값: 빈 칸만 채운다 (거래 유형·고르는 칸은 글 값으로)
 function fillEmpty(o) {

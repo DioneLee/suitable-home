@@ -100,6 +100,10 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
     const b = await reg(t, [{ text: JSON.stringify({ deal: null, deposit: null, rent: null, fee: null }) }]); added.push(b?.id);
     ok(`관리비 "${t}" → ${v == null ? '미확인(null)' : v + '만'} · 규칙 읽기 / Worker 가 관리비 null 로 보냄`, !!a && !!b && (a.fee ?? null) === v && (b.fee ?? null) === v, `${a?.fee} / ${b?.fee}`);
   }
+  { const b = await reg('1000/60 관리 8만', [{ text: JSON.stringify({ deal: '월세', deposit: 1000, rent: 60, fee: null, walk: 8, area: 30, rooms: 2, floorNo: '8/10' }) }]); added.push(b?.id);
+    ok('"1000/60 관리 8만" · Worker 가 도보 8·면적·방·층을 지어냄 → 글에 근거 없어 버림: 도보 미확인 · 관리비 8 (규칙)', b?.walk == null && b?.fee === 8 && b?.area == null && b?.rooms == null && !b?.floorNo, JSON.stringify(b)); }
+  { const b = await reg('투룸 1000/60 관리 8만 3층/5층 전용 41㎡ 망원역 도보 6분', [{ text: JSON.stringify({ deal: '월세', deposit: 1000, rent: 60, fee: 8, walk: 7, station: '망원역', area: 41, rooms: 2, floorNo: '3/5' }) }]); added.push(b?.id);
+    ok('근거가 있으면 Worker 값 그대로 (도보 7 · 면적 41 · 방 2 · 층 3/5)', b?.walk === 7 && b?.area === 41 && b?.rooms === 2 && b?.floorNo === '3/5' && b?.fee === 8, JSON.stringify(b)); }
   { const b = await reg('보증금 1000 월세 60 관리비 8', [{ text: JSON.stringify({ deal: '월세', deposit: 1000, rent: 60, fee: 9 }) }]); added.push(b?.id);
     ok('Worker 가 관리비를 읽어 오면 그 값이 먼저 (규칙 8 < Worker 9)', b?.fee === 9, b?.fee); }
   // ---- 전세 → 월세 환산 (2026-11-26 피드백): 전세 카드·비교 표·자세히 보기 · 순위 설정

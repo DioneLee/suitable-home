@@ -65,6 +65,7 @@
   - 실제 813호 옮기기는 사용자(Aside)가 push 뒤에
   - v31 실사용 수정 (2026-11-12): 통근만 빈 매물도 계산·순위에 넣음('통근 미입력' 배지 · 통근 점수는 통과 매물 평균 · 화면 곳곳 '미입력') · '값 미확인'은 금액·면적·방이 빠졌을 때만 · 휴대폰 탭바 '청약 ↗'(읽을 때 '청약 체크 (새 창)') · 백업 `index_v31_backup.html` · 사진 `after_v31_*`
   - v32 매물 지도 모아 보기 (2026-11-13): 리포트 > 입지 장 '모아 보기'(기본) / '한 곳 보기'(예전 그대로) · 우리 기준 통과만/전체 · 멀리 = 구별 동그라미(개수, 지역 칸의 'OO구'), 가까이(확대 13 이상) = 매물 핀 '이름 · 월 N만원' → 자세히 보기 · 상세 주소 못 찾으면 지역·역 위치 '대략 위치' · 설계 `docs/design/지도_모아보기.md` · 검사 `v32_check.py`(23) · 사진 `after_v32_map*` · 백업 `index_v32_backup.html`
+  - v36 (2026-11-26): 전세 → 월세 환산(카드·한눈에 비교·자세히 보기, 전세만 표시) · 설정 전월세 전환율(기본 4.5%) · '순위에 환산값 쓰기'(기본 꺼짐, 켜면 월세·전세 가격 점수 = 월세 + 보증금 × 전환율 ÷ 12 + 관리비, 매매는 실제 월 부담) · 관리비 규칙 읽기 보강('관리 8'·'별도 10만'·'만' 없는 숫자, 원·범위는 미확인) · 설계 `docs/design/전세환산.md` · `ai_check.py`(42) · 백업 `index_v36_backup.html` · Worker 504: 두 모델이 60초 타이머 하나를 같이 씀 → 모델별 타이머 제안(미적용)
   - 보안: `_headers` CSP(script-src self + jsdelivr·cdnjs + 인라인 3개 해시 · connect-src Worker·Nominatim·OSRM) · nosniff · Referrer-Policy · 원문 링크는 http(s)만 저장. **index.html 인라인 스크립트를 고치면 `python scripts/csp.py --write`** (v30_check 가 다르면 NG) · 브라우저 확인 `python scripts/verify/csp_check.py`
 
 ## 작업 규칙 (요약 — 원문은 CLAUDE.md)

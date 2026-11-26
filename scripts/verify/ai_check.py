@@ -94,7 +94,28 @@ async function frame(w, hash) { const f = document.createElement('iframe'); f.st
     fw.location.hash = 'home'; await W(400);
     ok('붙여넣기 등록(통근 없음) → 홈 "적합도 상위"에 들어감 (통근 점수는 통과 매물 평균)', !m.reasons.length && q('#topList').textContent.includes('흑석역 쓰리룸') && !!q(`#topList [data-detail="${l.id}"]`), q('#topList').textContent.replace(/\s+/g, ' ').slice(0, 160));
     fw.location.hash = 'listings'; await W(300); }
-  // ---- 예전 키 값 · 다른 곳으로 안 보냄
+  // ---- 숫자만 적힌 관리비 (2026-11-26 피드백): 규칙 읽기(Worker 꺼짐) · Worker/Gemini 가 관리비를 비워 보내도 규칙 값으로 · 못 읽으면 미확인 유지
+  for (const [t, v] of [['관리비 10만', 10], ['관리비10만원', 10], ['관리 10', 10], ['관리비 10만(인터넷 포함)', 10], ['관리비 별도 10만', 10], ['보증금 1000 월세 60 관리비 8', 8], ['1000/60 관리 8만', 8], ['관리비 100000원', null], ['관리비 10만~15만', null]]) {
+    const a = await reg(t, [{ status: 503 }]); added.push(a?.id);
+    const b = await reg(t, [{ text: JSON.stringify({ deal: null, deposit: null, rent: null, fee: null }) }]); added.push(b?.id);
+    ok(`관리비 "${t}" → ${v == null ? '미확인(null)' : v + '만'} · 규칙 읽기 / Worker 가 관리비 null 로 보냄`, !!a && !!b && (a.fee ?? null) === v && (b.fee ?? null) === v, `${a?.fee} / ${b?.fee}`);
+  }
+  { const b = await reg('보증금 1000 월세 60 관리비 8', [{ text: JSON.stringify({ deal: '월세', deposit: 1000, rent: 60, fee: 9 }) }]); added.push(b?.id);
+    ok('Worker 가 관리비를 읽어 오면 그 값이 먼저 (규칙 8 < Worker 9)', b?.fee === 9, b?.fee); }
+  // ---- 전세 → 월세 환산 (2026-11-26 피드백): 전세 카드·비교 표·자세히 보기 · 순위 설정
+  { const j = await reg('전세 2억, 관리비 5만, 전용 45㎡, 방2, 3층/5층, 흑석역 도보 5분', [{ status: 503 }]); added.push(j?.id);
+    const c = q(`.gl-cards [data-card="${j.id}"]`), m = q(`[data-card="${l0.id}"]`);
+    ok('전세 카드: "전세 → 월세 환산 월 75.0만원" (2억 × 4.5% ÷ 12) · 월세 카드에는 없음', /전세 → 월세 환산 월 75\.0만원/.test(c?.textContent) && !/환산/.test(m?.textContent), c?.textContent.replace(/\s+/g, ' ').slice(0, 200));
+    ok('비교 표(한눈에 비교)에도 전세만 환산 줄', [...d.querySelectorAll('.gl-sub.conv')].length >= 1 && [...d.querySelectorAll('.gl-sub.conv')].every(e => /전세 → 월세 환산 월 [\d.]+만원/.test(e.textContent)), d.querySelectorAll('.gl-sub.conv').length);
+    c.querySelector('[data-detail]').click(); await W(400);
+    ok('자세히 보기 계산식: "전세 → 월세 환산(참고용 · 실제 월 부담과 별개): 75.0 = 전세금 2억 × 4.5% ÷ 12"', q('#shFormula').textContent.includes('전세 → 월세 환산(참고용 · 실제 월 부담과 별개): 75.0 = 전세금 2억 × 4.5% ÷ 12'), q('#shFormula').textContent);
+    fw.eval('closeSheet()'); await W(400);
+    const ev0 = fw.eval('evaluate(state)'), j0 = ev0.all.find(x => x.id === j.id), w0 = ev0.all.find(x => x.id === l0.id);
+    ok('기본(꺼짐): 가격 점수 = 실제 월 부담 · 전환율 기본 4.5', fw.eval('state.settings.convRate') === 4.5 && fw.eval('state.settings.convRank') === false && j0.priceS === j0.monthly && w0.priceS === w0.monthly, `${j0.priceS} ${j0.monthly}`);
+    fw.eval('state.settings.convRank = true; state.settings.convRate = 6');
+    const ev1 = fw.eval('evaluate(state)'), j1 = ev1.all.find(x => x.id === j.id), w1 = ev1.all.find(x => x.id === l0.id);
+    ok('켜짐 · 전환율 6%: 전세 가격 점수 = 2억×6%÷12 + 5 = 105 · 월세 = 70 + 3000×6%÷12 + 8 = 93 · 실제 월 부담은 그대로', Math.abs(j1.priceS - 105) < 1e-9 && Math.abs(w1.priceS - 93) < 1e-9 && j1.monthly === j0.monthly && w1.monthly === w0.monthly, `${j1.priceS} ${w1.priceS}`);
+    fw.eval('state.settings.convRank = false; state.settings.convRate = 4.5'); }
   ok('기기에 남은 예전 키 값은 그대로 (지우지도 쓰지도 않음) · Gemini 로 직접 안 보냄 · 저장 데이터에 안 들어감', fw.localStorage.getItem('suitable-gemini-key') === 'TEST-ONLY-0000' && other.length === 0 && !/TEST-ONLY-0000/.test(fw.localStorage.getItem('newlywed-home-v1')), other.join());
   // ---- 390
   f.remove(); f = await frame(390, '#listings'); d = f.contentDocument; q = s => d.querySelector(s);
